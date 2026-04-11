@@ -89,6 +89,12 @@ export default function Users() {
   const columns = [
     { field: 'fullName', headerName: 'Name', flex: 1, minWidth: 120 },
     { field: 'email', headerName: 'Email', flex: 1, minWidth: 180 },
+    {
+      field: 'mobile',
+      headerName: 'Mobile',
+      width: 140,
+      valueGetter: (_, row) => row.mobile || '—',
+    },
     { field: 'tenantName', headerName: 'Tenant', width: 130, valueGetter: (_, row) => row.tenantName || 'System' },
     {
       field: 'roles',
@@ -241,6 +247,7 @@ export default function Users() {
 function CreateUserModal({ isOpen, onClose, onSubmit, isLoading, roles, tenants, isSiteAdmin }) {
   const [formData, setFormData] = useState({
     email: '',
+    mobile: '',
     password: '',
     fullName: '',
     tenantId: '',
@@ -253,12 +260,15 @@ function CreateUserModal({ isOpen, onClose, onSubmit, isLoading, roles, tenants,
     setError('');
     try {
       const data = {
-        ...formData,
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
         tenantId: parseInt(formData.tenantId),
-        roleIds: formData.roleIds.map(id => parseInt(id))
+        roleIds: formData.roleIds.map(id => parseInt(id)),
+        ...(formData.mobile.trim() ? { mobile: formData.mobile } : {})
       };
       await onSubmit(data);
-      setFormData({ email: '', password: '', fullName: '', tenantId: '', roleIds: [] });
+      setFormData({ email: '', mobile: '', password: '', fullName: '', tenantId: '', roleIds: [] });
     } catch (err) {
       setError(err.message);
     }
@@ -282,6 +292,14 @@ function CreateUserModal({ isOpen, onClose, onSubmit, isLoading, roles, tenants,
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
+        />
+        <Input
+          label="Mobile (optional)"
+          type="text"
+          name="mobile"
+          value={formData.mobile}
+          onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+          placeholder="10–15 digits; spaces and + allowed"
         />
         <Input
           label="Password"
@@ -409,22 +427,38 @@ function InviteUserModal({ isOpen, onClose, onSubmit, isLoading, roles }) {
   );
 }
 
+function editFormFromUser(u) {
+  return {
+    fullName: u.fullName,
+    email: u.email,
+    mobile: u.mobile ?? '',
+    status: u.status,
+    roleIds: u.roles?.map((r) => r.roleId) || [],
+  };
+}
+
 function EditUserModal({ isOpen, onClose, user, onSubmit, isLoading, roles }) {
-  const [formData, setFormData] = useState({
-    fullName: user.fullName,
-    email: user.email,
-    status: user.status,
-    roleIds: user.roles?.map(r => r.roleId) || []
-  });
+  const [formData, setFormData] = useState(() => editFormFromUser(user));
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen && user) {
+      setFormData(editFormFromUser(user));
+      setError('');
+    }
+  }, [isOpen, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
+      const mobileTrim = String(formData.mobile ?? '').trim();
       const data = {
-        ...formData,
-        roleIds: formData.roleIds.map(id => parseInt(id))
+        fullName: formData.fullName,
+        email: formData.email,
+        status: formData.status,
+        mobile: mobileTrim === '' ? null : formData.mobile,
+        roleIds: formData.roleIds.map((id) => parseInt(id)),
       };
       await onSubmit(data);
     } catch (err) {
@@ -450,6 +484,14 @@ function EditUserModal({ isOpen, onClose, user, onSubmit, isLoading, roles }) {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
+        />
+        <Input
+          label="Mobile (optional)"
+          type="text"
+          name="mobile"
+          value={formData.mobile ?? ''}
+          onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+          placeholder="Clear field to remove"
         />
         <Select
           label="Status"

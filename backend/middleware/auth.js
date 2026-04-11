@@ -8,20 +8,20 @@ export const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(403).json({ error: 'No token provided' });
     }
 
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
 
     if (!decoded) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+      return res.status(403).json({ error: 'Invalid or expired token' });
     }
 
     const user = await db.select().from(users).where(eq(users.id, decoded.userId)).limit(1);
 
     if (!user.length || user[0].status !== 'active') {
-      return res.status(401).json({ error: 'User not found or inactive' });
+      return res.status(403).json({ error: 'User not found or inactive' });
     }
 
     const userRolesData = await db
@@ -42,14 +42,14 @@ export const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(401).json({ error: 'Authentication failed' });
+    return res.status(403).json({ error: 'Authentication failed' });
   }
 };
 
 export const requireRole = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(403).json({ error: 'Authentication required' });
     }
 
     const userRoleNames = req.user.roles.map(r => r.roleName);
@@ -67,7 +67,7 @@ export const requirePermission = (resourceName, action) => {
   return async (req, res, next) => {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        return res.status(403).json({ error: 'Authentication required' });
       }
 
       const userRoleIds = req.user.roles.map(r => r.roleId);
@@ -102,7 +102,7 @@ export const requirePermission = (resourceName, action) => {
 
 export const requireTenantAccess = (req, res, next) => {
   if (!req.user) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(403).json({ error: 'Authentication required' });
   }
 
   const isSiteAdmin = req.user.roles.some(r => r.roleName === 'Site Admin');

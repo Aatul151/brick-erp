@@ -6,20 +6,46 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '../../ut
 import { sendPasswordResetEmail } from '../services/emailService.js';
 import { logAudit, AuditResourceType } from '../services/auditService.js';
 
+/** Resolve login identifier from body (after loginSchema validation). */
+function resolveLoginLookup(body) {
+  const digits = (s) => String(s ?? '').replace(/\D/g, '');
+  const fromMobileField = digits(body.mobile);
+  if (fromMobileField.length >= 10) {
+    return { kind: 'mobile', value: fromMobileField };
+  }
+  const primary = String(body.email ?? '').trim();
+  if (primary.includes('@')) {
+    return { kind: 'email', value: primary.toLowerCase() };
+  }
+  const fromEmailField = digits(primary);
+  if (fromEmailField.length >= 10) {
+    return { kind: 'mobile', value: fromEmailField };
+  }
+  return { kind: 'email', value: primary.toLowerCase() };
+}
+
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const lookup = resolveLoginLookup(req.body);
 
-    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const user =
+      lookup.kind === 'email'
+        ? await db.select().from(users).where(eq(users.email, lookup.value)).limit(1)
+        : await db.select().from(users).where(eq(users.mobile, lookup.value)).limit(1);
 
     if (!user.length) {
       await logAudit({
         action: 'LOGIN_FAILED',
         resourceType: AuditResourceType.AUTH,
-        details: { email, reason: 'User not found' },
+        details: {
+          loginMethod: lookup.kind,
+          ...(lookup.kind === 'email' ? { email: lookup.value } : {}),
+          reason: 'User not found'
+        },
         ipAddress: req.ip
       });
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email, mobile, or password' });
     }
 
     if (user[0].status !== 'active') {
@@ -28,7 +54,7 @@ export const login = async (req, res) => {
         tenantId: user[0].tenantId,
         action: 'LOGIN_FAILED',
         resourceType: AuditResourceType.AUTH,
-        details: { email, reason: 'User inactive' },
+        details: { loginMethod: lookup.kind, email: user[0].email, reason: 'User inactive' },
         ipAddress: req.ip
       });
       return res.status(401).json({ error: 'Account is inactive or suspended' });
@@ -42,10 +68,10 @@ export const login = async (req, res) => {
         tenantId: user[0].tenantId,
         action: 'LOGIN_FAILED',
         resourceType: AuditResourceType.AUTH,
-        details: { email, reason: 'Invalid password' },
+        details: { loginMethod: lookup.kind, email: user[0].email, reason: 'Invalid password' },
         ipAddress: req.ip
       });
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email, mobile, or password' });
     }
 
     const userRolesData = await db
@@ -117,8 +143,12 @@ export const login = async (req, res) => {
       user: {
         id: user[0].id,
         email: user[0].email,
+        mobile: user[0].mobile ?? null,
         fullName: user[0].fullName,
         tenantId: user[0].tenantId,
+        status: user[0].status,
+        createdAt: user[0].createdAt,
+        updatedAt: user[0].updatedAt,
         tenantName,
         tenantThemeSetting,
         roles: userRolesData,
@@ -324,6 +354,7 @@ export const getProfile = async (req, res) => {
       .select({
         id: users.id,
         email: users.email,
+        mobile: users.mobile,
         fullName: users.fullName,
         tenantId: users.tenantId,
         tenantName: tenants.name,
@@ -371,6 +402,7 @@ export const getProfile = async (req, res) => {
     res.json({
       id: user.id,
       email: user.email,
+      mobile: user.mobile ?? null,
       fullName: user.fullName,
       tenantId: user.tenantId,
       tenantName: user.tenantName || null,
@@ -388,7 +420,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, email, currentPassword, newPassword } = req.body;
+    const { fullName, email, mobile, currentPassword, newPassword } = req.body;
     const updates = {};
 
     if (fullName) {
@@ -401,6 +433,19 @@ export const updateProfile = async (req, res) => {
         return res.status(400).json({ error: 'Email already in use' });
       }
       updates.email = email;
+    }
+
+    if (mobile !== undefined) {
+      if (mobile === null || String(mobile).trim() === '') {
+        updates.mobile = null;
+      } else {
+        const mobileDigits = String(mobile).replace(/\D/g, '');
+        const mobileTaken = await db.select().from(users).where(eq(users.mobile, mobileDigits)).limit(1);
+        if (mobileTaken.length && mobileTaken[0].id !== req.user.id) {
+          return res.status(400).json({ error: 'Mobile number already in use' });
+        }
+        updates.mobile = mobileDigits;
+      }
     }
 
     if (newPassword) {

@@ -26,7 +26,7 @@ export async function authorizedFileFetch(fileUrl, accessToken) {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     }
   });
-  if (res.status === 401) {
+  if (res.status === 403) {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');

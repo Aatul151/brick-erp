@@ -27,6 +27,7 @@ export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   tenantId: integer('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
   email: varchar('email', { length: 255 }).notNull().unique(),
+  mobile: varchar('mobile', { length: 20 }),
   passwordHash: text('password_hash').notNull(),
   fullName: varchar('full_name', { length: 255 }).notNull(),
   status: userStatusEnum('status').notNull().default('active'),
@@ -34,6 +35,7 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
   emailIdx: uniqueIndex('user_email_idx').on(table.email),
+  mobileIdx: uniqueIndex('user_mobile_idx').on(table.mobile),
   tenantIdx: index('user_tenant_idx').on(table.tenantId),
   statusIdx: index('user_status_idx').on(table.status)
 }));

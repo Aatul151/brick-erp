@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Box,
@@ -50,6 +50,7 @@ export default function Profile() {
   const [accountForm, setAccountForm] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
+    mobile: user?.mobile ?? '',
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -60,14 +61,25 @@ export default function Profile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  useEffect(() => {
+    if (!isEditing && user) {
+      setAccountForm({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        mobile: user.mobile ?? '',
+      });
+    }
+  }, [user, isEditing]);
+
   const updateMutation = useMutation({
     mutationFn: authApi.updateProfile,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['profile']);
-      if (variables.fullName != null || variables.email != null) {
+      if (variables.fullName != null || variables.email != null || 'mobile' in variables) {
         const updates = {};
         if (variables.fullName != null) updates.fullName = variables.fullName;
         if (variables.email != null) updates.email = variables.email;
+        if ('mobile' in variables) updates.mobile = variables.mobile;
         updateUser?.(updates);
       }
       setSuccess('Profile updated successfully');
@@ -87,11 +99,21 @@ export default function Profile() {
     e.preventDefault();
     setError('');
     setSuccess('');
-    if (accountForm.fullName === user?.fullName && accountForm.email === user?.email) {
+    const formMobileDigits = String(accountForm.mobile ?? '').replace(/\D/g, '') || null;
+    const userMobileDigits = String(user?.mobile ?? '').replace(/\D/g, '') || null;
+    if (
+      accountForm.fullName === user?.fullName &&
+      accountForm.email === user?.email &&
+      formMobileDigits === userMobileDigits
+    ) {
       setIsEditing(false);
       return;
     }
-    updateMutation.mutate({ fullName: accountForm.fullName, email: accountForm.email });
+    updateMutation.mutate({
+      fullName: accountForm.fullName,
+      email: accountForm.email,
+      mobile: String(accountForm.mobile ?? '').trim() === '' ? null : accountForm.mobile,
+    });
   };
 
   const handlePasswordSubmit = (e) => {
@@ -121,11 +143,15 @@ export default function Profile() {
   };
 
   const handleCancelEdit = () => {
-    setAccountForm({ fullName: user?.fullName || '', email: user?.email || '' });
+    setAccountForm({
+      fullName: user?.fullName || '',
+      email: user?.email || '',
+      mobile: user?.mobile ?? '',
+    });
     setIsEditing(false);
     setError('');
   };
-
+  console.log(user);
   return (
     <div className="px-4 sm:px-0 flex flex-col gap-4 min-h-0 flex-1">
       <PageHeader
@@ -273,6 +299,15 @@ export default function Profile() {
                       fullWidth
                       size="small"
                     />
+                    <TextField
+                      label="Mobile (optional)"
+                      type="text"
+                      value={accountForm.mobile}
+                      onChange={(e) => setAccountForm({ ...accountForm, mobile: e.target.value })}
+                      placeholder="10–15 digits; clear to remove"
+                      fullWidth
+                      size="small"
+                    />
                     <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                       <Button type="submit" disabled={updateMutation.isPending}>
                         {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
@@ -288,6 +323,7 @@ export default function Profile() {
                   <InfoRow label="User ID" value={user?.id} />
                   <InfoRow label="Full Name" value={user?.fullName} />
                   <InfoRow label="Email" value={user?.email} />
+                  <InfoRow label="Mobile" value={user?.mobile || '—'} />
                   <InfoRow label="Roles" value={user?.roles?.map((r) => r.roleName).join(', ')} />
                   <InfoRow label="Tenant" value={user?.tenantId || 'System'} />
                   <InfoRow label="Status" value={<StatusLabel value={user?.status} variant="status" />} />

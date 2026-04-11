@@ -109,12 +109,13 @@ export default function Login() {
                 </div>
               )}
               <Input
-                label="Email Address"
-                type="email"
+                label="Email or mobile number"
+                type="text"
                 name="email"
+                autoComplete="username"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin@system.local"
+                placeholder="you@company.com or +91 98765 43210"
                 required
               />
               <Input

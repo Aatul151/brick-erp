@@ -1,13 +1,13 @@
 import { db } from '../../models/db.js';
 import { users, userRoles, roles, tenants } from '../../models/schema.js';
-import { eq, desc, sql, or, ilike } from 'drizzle-orm';
+import { eq, desc, sql, or, ilike, not } from 'drizzle-orm';
 import { hashPassword } from '../../utils/password.js';
 import { logAudit, AuditResourceType } from '../services/auditService.js';
 import { sendWelcomeEmail, sendUserInvitationEmail } from '../services/emailService.js';
 
 export const createUser = async (req, res) => {
   try {
-    const { email, password, fullName, tenantId, roleIds } = req.body;
+    const { email, password, fullName, tenantId, roleIds, mobile } = req.body;
 
     const isSiteAdmin = req.user.roles.some(r => r.roleName === 'Site Admin');
     
@@ -20,10 +20,20 @@ export const createUser = async (req, res) => {
       return res.status(409).json({ error: 'Email already exists' });
     }
 
+    let mobileDigits = null;
+    if (mobile && String(mobile).trim()) {
+      mobileDigits = String(mobile).replace(/\D/g, '');
+      const mobileTaken = await db.select().from(users).where(eq(users.mobile, mobileDigits)).limit(1);
+      if (mobileTaken.length) {
+        return res.status(409).json({ error: 'Mobile number already exists' });
+      }
+    }
+
     const hashedPassword = await hashPassword(password);
 
     const [user] = await db.insert(users).values({
       email,
+      mobile: mobileDigits,
       passwordHash: hashedPassword,
       fullName,
       tenantId,
@@ -47,7 +57,7 @@ export const createUser = async (req, res) => {
       action: 'USER_CREATED',
       resourceType: AuditResourceType.USER,
       resourceId: user.id,
-      details: { email, fullName, tenantId, roleIds },
+      details: { email, mobile: mobileDigits, fullName, tenantId, roleIds },
       ipAddress: req.ip
     });
 
@@ -63,6 +73,7 @@ export const createUser = async (req, res) => {
     res.status(201).json({
       id: user.id,
       email: user.email,
+      mobile: user.mobile ?? null,
       fullName: user.fullName,
       tenantId: user.tenantId,
       status: user.status,
@@ -85,6 +96,7 @@ export const getUsers = async (req, res) => {
     let query = db.select({
       id: users.id,
       email: users.email,
+      mobile: users.mobile,
       fullName: users.fullName,
       tenantId: users.tenantId,
       tenantName: tenants.name,
@@ -94,6 +106,7 @@ export const getUsers = async (req, res) => {
     }).from(users).leftJoin(tenants, eq(users.tenantId, tenants.id));
 
     const conditions = [];
+    // conditions.push(not(eq(users.tenantName, "system")));
 
     if (!isSiteAdmin) {
       conditions.push(eq(users.tenantId, req.user.tenantId));
@@ -106,12 +119,15 @@ export const getUsers = async (req, res) => {
     }
 
     if (search) {
-      conditions.push(
-        or(
-          ilike(users.fullName, `%${search}%`),
-          ilike(users.email, `%${search}%`)
-        )
-      );
+      const searchDigits = String(search).replace(/\D/g, '');
+      const searchOr = [
+        ilike(users.fullName, `%${search}%`),
+        ilike(users.email, `%${search}%`)
+      ];
+      if (searchDigits.length > 0) {
+        searchOr.push(ilike(users.mobile, `%${searchDigits}%`));
+      }
+      conditions.push(or(...searchOr));
     }
 
     if (conditions.length > 0) {
@@ -119,7 +135,6 @@ export const getUsers = async (req, res) => {
     }
 
     const allUsers = await query.orderBy(desc(users.createdAt)).limit(parseInt(limit)).offset(offset);
-
     for (const user of allUsers) {
       const userRolesData = await db
         .select({
@@ -163,6 +178,7 @@ export const getUser = async (req, res) => {
     const [user] = await db.select({
       id: users.id,
       email: users.email,
+      mobile: users.mobile,
       fullName: users.fullName,
       tenantId: users.tenantId,
       tenantName: tenants.name,
@@ -205,7 +221,7 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, fullName, status, roleIds } = req.body;
+    const { email, mobile, fullName, status, roleIds } = req.body;
 
     const isSiteAdmin = req.user.roles.some(r => r.roleName === 'Site Admin');
 
@@ -226,6 +242,18 @@ export const updateUser = async (req, res) => {
         return res.status(409).json({ error: 'Email already exists' });
       }
       updates.email = email;
+    }
+    if (mobile !== undefined) {
+      if (mobile === null || String(mobile).trim() === '') {
+        updates.mobile = null;
+      } else {
+        const mobileDigits = String(mobile).replace(/\D/g, '');
+        const mobileTaken = await db.select().from(users).where(eq(users.mobile, mobileDigits)).limit(1);
+        if (mobileTaken.length && mobileTaken[0].id !== parseInt(id)) {
+          return res.status(409).json({ error: 'Mobile number already exists' });
+        }
+        updates.mobile = mobileDigits;
+      }
     }
     if (fullName) updates.fullName = fullName;
     if (status) updates.status = status;
@@ -270,6 +298,7 @@ export const updateUser = async (req, res) => {
     res.json({
       id: updatedUser.id,
       email: updatedUser.email,
+      mobile: updatedUser.mobile ?? null,
       fullName: updatedUser.fullName,
       tenantId: updatedUser.tenantId,
       status: updatedUser.status,

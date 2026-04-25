@@ -1,6 +1,6 @@
 {
-  "name": "BRICK ERP PWA",
-  "short_name": "BRICK ERP PWA",
+  "name": "BEP PWA",
+  "short_name": "BEP PWA",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#0f172a",

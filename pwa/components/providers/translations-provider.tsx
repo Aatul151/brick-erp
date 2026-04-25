@@ -11,6 +11,7 @@ import {
 } from "react";
 import { idbGetFresh, idbSetWithTimestamp } from "@/lib/idb";
 import { TRANSLATIONS_CACHE_TTL_MS } from "@/lib/i18n/cache-config";
+import { FALLBACK_TRANSLATION_MESSAGES } from "@/lib/i18n/fallback-messages";
 
 type Messages = Record<string, string>;
 
@@ -29,6 +30,10 @@ function cacheKey(locale: string): string {
   return `translations:${locale}`;
 }
 
+function mergeMessages(remote: Messages): Messages {
+  return { ...FALLBACK_TRANSLATION_MESSAGES, ...remote };
+}
+
 export function TranslationsProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState(DEFAULT_LOCALE);
   const [messages, setMessages] = useState<Messages>({});
@@ -42,7 +47,7 @@ export function TranslationsProvider({ children }: { children: ReactNode }) {
       try {
         const cached = await idbGetFresh<Messages>(key, TRANSLATIONS_CACHE_TTL_MS);
         if (!cancelled && cached && Object.keys(cached).length > 0) {
-          setMessages(cached);
+          setMessages(mergeMessages(cached));
           setReady(true);
           return;
         }
@@ -62,18 +67,21 @@ export function TranslationsProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
 
         if (data && typeof data === "object") {
-          setMessages(data);
+          const merged = mergeMessages(data);
+          setMessages(merged);
           setReady(true);
           try {
-            await idbSetWithTimestamp(key, data);
+            await idbSetWithTimestamp(key, merged);
           } catch {
             /* ignore IDB write errors */
           }
         } else {
+          setMessages({ ...FALLBACK_TRANSLATION_MESSAGES });
           setReady(true);
         }
       } catch {
         if (!cancelled) {
+          setMessages({ ...FALLBACK_TRANSLATION_MESSAGES });
           setReady(true);
         }
       }
@@ -94,7 +102,7 @@ export function TranslationsProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback(
     (messageKey: string) => {
-      const value = messages[messageKey];
+      const value = messages[messageKey] ?? FALLBACK_TRANSLATION_MESSAGES[messageKey];
       return value ?? messageKey;
     },
     [messages],

@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAppTranslations } from "@/components/providers/translations-provider";
 import { Header } from "./_components/header";
 import { Sidebar } from "./_components/sidebar";
 
-const HEADER_TITLE = "Brick ERP";
-
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { t } = useAppTranslations();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -29,7 +29,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-full flex-1 flex-col bg-slate-50">
       <Header
-        title={HEADER_TITLE}
+        title={t("header.appTitle")}
         isLoggingOut={isLoggingOut}
         onMenuClick={() => setIsSidebarOpen((v) => !v)}
         onLogout={handleLogout}

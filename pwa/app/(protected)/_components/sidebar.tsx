@@ -23,7 +23,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <button
           type="button"
           className="fixed inset-0 z-40 bg-slate-900/40"
-          aria-label="Close menu"
+          aria-label={t("sidebar.closeMenu")}
           onClick={onClose}
         />
       ) : null}

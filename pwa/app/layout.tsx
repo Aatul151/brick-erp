@@ -16,16 +16,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA",
-    template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA"}`,
+    default: process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA",
+    template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA"}`,
   },
   description: "Production-ready Next.js PWA baseline with minimal service worker.",
-  applicationName: process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA",
+  applicationName: process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA",
+    title: process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA",
   },
   icons: {
     icon: [
@@ -37,10 +37,10 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA",
+    title: process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA",
     description: "Production-ready Next.js PWA baseline with minimal service worker.",
     url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-    siteName: process.env.NEXT_PUBLIC_APP_NAME ?? "BRICK ERP PWA",
+    siteName: process.env.NEXT_PUBLIC_APP_NAME ?? "BEP PWA",
   },
 };
 

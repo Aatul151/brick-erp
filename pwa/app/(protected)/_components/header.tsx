@@ -1,3 +1,7 @@
+"use client";
+
+import { useAppTranslations } from "@/components/providers/translations-provider";
+
 type HeaderProps = {
   title: string;
   isLoggingOut: boolean;
@@ -44,6 +48,8 @@ function LogoutIcon() {
 }
 
 export function Header({ title, isLoggingOut, onMenuClick, onLogout }: HeaderProps) {
+  const { t } = useAppTranslations();
+
   return (
     <header className="relative z-50 border-b border-slate-200 bg-white">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
@@ -51,7 +57,7 @@ export function Header({ title, isLoggingOut, onMenuClick, onLogout }: HeaderPro
           type="button"
           onClick={onMenuClick}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-slate-800 hover:bg-slate-100"
-          aria-label="Open menu"
+          aria-label={t("header.openMenu")}
         >
           <MenuIcon />
         </button>
@@ -65,8 +71,8 @@ export function Header({ title, isLoggingOut, onMenuClick, onLogout }: HeaderPro
           onClick={onLogout}
           disabled={isLoggingOut}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
-          aria-label={isLoggingOut ? "Logging out" : "Log out"}
-          title="Log out"
+          aria-label={isLoggingOut ? t("header.loggingOut") : t("header.logout")}
+          title={t("header.logout")}
         >
           {isLoggingOut ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-800" />

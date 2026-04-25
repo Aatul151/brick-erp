@@ -119,6 +119,14 @@ const data = await res.json();
 - Login sets an httpOnly cookie via `POST /api/auth/login`
 - Logout clears cookie via `POST /api/auth/logout`
 
+## Translations (API + IndexedDB TTL)
+
+- `GET /api/translations?locale=en` loads copy from your external API when `EXTERNAL_API_BASE_URL` and `EXTERNAL_API_KEY` are set; otherwise it returns safe fallbacks.
+- Configure path with `EXTERNAL_TRANSLATIONS_PATH` (default `i18n/{locale}`). Use `{locale}` where the locale should be inserted.
+- Client: `TranslationsProvider` in `app/layout.tsx` wraps the app. Use `useAppTranslations().t("key")` in client components.
+- IndexedDB helpers live in `lib/idb.ts` (built on the [`idb`](https://github.com/jakearchibald/idb) package). Translations are cached per locale for **24 hours** (`TRANSLATIONS_CACHE_TTL_MS` in `lib/i18n/cache-config.ts`). While cache is fresh, the app uses IndexedDB and **does not** refetch from the API.
+- Default locale: `NEXT_PUBLIC_DEFAULT_LOCALE` (optional, default `en`).
+
 ## TODO Before Publish
 
 - [ ] Update `.env.local` with real `NEXT_PUBLIC_APP_NAME`

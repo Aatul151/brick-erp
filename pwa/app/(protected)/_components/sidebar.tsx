@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useAppTranslations } from "@/components/providers/translations-provider";
 import { APP_VERSION } from "@/lib/app-version";
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
-  // { href: "/pwa-check", label: "PWA Check" },
+  { href: "/", labelKey: "nav.dashboard" as const },
+  { href: "/pwa-check", labelKey: "nav.pwaCheck" as const },
 ];
 
 type SidebarProps = {
@@ -12,6 +15,8 @@ type SidebarProps = {
 };
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { t } = useAppTranslations();
+
   return (
     <>
       {isOpen ? (
@@ -31,7 +36,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         aria-hidden={!isOpen}
       >
         <div className="flex h-14 shrink-0 items-center border-b border-slate-200 px-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Menu</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {t("sidebar.menu")}
+          </p>
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
@@ -42,13 +49,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </nav>
 
         <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-xs text-slate-500">App version</p>
+          <p className="text-xs text-slate-500">{t("sidebar.versionLabel")}</p>
           <p className="mt-0.5 font-mono text-sm font-medium text-slate-800">v{APP_VERSION}</p>
         </div>
       </aside>

@@ -1,7 +1,16 @@
 import { verifyToken } from '../utils/jwt.js';
 import { db } from '../models/db.js';
-import { users, userRoles, roles, rolePermissions, permissions } from '../models/schema.js';
-import { eq, inArray } from 'drizzle-orm';
+import { users, userRoles, roles, rolePermissions, permissions, tenants } from '../models/schema.js';
+import { eq, inArray, and } from 'drizzle-orm';
+
+const SITE_ADMIN_TENANT_SUBDOMAIN = 'system';
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function parseTenantUuid(value) {
+  if (value == null || value === '') return null;
+  const tenantId = String(value).trim();
+  return UUID_REGEX.test(tenantId) ? tenantId : null;
+}
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -38,6 +47,23 @@ export const authenticate = async (req, res, next) => {
       ...user[0],
       roles: userRolesData
     };
+
+    const isSiteAdmin = userRolesData.some((r) => r.roleName === 'Site Admin');
+    if (req.user.tenantId && !isSiteAdmin) {
+      const [protectedTenant] = await db
+        .select({ id: tenants.id })
+        .from(tenants)
+        .where(
+          and(
+            eq(tenants.id, req.user.tenantId),
+            eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)
+          )
+        )
+        .limit(1);
+      if (protectedTenant) {
+        return res.status(403).json({ error: 'Access denied to protected system tenant' });
+      }
+    }
 
     next();
   } catch (error) {
@@ -111,7 +137,7 @@ export const requireTenantAccess = (req, res, next) => {
     return next();
   }
 
-  const requestedTenantId = parseInt(req.params.tenantId || req.body.tenantId || req.query.tenantId);
+  const requestedTenantId = parseTenantUuid(req.params.tenantId || req.body.tenantId || req.query.tenantId);
   
   if (requestedTenantId && req.user.tenantId !== requestedTenantId) {
     return res.status(403).json({ error: 'Access denied to this tenant' });

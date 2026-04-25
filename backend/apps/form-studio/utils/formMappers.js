@@ -1,5 +1,5 @@
 /**
- * Map DB row to API shape for the UI. Form Studio only supports custom forms (no DB column).
+ * Map DB row to API shape for the UI.
  */
 export function mapFormDefinition(row) {
   if (!row) return null;
@@ -10,7 +10,7 @@ export function mapFormDefinition(row) {
     tenantId: row.tenantId,
     title: row.title,
     name: row.name,
-    formType: 'custom',
+    formType: row.formType ?? 'custom',
     collectionName: row.collectionName,
     sections: row.sections ?? [],
     settings: row.settings ?? {},

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
+const uuidSchema = z.string().uuid('Invalid tenant id');
 
 // Auth Schemas — accepts legacy { email, password }, optional { mobile }, or email field as mobile digits
 export const loginSchema = z.object({
@@ -34,7 +35,7 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[@$!%*?&#]/, 'Password must contain at least one special character'),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  tenantId: z.number().int().positive().optional()
+  tenantId: uuidSchema.optional()
 });
 
 export const passwordResetRequestSchema = z.object({
@@ -76,7 +77,7 @@ export const createUserSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[@$!%*?&#]/, 'Password must contain at least one special character'),
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  tenantId: z.number().int().positive(),
+  tenantId: uuidSchema,
   roleIds: z.array(z.number().int().positive()).min(1, 'At least one role is required')
 }).superRefine((data, ctx) => {
   const d = String(data.mobile ?? '').replace(/\D/g, '');

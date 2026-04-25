@@ -4,7 +4,80 @@ import { AuditResourceType } from '../core/services/auditService.js';
 import { hashPassword } from '../utils/password.js';
 import { eq, and } from 'drizzle-orm';
 
-const FORM_STUDIO_PERMISSIONS = [
+const SITE_ADMIN_TENANT_SUBDOMAIN = 'system';
+const SITE_ADMIN_TENANT_NAME = 'System Administration';
+
+async function ensureSiteAdminTenantAndUserBinding() {
+  let [systemTenant] = await db
+    .select()
+    .from(tenants)
+    .where(eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN))
+    .limit(1);
+
+  if (!systemTenant) {
+    [systemTenant] = await db
+      .insert(tenants)
+      .values({
+        name: SITE_ADMIN_TENANT_NAME,
+        subdomain: SITE_ADMIN_TENANT_SUBDOMAIN,
+        status: 'active'
+      })
+      .returning();
+  }
+
+  const siteAdminUsers = await db
+    .select({
+      id: users.id,
+      tenantId: users.tenantId
+    })
+    .from(users)
+    .innerJoin(userRoles, eq(userRoles.userId, users.id))
+    .innerJoin(roles, eq(userRoles.roleId, roles.id))
+    .where(eq(roles.name, 'Site Admin'));
+
+  for (const adminUser of siteAdminUsers) {
+    if (adminUser.tenantId !== systemTenant.id) {
+      await db
+        .update(users)
+        .set({ tenantId: systemTenant.id, updatedAt: new Date() })
+        .where(eq(users.id, adminUser.id));
+    }
+  }
+
+  return systemTenant;
+}
+
+const permissionData = [
+  { resourceName: 'tenants', action: 'menu', description: 'Show tenants in menu' },
+  { resourceName: 'tenants', action: 'create', description: 'Create new tenants' },
+  { resourceName: 'tenants', action: 'read', description: 'View tenant information' },
+  { resourceName: 'tenants', action: 'update', description: 'Update tenant information' },
+  { resourceName: 'tenants', action: 'delete', description: 'Delete tenants' },
+  { resourceName: 'users', action: 'menu', description: 'Show users in menu' },
+  { resourceName: 'users', action: 'create', description: 'Create new users' },
+  { resourceName: 'users', action: 'read', description: 'View user information' },
+  { resourceName: 'users', action: 'update', description: 'Update user information' },
+  { resourceName: 'users', action: 'delete', description: 'Delete users' },
+  { resourceName: 'roles', action: 'menu', description: 'Show roles in menu' },
+  { resourceName: 'roles', action: 'create', description: 'Create new roles' },
+  { resourceName: 'roles', action: 'read', description: 'View role information' },
+  { resourceName: 'roles', action: 'update', description: 'Update role information' },
+  { resourceName: 'roles', action: 'delete', description: 'Delete roles' },
+  { resourceName: 'permissions', action: 'menu', description: 'Show permissions in menu' },
+  { resourceName: 'permissions', action: 'create', description: 'Create new permissions' },
+  { resourceName: 'permissions', action: 'read', description: 'View permission information' },
+  { resourceName: 'permissions', action: 'update', description: 'Update permission information' },
+  { resourceName: 'permissions', action: 'delete', description: 'Delete permissions' },
+  { resourceName: 'modules', action: 'menu', description: 'Show modules in menu' },
+  { resourceName: 'modules', action: 'create', description: 'Create new modules' },
+  { resourceName: 'modules', action: 'read', description: 'View module information' },
+  { resourceName: 'modules', action: 'update', description: 'Update module information' },
+  { resourceName: 'modules', action: 'delete', description: 'Delete modules' },
+  { resourceName: 'audit_logs', action: 'menu', description: 'Show audit logs in menu' },
+  { resourceName: 'audit_logs', action: 'read', description: 'View audit logs' },
+  { resourceName: 'settings', action: 'menu', description: 'Show settings in menu' },
+  { resourceName: 'settings', action: 'read', description: 'View settings' },
+  { resourceName: 'settings', action: 'update', description: 'Update settings' },
   { resourceName: 'form_studio', action: 'menu', description: 'Show Form Studio in menu' },
   { resourceName: 'form_studio', action: 'create', description: 'Create forms and entries' },
   { resourceName: 'form_studio', action: 'read', description: 'View forms and entries' },
@@ -13,7 +86,8 @@ const FORM_STUDIO_PERMISSIONS = [
 ];
 
 async function ensureFormStudioApp(db, permissionsTable, rolePermissions, roles) {
-  for (const perm of FORM_STUDIO_PERMISSIONS) {
+  const formStudioPermissionData = permissionData.filter((p) => p.resourceName === 'form_studio');
+  for (const perm of formStudioPermissionData) {
     const existing = await db.select().from(permissionsTable).where(and(
       eq(permissionsTable.resourceName, perm.resourceName),
       eq(permissionsTable.action, perm.action)
@@ -69,8 +143,7 @@ export const seedDatabase = async () => {
 
     const existingRoles = await db.select().from(roles).limit(1);
     if (existingRoles.length > 0) {
-      console.log('Database already seeded. Ensuring Form Studio app...');
-      await ensureFormStudioApp(db, permissions, rolePermissions, roles);
+      console.log('Database already seeded');
       return;
     }
 
@@ -94,44 +167,6 @@ export const seedDatabase = async () => {
     }).returning();
 
     console.log('Creating permissions...');
-    const permissionData = [
-      { resourceName: 'tenants', action: 'menu', description: 'Show tenants in menu' },
-      { resourceName: 'tenants', action: 'create', description: 'Create new tenants' },
-      { resourceName: 'tenants', action: 'read', description: 'View tenant information' },
-      { resourceName: 'tenants', action: 'update', description: 'Update tenant information' },
-      { resourceName: 'tenants', action: 'delete', description: 'Delete tenants' },
-      { resourceName: 'users', action: 'menu', description: 'Show users in menu' },
-      { resourceName: 'users', action: 'create', description: 'Create new users' },
-      { resourceName: 'users', action: 'read', description: 'View user information' },
-      { resourceName: 'users', action: 'update', description: 'Update user information' },
-      { resourceName: 'users', action: 'delete', description: 'Delete users' },
-      { resourceName: 'roles', action: 'menu', description: 'Show roles in menu' },
-      { resourceName: 'roles', action: 'create', description: 'Create new roles' },
-      { resourceName: 'roles', action: 'read', description: 'View role information' },
-      { resourceName: 'roles', action: 'update', description: 'Update role information' },
-      { resourceName: 'roles', action: 'delete', description: 'Delete roles' },
-      { resourceName: 'permissions', action: 'menu', description: 'Show permissions in menu' },
-      { resourceName: 'permissions', action: 'create', description: 'Create new permissions' },
-      { resourceName: 'permissions', action: 'read', description: 'View permission information' },
-      { resourceName: 'permissions', action: 'update', description: 'Update permission information' },
-      { resourceName: 'permissions', action: 'delete', description: 'Delete permissions' },
-      { resourceName: 'modules', action: 'menu', description: 'Show modules in menu' },
-      { resourceName: 'modules', action: 'create', description: 'Create new modules' },
-      { resourceName: 'modules', action: 'read', description: 'View module information' },
-      { resourceName: 'modules', action: 'update', description: 'Update module information' },
-      { resourceName: 'modules', action: 'delete', description: 'Delete modules' },
-      { resourceName: 'audit_logs', action: 'menu', description: 'Show audit logs in menu' },
-      { resourceName: 'audit_logs', action: 'read', description: 'View audit logs' },
-      { resourceName: 'settings', action: 'menu', description: 'Show settings in menu' },
-      { resourceName: 'settings', action: 'read', description: 'View settings' },
-      { resourceName: 'settings', action: 'update', description: 'Update settings' },
-      { resourceName: 'form_studio', action: 'menu', description: 'Show Form Studio in menu' },
-      { resourceName: 'form_studio', action: 'create', description: 'Create forms and entries' },
-      { resourceName: 'form_studio', action: 'read', description: 'View forms and entries' },
-      { resourceName: 'form_studio', action: 'update', description: 'Update forms and entries' },
-      { resourceName: 'form_studio', action: 'delete', description: 'Delete forms and entries' }
-    ];
-
     const createdPermissions = await db.insert(permissions).values(permissionData).returning();
 
     console.log('Assigning permissions to Site Admin role...');
@@ -143,7 +178,7 @@ export const seedDatabase = async () => {
     }
 
     console.log('Assigning permissions to Client Admin role...');
-    const clientAdminPermissions = createdPermissions.filter(p => 
+    const clientAdminPermissions = createdPermissions.filter(p =>
       ['users', 'audit_logs', 'settings', 'form_studio'].includes(p.resourceName)
     );
     for (const permission of clientAdminPermissions) {
@@ -154,7 +189,7 @@ export const seedDatabase = async () => {
     }
 
     console.log('Assigning permissions to Client User role...');
-    const clientUserPermissions = createdPermissions.filter(p => 
+    const clientUserPermissions = createdPermissions.filter(p =>
       (p.resourceName === 'settings' && p.action === 'read') ||
       (p.resourceName === 'form_studio')
     );
@@ -165,13 +200,20 @@ export const seedDatabase = async () => {
       });
     }
 
+    console.log('Creating default Site Admin tenant...');
+    const [siteAdminTenant] = await db.insert(tenants).values({
+      name: SITE_ADMIN_TENANT_NAME,
+      subdomain: SITE_ADMIN_TENANT_SUBDOMAIN,
+      status: 'active'
+    }).returning();
+
     console.log('Creating default Site Admin user...');
     const adminPassword = await hashPassword(process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123456');
     const [siteAdmin] = await db.insert(users).values({
       email: process.env.DEFAULT_ADMIN_EMAIL || 'admin@system.local',
       passwordHash: adminPassword,
       fullName: process.env.DEFAULT_ADMIN_NAME || 'System Administrator',
-      tenantId: null,
+      tenantId: siteAdminTenant.id,
       status: 'active'
     }).returning();
 
@@ -217,25 +259,12 @@ export const seedDatabase = async () => {
       roleId: clientUserRole.id
     });
 
-    const user2Password = await hashPassword('User@123456');
-    const [user2] = await db.insert(users).values({
-      email: 'user2@democompany.com',
-      passwordHash: user2Password,
-      fullName: 'Demo User Two',
-      tenantId: demoTenant.id,
-      status: 'active'
-    }).returning();
-
-    await db.insert(userRoles).values({
-      userId: user2.id,
-      roleId: clientUserRole.id
-    });
 
     console.log('Creating sample audit logs...');
     await db.insert(auditLogs).values([
       {
         userId: siteAdmin.id,
-        tenantId: null,
+        tenantId: siteAdminTenant.id,
         action: 'SYSTEM_INITIALIZED',
         resourceType: AuditResourceType.SYSTEM,
         details: JSON.stringify({ message: 'System initialized with seed data' }),

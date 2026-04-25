@@ -38,8 +38,9 @@ import { PageContent } from '../../../components/common/PageContent';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function FormBuilderPage() {
-  const { user } = useAuth();
-  const hasNoTenant = !user?.tenantId;
+  const { user, isSiteAdmin } = useAuth();
+  const siteAdmin = isSiteAdmin();
+  const hasNoTenant = !user?.tenantId && !siteAdmin;
 
   const [path, setLocation] = useLocation();
   const parts = path.split('/').filter(Boolean);
@@ -66,7 +67,8 @@ export default function FormBuilderPage() {
   const [formDetails, setFormDetails] = useState({
     title: '',
     name: '',
-    collectionName: ''
+    collectionName: '',
+    formType: 'custom'
   });
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
   const [sectionConfigDrawerOpen, setSectionConfigDrawerOpen] = useState(false);
@@ -104,7 +106,8 @@ export default function FormBuilderPage() {
       setFormDetails({
         title: currentForm.title,
         name: currentForm.name,
-        collectionName: currentForm.collectionName || ''
+        collectionName: currentForm.collectionName || '',
+        formType: currentForm.formType || 'custom'
       });
       setFormSettings(
         currentForm.settings || {
@@ -158,8 +161,11 @@ export default function FormBuilderPage() {
   };
 
   const [prevSectionsLength, setPrevSectionsLength] = useState(sections.length);
+  const isSystemForm = (currentForm?.formType || formDetails.formType) === 'system';
+  const canManageFormDefinition = !isSystemForm || siteAdmin;
 
   const handleAddSection = () => {
+    if (!canManageFormDefinition) return;
     const n = sections.length + 1;
     addSection({ title: `Section ${n}` });
   };
@@ -186,6 +192,7 @@ export default function FormBuilderPage() {
   };
 
   const handleAddField = (type) => {
+    if (!canManageFormDefinition) return;
     let targetSectionId = selectedSectionId || sections[0]?.id;
     if (!targetSectionId) {
       addSection({ title: 'Section 1' });
@@ -213,12 +220,14 @@ export default function FormBuilderPage() {
   };
 
   const handleFieldSelect = (field, sectionId, fieldIndex) => {
+    if (!canManageFormDefinition) return;
     selectField(field, sectionId, fieldIndex);
     setSelectedSectionId(sectionId);
     setConfigDrawerOpen(true);
   };
 
   const handleFieldConfigSave = (field) => {
+    if (!canManageFormDefinition) return;
     if (selectedFieldPath) {
       if (!isFieldNameUnique(field.name, selectedFieldPath.sectionId, selectedFieldPath.fieldIndex)) {
         setSaveError(`Field name "${field.name}" already exists.`);
@@ -231,11 +240,13 @@ export default function FormBuilderPage() {
   };
 
   const handleSectionEdit = (sectionId) => {
+    if (!canManageFormDefinition) return;
     setEditingSectionId(sectionId);
     setSectionConfigDrawerOpen(true);
   };
 
   const handleFieldDelete = (sectionId, fieldIndex) => {
+    if (!canManageFormDefinition) return;
     removeField(sectionId, fieldIndex);
     if (
       selectedFieldPath?.sectionId === sectionId &&
@@ -248,6 +259,10 @@ export default function FormBuilderPage() {
 
   const handleSave = async () => {
     if (hasNoTenant) return;
+    if (!canManageFormDefinition) {
+      setSaveError('Only Site Admin can manage system forms');
+      return;
+    }
     setSaveError(null);
     setSaveSuccess(false);
     if (!formDetails.name.trim()) {
@@ -268,6 +283,7 @@ export default function FormBuilderPage() {
         ...currentForm,
         title: formDetails.title,
         name: formDetails.name?.toLowerCase()?.trim(),
+        formType: formDetails.formType || 'custom',
         collectionName: formDetails.collectionName?.trim() || undefined,
         sections,
         settings: formSettings
@@ -301,7 +317,13 @@ export default function FormBuilderPage() {
               Cancel
             </Button>
             {!hasNoTenant && (
-              <Button variant="contained" size="small" startIcon={<SaveIcon />} onClick={handleSave}>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<SaveIcon />}
+                onClick={handleSave}
+                disabled={!canManageFormDefinition}
+              >
                 Save
               </Button>
             )}
@@ -312,17 +334,22 @@ export default function FormBuilderPage() {
 
       {hasNoTenant && (
         <Alert severity="info" sx={{ mx: 1.5, mb: 1 }}>
-          Form Studio is available for tenant users. Site Admin cannot access tenant apps.
+          Form Studio is available for tenant users and Site Admin.
         </Alert>
       )}
 
       <PageContent sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', p: 1.5 }}>
         {hasNoTenant ? (
           <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
-            <Typography>Switch to a tenant account to use the Form Builder.</Typography>
+            <Typography>Switch to a tenant account or Site Admin user to use the Form Builder.</Typography>
           </Box>
         ) : (
           <>
+        {!canManageFormDefinition && (
+          <Alert severity="warning" sx={{ mb: 1.5 }}>
+            Only Site Admin can manage system forms.
+          </Alert>
+        )}
         {saveError && (
           <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSaveError(null)}>
             {saveError}
@@ -347,6 +374,7 @@ export default function FormBuilderPage() {
                 value={formDetails.title}
                 onChange={(e) => handleFormTitleChange(e.target.value)}
                 required
+                disabled={!canManageFormDefinition}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -361,7 +389,24 @@ export default function FormBuilderPage() {
                 }}
                 helperText="Unique identifier (lowercase)"
                 required
+                disabled={!canManageFormDefinition}
               />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                label="Form Type"
+                fullWidth
+                size="small"
+                value={formDetails.formType}
+                onChange={(e) => setFormDetails((prev) => ({ ...prev, formType: e.target.value }))}
+                SelectProps={{ native: true }}
+                disabled={!siteAdmin}
+                helperText={siteAdmin ? 'System forms are manageable by Site Admin only' : 'Managed by Site Admin'}
+              >
+                <option value="custom">Custom</option>
+                <option value="system">System</option>
+              </TextField>
             </Grid>
           </Grid>
         </Paper>
@@ -395,6 +440,7 @@ export default function FormBuilderPage() {
                     size="small"
                     startIcon={<AddIcon />}
                     onClick={handleAddSection}
+                    disabled={!canManageFormDefinition}
                     sx={{ mb: 1.5, flexShrink: 0 }}
                   >
                     Add Section
@@ -406,7 +452,7 @@ export default function FormBuilderPage() {
                     <FieldTypePanel
                       fieldTypes={regularFieldTypes}
                       onAddField={handleAddField}
-                      disabled={sections.length === 0 || !hasExpandedSection}
+                      disabled={sections.length === 0 || !hasExpandedSection || !canManageFormDefinition}
                     />
                   </Box>
                 </Paper>
@@ -415,12 +461,15 @@ export default function FormBuilderPage() {
                     sections={sections}
                     onFieldSelect={handleFieldSelect}
                     onFieldDelete={handleFieldDelete}
-                    onFieldReorder={reorderFields}
+                    onFieldReorder={canManageFormDefinition ? reorderFields : () => {}}
                     selectedField={selectedField}
                     selectedSectionId={selectedSectionId}
-                    onSectionSelect={setSelectedSectionId}
+                    onSectionSelect={canManageFormDefinition ? setSelectedSectionId : () => {}}
                     onSectionEdit={handleSectionEdit}
-                    onSectionDelete={(id) => removeSection(id)}
+                    onSectionDelete={(id) => {
+                      if (!canManageFormDefinition) return;
+                      removeSection(id);
+                    }}
                     onExpandedSectionsChange={setHasExpandedSection}
                   />
                 </Box>
@@ -431,7 +480,7 @@ export default function FormBuilderPage() {
                   <FieldTypePanel
                     fieldTypes={referenceFieldTypes}
                     onAddField={handleAddField}
-                    disabled={sections.length === 0 || !hasExpandedSection}
+                    disabled={sections.length === 0 || !hasExpandedSection || !canManageFormDefinition}
                   />
                 </Paper>
               </Box>
@@ -452,6 +501,7 @@ export default function FormBuilderPage() {
                       onChange={(e) =>
                         setFormSettings((prev) => ({ ...prev, formIcon: e.target.value }))
                       }
+                      disabled={!canManageFormDefinition}
                       helperText="Optional icon key for navigation"
                     />
                   </Grid>
@@ -469,6 +519,7 @@ export default function FormBuilderPage() {
                       fullWidth
                       size="small"
                       SelectProps={{ native: true }}
+                      disabled={!canManageFormDefinition}
                     >
                       <option value={1}>1 Field</option>
                       <option value={2}>2 Fields</option>
@@ -486,6 +537,7 @@ export default function FormBuilderPage() {
                             sectionDisplayMode: e.target.value
                           }))
                         }
+                        disabled={!canManageFormDefinition}
                       >
                         <FormControlLabel value="panel" control={<Radio size="small" />} label="Panel" />
                         <FormControlLabel value="stepper" control={<Radio size="small" />} label="Stepper" />
@@ -503,6 +555,7 @@ export default function FormBuilderPage() {
                           onChange={(e) =>
                             setFormSettings((prev) => ({ ...prev, isPublic: e.target.checked }))
                           }
+                          disabled={!canManageFormDefinition}
                         />
                       }
                       label="Public Form"
@@ -519,6 +572,7 @@ export default function FormBuilderPage() {
                               isSingleRecordForm: e.target.checked
                             }))
                           }
+                          disabled={!canManageFormDefinition}
                         />
                       }
                       label="Single Record Form"
@@ -535,6 +589,7 @@ export default function FormBuilderPage() {
                               allowManageFromEntryPage: e.target.checked
                             }))
                           }
+                          disabled={!canManageFormDefinition}
                         />
                       }
                       label="Allow Manage From Entry Page"
@@ -600,6 +655,7 @@ export default function FormBuilderPage() {
             section={editingSectionId ? sections.find((s) => s.id === editingSectionId) || null : null}
             onSave={(updates) => {
               if (editingSectionId) {
+                if (!canManageFormDefinition) return;
                 useFormBuilderStore.getState().updateSection(editingSectionId, updates);
                 setSectionConfigDrawerOpen(false);
                 setEditingSectionId(null);

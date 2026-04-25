@@ -155,6 +155,7 @@ export const useFormBuilderStore = create((set, get) => ({
       const formData = {
         title: currentForm?.title || 'New Form',
         name: currentForm?.name || 'new_form',
+        formType: currentForm?.formType || 'custom',
         collectionName: currentForm?.collectionName || '',
         sections: apiSections,
         settings: currentForm?.settings || {}

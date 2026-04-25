@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, boolean, integer, pgEnum, index, uniqueIndex, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, timestamp, boolean, integer, pgEnum, index, uniqueIndex, jsonb, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -9,7 +9,7 @@ export const permissionActionEnum = pgEnum('permission_action', ['create', 'read
 
 // Tenants Table
 export const tenants = pgTable('tenants', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   subdomain: varchar('subdomain', { length: 100 }).unique(),
   status: tenantStatusEnum('status').notNull().default('active'),
@@ -25,7 +25,7 @@ export const tenants = pgTable('tenants', {
 // Users Table
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  tenantId: integer('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
   email: varchar('email', { length: 255 }).notNull().unique(),
   mobile: varchar('mobile', { length: 20 }),
   passwordHash: text('password_hash').notNull(),
@@ -108,10 +108,10 @@ export const userRoles = pgTable('user_roles', {
 export const auditLogs = pgTable('audit_logs', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
-  tenantId: integer('tenant_id').references(() => tenants.id, { onDelete: 'set null' }),
+  tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'set null' }),
   action: varchar('action', { length: 100 }).notNull(),
   resourceType: varchar('resource_type', { length: 100 }),
-  resourceId: integer('resource_id'),
+  resourceId: varchar('resource_id', { length: 100 }),
   details: text('details'),
   ipAddress: varchar('ip_address', { length: 45 }),
   timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow()

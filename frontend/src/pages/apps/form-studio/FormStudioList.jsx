@@ -26,12 +26,13 @@ import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 
 export default function FormStudioList() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, isSiteAdmin } = useAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
 
-  const hasNoTenant = !user?.tenantId;
+  const siteAdmin = isSiteAdmin();
+  const hasNoTenant = !user?.tenantId && !siteAdmin;
 
   const queryClient = useQueryClient();
 
@@ -43,9 +44,15 @@ export default function FormStudioList() {
   });
 
   const myForms = useMemo(() => {
-    if (!user?.tenantId) return [];
+    if (!user?.tenantId && !siteAdmin) return [];
     return allForms;
-  }, [allForms, user?.tenantId]);
+  }, [allForms, user?.tenantId, siteAdmin]);
+
+  const canManageFormDefinition = (form) => {
+    if (!form) return false;
+    if (form.formType === 'system') return siteAdmin;
+    return true;
+  };
 
   const deleteMutation = useMutation({
     mutationFn: (id) => formsApi.delete(id),
@@ -65,6 +72,10 @@ export default function FormStudioList() {
   });
 
   const handleEdit = (form) => {
+    if (!canManageFormDefinition(form)) {
+      setSnack({ open: true, message: 'Only Site Admin can manage system forms', severity: 'error' });
+      return;
+    }
     if (!form.name) {
       setSnack({ open: true, message: 'Form name not found', severity: 'error' });
       return;
@@ -73,6 +84,10 @@ export default function FormStudioList() {
   };
 
   const handleDelete = (form) => {
+    if (!canManageFormDefinition(form)) {
+      setSnack({ open: true, message: 'Only Site Admin can manage system forms', severity: 'error' });
+      return;
+    }
     setSelectedForm(form);
     setDeleteDialogOpen(true);
   };
@@ -94,6 +109,7 @@ export default function FormStudioList() {
   const columns = [
     { field: 'title', headerName: 'Form Title', flex: 1, minWidth: 200 },
     { field: 'name', headerName: 'Form Name', flex: 1, minWidth: 150 },
+    { field: 'formType', headerName: 'Type', width: 110, valueGetter: (_v, row) => row.formType || 'custom' },
     {
       field: 'sections',
       headerName: 'Sections',
@@ -137,12 +153,14 @@ export default function FormStudioList() {
             icon={<EditIcon />}
             label="Edit"
             onClick={() => handleEdit(row)}
+            disabled={!canManageFormDefinition(row)}
           />,
           <GridActionsCellItem
             key="delete"
             icon={<DeleteIcon />}
             label="Delete"
             onClick={() => handleDelete(row)}
+            disabled={!canManageFormDefinition(row)}
             showInMenu
           />
         ];

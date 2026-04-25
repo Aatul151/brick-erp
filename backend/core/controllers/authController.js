@@ -6,6 +6,8 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '../../ut
 import { sendPasswordResetEmail } from '../services/emailService.js';
 import { logAudit, AuditResourceType } from '../services/auditService.js';
 
+const SITE_ADMIN_TENANT_SUBDOMAIN = 'system';
+
 /** Resolve login identifier from body (after loginSchema validation). */
 function resolveLoginLookup(body) {
   const digits = (s) => String(s ?? '').replace(/\D/g, '');
@@ -83,6 +85,26 @@ export const login = async (req, res) => {
       .from(userRoles)
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
       .where(eq(userRoles.userId, user[0].id));
+
+    const isSiteAdmin = userRolesData.some((r) => r.roleName === 'Site Admin');
+    if (user[0].tenantId && !isSiteAdmin) {
+      const [protectedTenant] = await db
+        .select({ id: tenants.id })
+        .from(tenants)
+        .where(and(eq(tenants.id, user[0].tenantId), eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)))
+        .limit(1);
+      if (protectedTenant) {
+        await logAudit({
+          userId: user[0].id,
+          tenantId: user[0].tenantId,
+          action: 'LOGIN_FAILED',
+          resourceType: AuditResourceType.AUTH,
+          details: { loginMethod: lookup.kind, email: user[0].email, reason: 'Protected tenant access denied' },
+          ipAddress: req.ip
+        });
+        return res.status(403).json({ error: 'Access denied to protected system tenant' });
+      }
+    }
 
     const tokenPayload = {
       userId: user[0].id,
@@ -236,6 +258,18 @@ export const refreshAccessToken = async (req, res) => {
       .from(userRoles)
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
       .where(eq(userRoles.userId, user[0].id));
+
+    const isSiteAdmin = userRolesData.some((r) => r.roleName === 'Site Admin');
+    if (user[0].tenantId && !isSiteAdmin) {
+      const [protectedTenant] = await db
+        .select({ id: tenants.id })
+        .from(tenants)
+        .where(and(eq(tenants.id, user[0].tenantId), eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)))
+        .limit(1);
+      if (protectedTenant) {
+        return res.status(403).json({ error: 'Access denied to protected system tenant' });
+      }
+    }
 
     const tokenPayload = {
       userId: user[0].id,

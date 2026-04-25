@@ -3,11 +3,21 @@ import { formDefinitions } from '../models/formStudioSchema.js';
 import { eq, and } from 'drizzle-orm';
 import { isSiteAdmin } from './tenantScope.js';
 
+function parseTenantUuid(value) {
+  if (value == null || value === '') return null;
+  const tenantId = String(value).trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
+    return null;
+  }
+  return tenantId;
+}
+
 const selectShape = {
   id: formDefinitions.id,
   tenantId: formDefinitions.tenantId,
   name: formDefinitions.name,
   title: formDefinitions.title,
+  formType: formDefinitions.formType,
   collectionName: formDefinitions.collectionName,
   sections: formDefinitions.sections,
   settings: formDefinitions.settings,
@@ -36,8 +46,8 @@ export async function findFormDefinitionByName(req, formName) {
   if (isSiteAdmin(req)) {
     const tidRaw = req.query.tenantId ?? req.body?.tenantId;
     if (tidRaw != null && tidRaw !== '') {
-      const tid = parseInt(tidRaw, 10);
-      if (Number.isNaN(tid)) return null;
+      const tid = parseTenantUuid(tidRaw);
+      if (!tid) return null;
       const [row] = await db
         .select(selectShape)
         .from(formDefinitions)

@@ -2,6 +2,15 @@ import { db } from '../../models/db.js';
 import { auditLogs, users, tenants } from '../../models/schema.js';
 import { eq, desc, sql, gte, lte } from 'drizzle-orm';
 
+function parseTenantUuid(value) {
+  if (value == null || value === '') return null;
+  const tenantId = String(value).trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
+    return null;
+  }
+  return tenantId;
+}
+
 export const getAuditLogs = async (req, res) => {
   try {
     const { 
@@ -41,7 +50,9 @@ export const getAuditLogs = async (req, res) => {
     if (!isSiteAdmin) {
       conditions.push(eq(auditLogs.tenantId, req.user.tenantId));
     } else if (tenantId) {
-      conditions.push(eq(auditLogs.tenantId, parseInt(tenantId)));
+      const tenantUuid = parseTenantUuid(tenantId);
+      if (!tenantUuid) return res.status(400).json({ error: 'Invalid tenantId' });
+      conditions.push(eq(auditLogs.tenantId, tenantUuid));
     }
 
     if (userId) {

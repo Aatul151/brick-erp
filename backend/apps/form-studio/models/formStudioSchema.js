@@ -4,6 +4,7 @@ import {
   varchar,
   timestamp,
   integer,
+  uuid,
   index,
   uniqueIndex,
   jsonb
@@ -11,16 +12,17 @@ import {
 import { relations, sql } from 'drizzle-orm';
 import { tenants, users } from '../../../models/schema.js';
 
-/** Form definitions (tenant-scoped; PostgreSQL + JSONB for sections/settings). All forms are custom forms. */
+/** Form definitions (tenant-scoped; PostgreSQL + JSONB for sections/settings). */
 export const formDefinitions = pgTable(
   'form_definitions',
   {
-    id: serial('id').primaryKey(),
-    tenantId: integer('tenant_id')
+    id: uuid('id').defaultRandom().primaryKey(),
+    tenantId: uuid('tenant_id')
       .notNull()
       .references(() => tenants.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 200 }).notNull(),
     title: varchar('title', { length: 500 }).notNull(),
+    formType: varchar('form_type', { length: 20 }).notNull().default('custom'),
     collectionName: varchar('collection_name', { length: 200 }),
     sections: jsonb('sections').notNull().default(sql`'[]'::jsonb`),
     settings: jsonb('settings').default(sql`'{}'::jsonb`),
@@ -38,11 +40,11 @@ export const formDefinitions = pgTable(
 export const formEntries = pgTable(
   'form_entries',
   {
-    id: serial('id').primaryKey(),
-    tenantId: integer('tenant_id')
+    id: uuid('id').defaultRandom().primaryKey(),
+    tenantId: uuid('tenant_id')
       .notNull()
       .references(() => tenants.id, { onDelete: 'cascade' }),
-    formDefinitionId: integer('form_definition_id')
+    formDefinitionId: uuid('form_definition_id')
       .notNull()
       .references(() => formDefinitions.id, { onDelete: 'cascade' }),
     payload: jsonb('payload').notNull().default(sql`'{}'::jsonb`),
@@ -61,7 +63,7 @@ export const formUploadedFiles = pgTable(
   'form_uploaded_files',
   {
     id: serial('id').primaryKey(),
-    tenantId: integer('tenant_id')
+    tenantId: uuid('tenant_id')
       .notNull()
       .references(() => tenants.id, { onDelete: 'cascade' }),
     formName: varchar('form_name', { length: 200 }).notNull(),

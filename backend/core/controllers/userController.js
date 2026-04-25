@@ -1,9 +1,18 @@
 import { db } from '../../models/db.js';
 import { users, userRoles, roles, tenants } from '../../models/schema.js';
-import { eq, desc, sql, or, ilike, not } from 'drizzle-orm';
+import { eq, desc, sql, or, ilike } from 'drizzle-orm';
 import { hashPassword } from '../../utils/password.js';
 import { logAudit, AuditResourceType } from '../services/auditService.js';
 import { sendWelcomeEmail, sendUserInvitationEmail } from '../services/emailService.js';
+
+function parseTenantUuid(value) {
+  if (value == null || value === '') return null;
+  const tenantId = String(value).trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
+    return null;
+  }
+  return tenantId;
+}
 
 export const createUser = async (req, res) => {
   try {
@@ -111,7 +120,9 @@ export const getUsers = async (req, res) => {
     if (!isSiteAdmin) {
       conditions.push(eq(users.tenantId, req.user.tenantId));
     } else if (tenantId) {
-      conditions.push(eq(users.tenantId, parseInt(tenantId)));
+      const tenantUuid = parseTenantUuid(tenantId);
+      if (!tenantUuid) return res.status(400).json({ error: 'Invalid tenantId' });
+      conditions.push(eq(users.tenantId, tenantUuid));
     }
 
     if (status) {

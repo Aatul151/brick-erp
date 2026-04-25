@@ -4,6 +4,15 @@ import { eq, desc, sql, or, ilike, and } from 'drizzle-orm';
 import { logAudit, AuditResourceType } from '../services/auditService.js';
 import { sendTenantSuspensionEmail, sendAccountReactivationEmail } from '../services/emailService.js';
 
+function parseTenantUuid(value) {
+  if (value == null || value === '') return null;
+  const tenantId = String(value).trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
+    return null;
+  }
+  return tenantId;
+}
+
 export const createTenant = async (req, res) => {
   try {
     const { name, subdomain } = req.body;
@@ -91,6 +100,8 @@ export const getTenants = async (req, res) => {
 export const getTenant = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
 
     const [tenant] = await db.select({
       id: tenants.id,
@@ -102,7 +113,7 @@ export const getTenant = async (req, res) => {
       updatedAt: tenants.updatedAt,
       userCount: sql`(SELECT COUNT(*) FROM ${users} WHERE ${users.tenantId} = ${tenants.id})`,
       activeUserCount: sql`(SELECT COUNT(*) FROM ${users} WHERE ${users.tenantId} = ${tenants.id} AND ${users.status} = 'active')`
-    }).from(tenants).where(eq(tenants.id, parseInt(id))).limit(1);
+    }).from(tenants).where(eq(tenants.id, tenantId)).limit(1);
 
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant not found' });
@@ -118,6 +129,8 @@ export const getTenant = async (req, res) => {
 export const updateTenant = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
     const { name, subdomain, status } = req.body;
 
     const updates = {};
@@ -128,7 +141,7 @@ export const updateTenant = async (req, res) => {
 
     const [tenant] = await db.update(tenants)
       .set(updates)
-      .where(eq(tenants.id, parseInt(id)))
+      .where(eq(tenants.id, tenantId))
       .returning();
 
     if (!tenant) {
@@ -158,10 +171,12 @@ export const updateTenant = async (req, res) => {
 export const suspendTenant = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
 
     const [tenant] = await db.update(tenants)
       .set({ status: 'suspended', updatedAt: new Date() })
-      .where(eq(tenants.id, parseInt(id)))
+      .where(eq(tenants.id, tenantId))
       .returning();
 
     if (!tenant) {
@@ -176,7 +191,7 @@ export const suspendTenant = async (req, res) => {
       .from(users)
       .innerJoin(userRoles, eq(users.id, userRoles.userId))
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
-      .where(and(eq(users.tenantId, parseInt(id)), eq(roles.name, 'Client Admin')));
+      .where(and(eq(users.tenantId, tenantId), eq(roles.name, 'Client Admin')));
 
     for (const admin of clientAdmins) {
       await sendTenantSuspensionEmail(admin.email, tenant.name, admin.fullName);
@@ -201,10 +216,12 @@ export const suspendTenant = async (req, res) => {
 export const activateTenant = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
 
     const [tenant] = await db.update(tenants)
       .set({ status: 'active', updatedAt: new Date() })
-      .where(eq(tenants.id, parseInt(id)))
+      .where(eq(tenants.id, tenantId))
       .returning();
 
     if (!tenant) {
@@ -219,7 +236,7 @@ export const activateTenant = async (req, res) => {
       .from(users)
       .innerJoin(userRoles, eq(users.id, userRoles.userId))
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
-      .where(and(eq(users.tenantId, parseInt(id)), eq(roles.name, 'Client Admin')));
+      .where(and(eq(users.tenantId, tenantId), eq(roles.name, 'Client Admin')));
 
     for (const admin of clientAdmins) {
       await sendAccountReactivationEmail(admin.email, admin.fullName, tenant.name);
@@ -244,9 +261,11 @@ export const activateTenant = async (req, res) => {
 export const deleteTenant = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
 
     const [tenant] = await db.delete(tenants)
-      .where(eq(tenants.id, parseInt(id)))
+      .where(eq(tenants.id, tenantId))
       .returning();
 
     if (!tenant) {
@@ -257,7 +276,7 @@ export const deleteTenant = async (req, res) => {
       userId: req.user.id,
       action: 'TENANT_DELETED',
       resourceType: AuditResourceType.TENANT,
-      resourceId: parseInt(id),
+      resourceId: tenantId,
       details: { name: tenant.name },
       ipAddress: req.ip
     });
@@ -272,6 +291,8 @@ export const deleteTenant = async (req, res) => {
 export const updateTenantThemeSetting = async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = parseTenantUuid(id);
+    if (!tenantId) return res.status(400).json({ error: 'Invalid tenant id' });
     const { themeSetting } = req.body;
 
     const [tenant] = await db.update(tenants)
@@ -279,7 +300,7 @@ export const updateTenantThemeSetting = async (req, res) => {
         themeSetting: themeSetting ?? null,
         updatedAt: new Date()
       })
-      .where(eq(tenants.id, parseInt(id)))
+      .where(eq(tenants.id, tenantId))
       .returning();
 
     if (!tenant) {

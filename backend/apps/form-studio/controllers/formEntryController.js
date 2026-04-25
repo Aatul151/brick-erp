@@ -3,8 +3,17 @@ import { formEntries } from '../models/formStudioSchema.js';
 import { users } from '../../../models/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { mapFormEntry } from '../utils/formMappers.js';
-import { tenantFilter } from '../utils/tenantScope.js';
+import { resolveWriteTenantId } from '../utils/tenantScope.js';
 import { findFormDefinitionByName } from '../utils/formStudioQueries.js';
+
+function parseUuid(value) {
+  if (value == null || value === '') return null;
+  const id = String(value).trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    return null;
+  }
+  return id;
+}
 
 export const listFormEntries = async (req, res) => {
   try {
@@ -25,7 +34,7 @@ export const listFormEntries = async (req, res) => {
     const def = await findFormDefinitionByName(req, formName);
     if (!def) return res.status(404).json({ error: 'Form definition not found' });
 
-    const tf = tenantFilter(req);
+    const tf = resolveWriteTenantId(req);
     if (tf != null && def.tenantId !== tf) {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -116,7 +125,7 @@ export const createFormEntry = async (req, res) => {
     const def = await findFormDefinitionByName(req, formName);
     if (!def) return res.status(404).json({ error: 'Form definition not found' });
 
-    const tf = tenantFilter(req);
+    const tf = resolveWriteTenantId(req);
     if (tf != null && def.tenantId !== tf) {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -145,8 +154,8 @@ export const createFormEntry = async (req, res) => {
 
 export const updateFormEntry = async (req, res) => {
   try {
-    const entryId = parseInt(req.params.id, 10);
-    if (Number.isNaN(entryId)) return res.status(400).json({ error: 'Invalid id' });
+    const entryId = parseUuid(req.params.id);
+    if (!entryId) return res.status(400).json({ error: 'Invalid id' });
 
     const { formName, payload } = req.body;
     if (!formName) return res.status(400).json({ error: 'formName is required' });
@@ -155,7 +164,7 @@ export const updateFormEntry = async (req, res) => {
     const def = await findFormDefinitionByName(req, formName);
     if (!def) return res.status(404).json({ error: 'Form definition not found' });
 
-    const tf = tenantFilter(req);
+    const tf = resolveWriteTenantId(req);
     const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
     if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
 
@@ -187,15 +196,15 @@ export const updateFormEntry = async (req, res) => {
 
 export const deleteFormEntry = async (req, res) => {
   try {
-    const entryId = parseInt(req.params.id, 10);
+    const entryId = parseUuid(req.params.id);
     const formName = req.query.formName;
-    if (Number.isNaN(entryId)) return res.status(400).json({ error: 'Invalid id' });
+    if (!entryId) return res.status(400).json({ error: 'Invalid id' });
     if (!formName) return res.status(400).json({ error: 'formName query is required' });
 
     const def = await findFormDefinitionByName(req, formName);
     if (!def) return res.status(404).json({ error: 'Form definition not found' });
 
-    const tf = tenantFilter(req);
+    const tf = resolveWriteTenantId(req);
     const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
     if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
 

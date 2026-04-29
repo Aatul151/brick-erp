@@ -23,11 +23,7 @@ export default function Dashboard() {
 
     return (
         <div className="px-4 sm:px-0 flex flex-col gap-4 min-h-0 flex-1">
-            <PageHeader
-                title="Dashboard"
-                subtitle={`Welcome back, ${user?.fullName}`}
-                icon={<DashboardIcon fontSize="small" color="primary" />}
-            />
+            <PageHeader title="Dashboard" subtitle={`Welcome back, ${user?.fullName}`} icon={<DashboardIcon fontSize="small" color="primary" />} />
             <PageContent>
                 {isLoading ? (
                     <Box
@@ -43,52 +39,17 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
                         {isSiteAdmin() && (
                             <>
-                                <StatCard
-                                    title="Total Tenants"
-                                    value={stats?.totalTenants || 0}
-                                    icon={<BusinessIcon />}
-                                    to="/tenants"
-                                />
-                                <StatCard
-                                    title="Active Tenants"
-                                    value={stats?.activeTenants || 0}
-                                    icon={<CheckCircleIcon />}
-                                    to="/tenants?status=active"
-                                />
-                                <StatCard
-                                    title="Suspended Tenants"
-                                    value={stats?.suspendedTenants || 0}
-                                    icon={<BlockIcon />}
-                                    to="/tenants?status=suspended"
-                                />
+                                <StatCard title="Total Tenants" value={stats?.totalTenants || 0} icon={<BusinessIcon />} to="/tenants" />
+                                <StatCard title="Active Tenants" value={stats?.activeTenants || 0} icon={<CheckCircleIcon />} to="/tenants?status=active" />
+                                <StatCard title="Suspended Tenants" value={stats?.suspendedTenants || 0} icon={<BlockIcon />} to="/tenants?status=suspended" />
                             </>
                         )}
-                        <StatCard
-                            title="Total Users"
-                            value={stats?.totalUsers || 0}
-                            icon={<PeopleIcon />}
-                            to="/users"
-                        />
-                        <StatCard
-                            title="Active Users"
-                            value={stats?.activeUsers || 0}
-                            icon={<PersonIcon />}
-                            to="/users?status=active"
-                        />
+                        <StatCard title="Total Users" value={stats?.totalUsers || 0} icon={<PeopleIcon />} to="/users" />
+                        <StatCard title="Active Users" value={stats?.activeUsers || 0} icon={<PersonIcon />} to="/users?status=active" />
                         {!isSiteAdmin() && (
                             <>
-                                <StatCard
-                                    title="Inactive Users"
-                                    value={stats?.inactiveUsers || 0}
-                                    icon={<PersonOffIcon />}
-                                    to="/users?status=inactive"
-                                />
-                                <StatCard
-                                    title="Suspended Users"
-                                    value={stats?.suspendedUsers || 0}
-                                    icon={<BlockIcon />}
-                                    to="/users?status=suspended"
-                                />
+                                <StatCard title="Inactive Users" value={stats?.inactiveUsers || 0} icon={<PersonOffIcon />} to="/users?status=inactive" />
+                                <StatCard title="Suspended Users" value={stats?.suspendedUsers || 0} icon={<BlockIcon />} to="/users?status=suspended" />
                             </>
                         )}
                     </div>
@@ -116,17 +77,11 @@ function StatCard({ title, value, icon, to }) {
                 overflow: "hidden",
                 borderRadius: 2,
                 border: (theme) => `1px solid ${theme.palette.divider}`,
-                boxShadow: (theme) =>
-                    theme.palette.mode === "light"
-                        ? "0 2px 8px rgba(0,0,0,0.06)"
-                        : "0 2px 8px rgba(0,0,0,0.25)",
+                boxShadow: (theme) => (theme.palette.mode === "light" ? "0 2px 8px rgba(0,0,0,0.06)" : "0 2px 8px rgba(0,0,0,0.25)"),
                 transition: "box-shadow 0.2s",
                 "&:hover": to
                     ? {
-                          boxShadow: (theme) =>
-                              theme.palette.mode === "light"
-                                  ? "0 4px 12px rgba(0,0,0,0.1)"
-                                  : "0 4px 12px rgba(0,0,0,0.35)",
+                          boxShadow: (theme) => (theme.palette.mode === "light" ? "0 4px 12px rgba(0,0,0,0.1)" : "0 4px 12px rgba(0,0,0,0.35)"),
                       }
                     : {},
             }}
@@ -142,8 +97,7 @@ function StatCard({ title, value, icon, to }) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: (theme) =>
-                                alpha(theme.palette.primary.main, 0.12),
+                            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
                             color: "primary.main",
                             "& svg": { fontSize: 28 },
                         }}

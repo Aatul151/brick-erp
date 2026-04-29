@@ -20,10 +20,7 @@ export function getFileUrl(fileUrl) {
  */
 export async function authorizedFileFetch(fileUrl, accessToken) {
     const url = getFileUrl(fileUrl);
-    const token =
-        accessToken !== undefined
-            ? accessToken
-            : localStorage.getItem("accessToken");
+    const token = accessToken !== undefined ? accessToken : localStorage.getItem("accessToken");
     const res = await fetch(url, {
         headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

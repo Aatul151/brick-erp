@@ -18,19 +18,13 @@ export function PageContent({ children, sx }) {
                 padding: { xs: 2, sm: 3 },
                 borderRadius: "8px",
                 border: (theme) => `1px solid ${theme.palette.divider}`,
-                boxShadow: (theme) =>
-                    theme.palette.mode === "light"
-                        ? "0 2px 8px rgba(0,0,0,0.06)"
-                        : "0 2px 8px rgba(0,0,0,0.25)",
+                boxShadow: (theme) => (theme.palette.mode === "light" ? "0 2px 8px rgba(0,0,0,0.06)" : "0 2px 8px rgba(0,0,0,0.25)"),
                 transition: "all 0.2s ease-in-out",
                 overflow: "auto",
                 overflowX: "auto",
                 overflowY: "auto",
                 "&:hover": {
-                    boxShadow: (theme) =>
-                        theme.palette.mode === "light"
-                            ? "0 4px 12px rgba(0,0,0,0.08)"
-                            : "0 4px 12px rgba(0,0,0,0.3)",
+                    boxShadow: (theme) => (theme.palette.mode === "light" ? "0 4px 12px rgba(0,0,0,0.08)" : "0 4px 12px rgba(0,0,0,0.3)"),
                 },
                 ...sx,
             }}

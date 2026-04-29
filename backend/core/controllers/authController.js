@@ -1,25 +1,8 @@
 import { db } from "../../models/db.js";
-import {
-    users,
-    refreshTokens,
-    passwordResetTokens,
-    userRoles,
-    roles,
-    rolePermissions,
-    permissions,
-    tenants,
-} from "../../models/schema.js";
+import { users, refreshTokens, passwordResetTokens, userRoles, roles, rolePermissions, permissions, tenants } from "../../models/schema.js";
 import { eq, and, inArray } from "drizzle-orm";
-import {
-    hashPassword,
-    verifyPassword,
-    generateRandomToken,
-} from "../../utils/password.js";
-import {
-    generateAccessToken,
-    generateRefreshToken,
-    verifyToken,
-} from "../../utils/jwt.js";
+import { hashPassword, verifyPassword, generateRandomToken } from "../../utils/password.js";
+import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwt.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 import { logAudit, AuditResourceType } from "../services/auditService.js";
 
@@ -30,17 +13,29 @@ function resolveLoginLookup(body) {
     const digits = (s) => String(s ?? "").replace(/\D/g, "");
     const fromMobileField = digits(body.mobile);
     if (fromMobileField.length >= 10) {
-        return { kind: "mobile", value: fromMobileField };
+        return {
+            kind: "mobile",
+            value: fromMobileField,
+        };
     }
     const primary = String(body.email ?? "").trim();
     if (primary.includes("@")) {
-        return { kind: "email", value: primary.toLowerCase() };
+        return {
+            kind: "email",
+            value: primary.toLowerCase(),
+        };
     }
     const fromEmailField = digits(primary);
     if (fromEmailField.length >= 10) {
-        return { kind: "mobile", value: fromEmailField };
+        return {
+            kind: "mobile",
+            value: fromEmailField,
+        };
     }
-    return { kind: "email", value: primary.toLowerCase() };
+    return {
+        kind: "email",
+        value: primary.toLowerCase(),
+    };
 }
 
 export const login = async (req, res) => {
@@ -49,17 +44,7 @@ export const login = async (req, res) => {
         const lookup = resolveLoginLookup(req.body);
 
         const user =
-            lookup.kind === "email"
-                ? await db
-                      .select()
-                      .from(users)
-                      .where(eq(users.email, lookup.value))
-                      .limit(1)
-                : await db
-                      .select()
-                      .from(users)
-                      .where(eq(users.mobile, lookup.value))
-                      .limit(1);
+            lookup.kind === "email" ? await db.select().from(users).where(eq(users.email, lookup.value)).limit(1) : await db.select().from(users).where(eq(users.mobile, lookup.value)).limit(1);
 
         if (!user.length) {
             await logAudit({
@@ -67,14 +52,18 @@ export const login = async (req, res) => {
                 resourceType: AuditResourceType.AUTH,
                 details: {
                     loginMethod: lookup.kind,
-                    ...(lookup.kind === "email" ? { email: lookup.value } : {}),
+                    ...(lookup.kind === "email"
+                        ? {
+                              email: lookup.value,
+                          }
+                        : {}),
                     reason: "User not found",
                 },
                 ipAddress: req.ip,
             });
-            return res
-                .status(401)
-                .json({ error: "Invalid email, mobile, or password" });
+            return res.status(401).json({
+                error: "Invalid email, mobile, or password",
+            });
         }
 
         if (user[0].status !== "active") {
@@ -90,15 +79,12 @@ export const login = async (req, res) => {
                 },
                 ipAddress: req.ip,
             });
-            return res
-                .status(401)
-                .json({ error: "Account is inactive or suspended" });
+            return res.status(401).json({
+                error: "Account is inactive or suspended",
+            });
         }
 
-        const isValidPassword = await verifyPassword(
-            password,
-            user[0].passwordHash,
-        );
+        const isValidPassword = await verifyPassword(password, user[0].passwordHash);
 
         if (!isValidPassword) {
             await logAudit({
@@ -113,9 +99,9 @@ export const login = async (req, res) => {
                 },
                 ipAddress: req.ip,
             });
-            return res
-                .status(401)
-                .json({ error: "Invalid email, mobile, or password" });
+            return res.status(401).json({
+                error: "Invalid email, mobile, or password",
+            });
         }
 
         const userRolesData = await db
@@ -128,19 +114,14 @@ export const login = async (req, res) => {
             .innerJoin(roles, eq(userRoles.roleId, roles.id))
             .where(eq(userRoles.userId, user[0].id));
 
-        const isSiteAdmin = userRolesData.some(
-            (r) => r.roleName === "Site Admin",
-        );
+        const isSiteAdmin = userRolesData.some((r) => r.roleName === "Site Admin");
         if (user[0].tenantId && !isSiteAdmin) {
             const [protectedTenant] = await db
-                .select({ id: tenants.id })
+                .select({
+                    id: tenants.id,
+                })
                 .from(tenants)
-                .where(
-                    and(
-                        eq(tenants.id, user[0].tenantId),
-                        eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN),
-                    ),
-                )
+                .where(and(eq(tenants.id, user[0].tenantId), eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)))
                 .limit(1);
             if (protectedTenant) {
                 await logAudit({
@@ -198,10 +179,7 @@ export const login = async (req, res) => {
                     action: permissions.action,
                 })
                 .from(rolePermissions)
-                .innerJoin(
-                    permissions,
-                    eq(rolePermissions.permissionId, permissions.id),
-                )
+                .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
                 .where(inArray(rolePermissions.roleId, roleIds));
             const seen = new Set();
             userPermissions = perms.filter((p) => {
@@ -247,7 +225,9 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error("Login error:", error);
-        res.status(500).json({ error: "Login failed" });
+        res.status(500).json({
+            error: "Login failed",
+        });
     }
 };
 
@@ -261,7 +241,9 @@ export const logout = async (req, res) => {
             if (decoded) {
                 await db
                     .update(refreshTokens)
-                    .set({ revokedAt: new Date() })
+                    .set({
+                        revokedAt: new Date(),
+                    })
                     .where(eq(refreshTokens.userId, decoded.userId));
 
                 await logAudit({
@@ -274,10 +256,14 @@ export const logout = async (req, res) => {
             }
         }
 
-        res.json({ message: "Logged out successfully" });
+        res.json({
+            message: "Logged out successfully",
+        });
     } catch (error) {
         console.error("Logout error:", error);
-        res.status(500).json({ error: "Logout failed" });
+        res.status(500).json({
+            error: "Logout failed",
+        });
     }
 };
 
@@ -286,45 +272,42 @@ export const refreshAccessToken = async (req, res) => {
         const { refreshToken: token } = req.body;
 
         if (!token) {
-            return res.status(400).json({ error: "Refresh token required" });
+            return res.status(400).json({
+                error: "Refresh token required",
+            });
         }
 
         const decoded = verifyToken(token);
         if (!decoded) {
-            return res.status(401).json({ error: "Invalid refresh token" });
+            return res.status(401).json({
+                error: "Invalid refresh token",
+            });
         }
 
         const storedToken = await db
             .select()
             .from(refreshTokens)
-            .where(
-                and(
-                    eq(refreshTokens.token, token),
-                    eq(refreshTokens.userId, decoded.userId),
-                ),
-            )
+            .where(and(eq(refreshTokens.token, token), eq(refreshTokens.userId, decoded.userId)))
             .limit(1);
 
         if (!storedToken.length || storedToken[0].revokedAt) {
-            return res
-                .status(401)
-                .json({ error: "Refresh token revoked or not found" });
+            return res.status(401).json({
+                error: "Refresh token revoked or not found",
+            });
         }
 
         if (new Date() > new Date(storedToken[0].expiresAt)) {
-            return res.status(401).json({ error: "Refresh token expired" });
+            return res.status(401).json({
+                error: "Refresh token expired",
+            });
         }
 
-        const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, decoded.userId))
-            .limit(1);
+        const user = await db.select().from(users).where(eq(users.id, decoded.userId)).limit(1);
 
         if (!user.length || user[0].status !== "active") {
-            return res
-                .status(401)
-                .json({ error: "User not found or inactive" });
+            return res.status(401).json({
+                error: "User not found or inactive",
+            });
         }
 
         const userRolesData = await db
@@ -337,19 +320,14 @@ export const refreshAccessToken = async (req, res) => {
             .innerJoin(roles, eq(userRoles.roleId, roles.id))
             .where(eq(userRoles.userId, user[0].id));
 
-        const isSiteAdmin = userRolesData.some(
-            (r) => r.roleName === "Site Admin",
-        );
+        const isSiteAdmin = userRolesData.some((r) => r.roleName === "Site Admin");
         if (user[0].tenantId && !isSiteAdmin) {
             const [protectedTenant] = await db
-                .select({ id: tenants.id })
+                .select({
+                    id: tenants.id,
+                })
                 .from(tenants)
-                .where(
-                    and(
-                        eq(tenants.id, user[0].tenantId),
-                        eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN),
-                    ),
-                )
+                .where(and(eq(tenants.id, user[0].tenantId), eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)))
                 .limit(1);
             if (protectedTenant) {
                 return res.status(403).json({
@@ -375,10 +353,14 @@ export const refreshAccessToken = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        res.json({ accessToken });
+        res.json({
+            accessToken,
+        });
     } catch (error) {
         console.error("Token refresh error:", error);
-        res.status(500).json({ error: "Token refresh failed" });
+        res.status(500).json({
+            error: "Token refresh failed",
+        });
     }
 };
 
@@ -386,11 +368,7 @@ export const requestPasswordReset = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.email, email))
-            .limit(1);
+        const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
         if (!user.length) {
             return res.json({
@@ -423,7 +401,9 @@ export const requestPasswordReset = async (req, res) => {
         });
     } catch (error) {
         console.error("Password reset request error:", error);
-        res.status(500).json({ error: "Password reset request failed" });
+        res.status(500).json({
+            error: "Password reset request failed",
+        });
     }
 };
 
@@ -434,41 +414,39 @@ export const resetPassword = async (req, res) => {
         const resetToken = await db
             .select()
             .from(passwordResetTokens)
-            .where(
-                and(
-                    eq(passwordResetTokens.token, token),
-                    eq(passwordResetTokens.usedAt, null),
-                ),
-            )
+            .where(and(eq(passwordResetTokens.token, token), eq(passwordResetTokens.usedAt, null)))
             .limit(1);
 
         if (!resetToken.length) {
-            return res
-                .status(400)
-                .json({ error: "Invalid or already used reset token" });
+            return res.status(400).json({
+                error: "Invalid or already used reset token",
+            });
         }
 
         if (new Date() > new Date(resetToken[0].expiresAt)) {
-            return res.status(400).json({ error: "Reset token has expired" });
+            return res.status(400).json({
+                error: "Reset token has expired",
+            });
         }
 
         const hashedPassword = await hashPassword(newPassword);
 
         await db
             .update(users)
-            .set({ passwordHash: hashedPassword, updatedAt: new Date() })
+            .set({
+                passwordHash: hashedPassword,
+                updatedAt: new Date(),
+            })
             .where(eq(users.id, resetToken[0].userId));
 
         await db
             .update(passwordResetTokens)
-            .set({ usedAt: new Date() })
+            .set({
+                usedAt: new Date(),
+            })
             .where(eq(passwordResetTokens.id, resetToken[0].id));
 
-        const user = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, resetToken[0].userId))
-            .limit(1);
+        const user = await db.select().from(users).where(eq(users.id, resetToken[0].userId)).limit(1);
 
         await logAudit({
             userId: resetToken[0].userId,
@@ -478,10 +456,14 @@ export const resetPassword = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Password reset successfully" });
+        res.json({
+            message: "Password reset successfully",
+        });
     } catch (error) {
         console.error("Password reset error:", error);
-        res.status(500).json({ error: "Password reset failed" });
+        res.status(500).json({
+            error: "Password reset failed",
+        });
     }
 };
 
@@ -505,7 +487,9 @@ export const getProfile = async (req, res) => {
             .limit(1);
 
         if (!userData.length) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(404).json({
+                error: "User not found",
+            });
         }
 
         const user = userData[0];
@@ -528,10 +512,7 @@ export const getProfile = async (req, res) => {
                     action: permissions.action,
                 })
                 .from(rolePermissions)
-                .innerJoin(
-                    permissions,
-                    eq(rolePermissions.permissionId, permissions.id),
-                )
+                .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
                 .where(inArray(rolePermissions.roleId, roleIds));
             const seen = new Set();
             userPermissions = perms.filter((p) => {
@@ -557,14 +538,15 @@ export const getProfile = async (req, res) => {
         });
     } catch (error) {
         console.error("Get profile error:", error);
-        res.status(500).json({ error: "Failed to fetch profile" });
+        res.status(500).json({
+            error: "Failed to fetch profile",
+        });
     }
 };
 
 export const updateProfile = async (req, res) => {
     try {
-        const { fullName, email, mobile, currentPassword, newPassword } =
-            req.body;
+        const { fullName, email, mobile, currentPassword, newPassword } = req.body;
         const updates = {};
 
         if (fullName) {
@@ -572,13 +554,11 @@ export const updateProfile = async (req, res) => {
         }
 
         if (email && email !== req.user.email) {
-            const existingUser = await db
-                .select()
-                .from(users)
-                .where(eq(users.email, email))
-                .limit(1);
+            const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
             if (existingUser.length) {
-                return res.status(400).json({ error: "Email already in use" });
+                return res.status(400).json({
+                    error: "Email already in use",
+                });
             }
             updates.email = email;
         }
@@ -588,15 +568,11 @@ export const updateProfile = async (req, res) => {
                 updates.mobile = null;
             } else {
                 const mobileDigits = String(mobile).replace(/\D/g, "");
-                const mobileTaken = await db
-                    .select()
-                    .from(users)
-                    .where(eq(users.mobile, mobileDigits))
-                    .limit(1);
+                const mobileTaken = await db.select().from(users).where(eq(users.mobile, mobileDigits)).limit(1);
                 if (mobileTaken.length && mobileTaken[0].id !== req.user.id) {
-                    return res
-                        .status(400)
-                        .json({ error: "Mobile number already in use" });
+                    return res.status(400).json({
+                        error: "Mobile number already in use",
+                    });
                 }
                 updates.mobile = mobileDigits;
             }
@@ -609,20 +585,13 @@ export const updateProfile = async (req, res) => {
                 });
             }
 
-            const user = await db
-                .select()
-                .from(users)
-                .where(eq(users.id, req.user.id))
-                .limit(1);
-            const isValidPassword = await verifyPassword(
-                currentPassword,
-                user[0].passwordHash,
-            );
+            const user = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
+            const isValidPassword = await verifyPassword(currentPassword, user[0].passwordHash);
 
             if (!isValidPassword) {
-                return res
-                    .status(400)
-                    .json({ error: "Current password is incorrect" });
+                return res.status(400).json({
+                    error: "Current password is incorrect",
+                });
             }
 
             updates.passwordHash = await hashPassword(newPassword);
@@ -630,10 +599,7 @@ export const updateProfile = async (req, res) => {
 
         if (Object.keys(updates).length > 0) {
             updates.updatedAt = new Date();
-            await db
-                .update(users)
-                .set(updates)
-                .where(eq(users.id, req.user.id));
+            await db.update(users).set(updates).where(eq(users.id, req.user.id));
 
             await logAudit({
                 userId: req.user.id,
@@ -641,14 +607,20 @@ export const updateProfile = async (req, res) => {
                 action: "PROFILE_UPDATED",
                 resourceType: AuditResourceType.USER,
                 resourceId: req.user.id,
-                details: { fields: Object.keys(updates) },
+                details: {
+                    fields: Object.keys(updates),
+                },
                 ipAddress: req.ip,
             });
         }
 
-        res.json({ message: "Profile updated successfully" });
+        res.json({
+            message: "Profile updated successfully",
+        });
     } catch (error) {
         console.error("Update profile error:", error);
-        res.status(500).json({ error: "Failed to update profile" });
+        res.status(500).json({
+            error: "Failed to update profile",
+        });
     }
 };

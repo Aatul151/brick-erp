@@ -1,11 +1,5 @@
 import { createContext, useContext, useState, useCallback } from "react";
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import Button from "../ui/Button";
 
 const ConfirmContext = createContext(null);
@@ -53,13 +47,8 @@ export function ConfirmProvider({ children }) {
 
     const confirm = useCallback((messageOrOptions, options = {}) => {
         // Support both: confirm(message, options) and confirm({ title, message, ... })
-        const isObject =
-            messageOrOptions &&
-            typeof messageOrOptions === "object" &&
-            !Array.isArray(messageOrOptions);
-        const opts = isObject
-            ? { ...messageOrOptions, ...options }
-            : { message: messageOrOptions, ...options };
+        const isObject = messageOrOptions && typeof messageOrOptions === "object" && !Array.isArray(messageOrOptions);
+        const opts = isObject ? { ...messageOrOptions, ...options } : { message: messageOrOptions, ...options };
         return new Promise((resolve) => {
             setState({
                 open: true,
@@ -108,15 +97,9 @@ export function ConfirmProvider({ children }) {
                     },
                 }}
             >
-                <DialogTitle sx={{ fontWeight: 600, fontSize: "1.125rem" }}>
-                    {state.title}
-                </DialogTitle>
+                <DialogTitle sx={{ fontWeight: 600, fontSize: "1.125rem" }}>{state.title}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText
-                        sx={{ color: "text.primary", fontSize: "0.9375rem" }}
-                    >
-                        {state.message}
-                    </DialogContentText>
+                    <DialogContentText sx={{ color: "text.primary", fontSize: "0.9375rem" }}>{state.message}</DialogContentText>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2, pt: 1, gap: 1 }}>
                     {state.mode === "confirm" ? (
@@ -124,10 +107,7 @@ export function ConfirmProvider({ children }) {
                             <Button variant="secondary" onClick={handleClose}>
                                 {state.cancelText}
                             </Button>
-                            <Button
-                                variant={state.confirmVariant}
-                                onClick={handleConfirm}
-                            >
+                            <Button variant={state.confirmVariant} onClick={handleConfirm}>
                                 {state.confirmText}
                             </Button>
                         </>

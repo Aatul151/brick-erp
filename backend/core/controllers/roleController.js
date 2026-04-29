@@ -1,10 +1,5 @@
 import { db } from "../../models/db.js";
-import {
-    roles,
-    permissions,
-    rolePermissions,
-    userRoles,
-} from "../../models/schema.js";
+import { roles, permissions, rolePermissions, userRoles } from "../../models/schema.js";
 import { eq, desc, sql } from "drizzle-orm";
 import { logAudit, AuditResourceType } from "../services/auditService.js";
 
@@ -31,10 +26,7 @@ export const getRoles = async (req, res) => {
                     description: permissions.description,
                 })
                 .from(rolePermissions)
-                .innerJoin(
-                    permissions,
-                    eq(rolePermissions.permissionId, permissions.id),
-                )
+                .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
                 .where(eq(rolePermissions.roleId, role.id));
 
             role.permissions = rolePerms;
@@ -43,7 +35,9 @@ export const getRoles = async (req, res) => {
         res.json(allRoles);
     } catch (error) {
         console.error("Get roles error:", error);
-        res.status(500).json({ error: "Failed to fetch roles" });
+        res.status(500).json({
+            error: "Failed to fetch roles",
+        });
     }
 };
 
@@ -66,7 +60,9 @@ export const getRole = async (req, res) => {
             .limit(1);
 
         if (!role) {
-            return res.status(404).json({ error: "Role not found" });
+            return res.status(404).json({
+                error: "Role not found",
+            });
         }
 
         const rolePerms = await db
@@ -77,10 +73,7 @@ export const getRole = async (req, res) => {
                 description: permissions.description,
             })
             .from(rolePermissions)
-            .innerJoin(
-                permissions,
-                eq(rolePermissions.permissionId, permissions.id),
-            )
+            .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
             .where(eq(rolePermissions.roleId, role.id));
 
         role.permissions = rolePerms;
@@ -88,7 +81,9 @@ export const getRole = async (req, res) => {
         res.json(role);
     } catch (error) {
         console.error("Get role error:", error);
-        res.status(500).json({ error: "Failed to fetch role" });
+        res.status(500).json({
+            error: "Failed to fetch role",
+        });
     }
 };
 
@@ -120,7 +115,11 @@ export const createRole = async (req, res) => {
             action: "ROLE_CREATED",
             resourceType: "role",
             resourceId: role.id,
-            details: { name, scope, permissionIds },
+            details: {
+                name,
+                scope,
+                permissionIds,
+            },
             ipAddress: req.ip,
         });
 
@@ -131,10 +130,7 @@ export const createRole = async (req, res) => {
                 action: permissions.action,
             })
             .from(rolePermissions)
-            .innerJoin(
-                permissions,
-                eq(rolePermissions.permissionId, permissions.id),
-            )
+            .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
             .where(eq(rolePermissions.roleId, role.id));
 
         res.status(201).json({
@@ -144,9 +140,13 @@ export const createRole = async (req, res) => {
     } catch (error) {
         console.error("Create role error:", error);
         if (error.code === "23505") {
-            return res.status(409).json({ error: "Role name already exists" });
+            return res.status(409).json({
+                error: "Role name already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to create role" });
+        res.status(500).json({
+            error: "Failed to create role",
+        });
     }
 };
 
@@ -167,13 +167,13 @@ export const updateRole = async (req, res) => {
             .returning();
 
         if (!role) {
-            return res.status(404).json({ error: "Role not found" });
+            return res.status(404).json({
+                error: "Role not found",
+            });
         }
 
         if (permissionIds !== undefined) {
-            await db
-                .delete(rolePermissions)
-                .where(eq(rolePermissions.roleId, parseInt(id)));
+            await db.delete(rolePermissions).where(eq(rolePermissions.roleId, parseInt(id)));
 
             if (permissionIds.length > 0) {
                 for (const permissionId of permissionIds) {
@@ -191,7 +191,10 @@ export const updateRole = async (req, res) => {
             action: "ROLE_UPDATED",
             resourceType: "role",
             resourceId: parseInt(id),
-            details: { ...updates, permissionIds },
+            details: {
+                ...updates,
+                permissionIds,
+            },
             ipAddress: req.ip,
         });
 
@@ -202,10 +205,7 @@ export const updateRole = async (req, res) => {
                 action: permissions.action,
             })
             .from(rolePermissions)
-            .innerJoin(
-                permissions,
-                eq(rolePermissions.permissionId, permissions.id),
-            )
+            .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
             .where(eq(rolePermissions.roleId, parseInt(id)));
 
         res.json({
@@ -215,9 +215,13 @@ export const updateRole = async (req, res) => {
     } catch (error) {
         console.error("Update role error:", error);
         if (error.code === "23505") {
-            return res.status(409).json({ error: "Role name already exists" });
+            return res.status(409).json({
+                error: "Role name already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to update role" });
+        res.status(500).json({
+            error: "Failed to update role",
+        });
     }
 };
 
@@ -226,7 +230,9 @@ export const deleteRole = async (req, res) => {
         const { id } = req.params;
 
         const [userCount] = await db
-            .select({ count: sql`count(*)` })
+            .select({
+                count: sql`count(*)`,
+            })
             .from(userRoles)
             .where(eq(userRoles.roleId, parseInt(id)));
 
@@ -243,7 +249,9 @@ export const deleteRole = async (req, res) => {
             .returning();
 
         if (!role) {
-            return res.status(404).json({ error: "Role not found" });
+            return res.status(404).json({
+                error: "Role not found",
+            });
         }
 
         await logAudit({
@@ -252,14 +260,20 @@ export const deleteRole = async (req, res) => {
             action: "ROLE_DELETED",
             resourceType: "role",
             resourceId: parseInt(id),
-            details: { name: role.name },
+            details: {
+                name: role.name,
+            },
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Role deleted successfully" });
+        res.json({
+            message: "Role deleted successfully",
+        });
     } catch (error) {
         console.error("Delete role error:", error);
-        res.status(500).json({ error: "Failed to delete role" });
+        res.status(500).json({
+            error: "Failed to delete role",
+        });
     }
 };
 
@@ -291,7 +305,9 @@ export const getPermissions = async (req, res) => {
         });
     } catch (error) {
         console.error("Get permissions error:", error);
-        res.status(500).json({ error: "Failed to fetch permissions" });
+        res.status(500).json({
+            error: "Failed to fetch permissions",
+        });
     }
 };
 
@@ -314,7 +330,10 @@ export const createPermission = async (req, res) => {
             action: "PERMISSION_CREATED",
             resourceType: AuditResourceType.PERMISSION,
             resourceId: permission.id,
-            details: { resourceName, action },
+            details: {
+                resourceName,
+                action,
+            },
             ipAddress: req.ip,
         });
 
@@ -326,7 +345,9 @@ export const createPermission = async (req, res) => {
                 error: "Permission already exists for this resource and action",
             });
         }
-        res.status(500).json({ error: "Failed to create permission" });
+        res.status(500).json({
+            error: "Failed to create permission",
+        });
     }
 };
 
@@ -341,7 +362,9 @@ export const updatePermission = async (req, res) => {
         if (description !== undefined) updates.description = description;
 
         if (Object.keys(updates).length === 0) {
-            return res.status(400).json({ error: "No fields to update" });
+            return res.status(400).json({
+                error: "No fields to update",
+            });
         }
 
         const [permission] = await db
@@ -351,7 +374,9 @@ export const updatePermission = async (req, res) => {
             .returning();
 
         if (!permission) {
-            return res.status(404).json({ error: "Permission not found" });
+            return res.status(404).json({
+                error: "Permission not found",
+            });
         }
 
         await logAudit({
@@ -372,7 +397,9 @@ export const updatePermission = async (req, res) => {
                 error: "Permission already exists for this resource and action",
             });
         }
-        res.status(500).json({ error: "Failed to update permission" });
+        res.status(500).json({
+            error: "Failed to update permission",
+        });
     }
 };
 
@@ -386,7 +413,9 @@ export const deletePermission = async (req, res) => {
             .returning();
 
         if (!permission) {
-            return res.status(404).json({ error: "Permission not found" });
+            return res.status(404).json({
+                error: "Permission not found",
+            });
         }
 
         await logAudit({
@@ -402,9 +431,13 @@ export const deletePermission = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Permission deleted successfully" });
+        res.json({
+            message: "Permission deleted successfully",
+        });
     } catch (error) {
         console.error("Delete permission error:", error);
-        res.status(500).json({ error: "Failed to delete permission" });
+        res.status(500).json({
+            error: "Failed to delete permission",
+        });
     }
 };

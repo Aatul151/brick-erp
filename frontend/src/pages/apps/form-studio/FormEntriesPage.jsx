@@ -1,20 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import {
-    Box,
-    Button,
-    Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    DialogContentText,
-    CircularProgress,
-    Alert,
-    ButtonGroup,
-    Tooltip,
-    useMediaQuery,
-    useTheme,
-} from "@mui/material";
+import { Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, CircularProgress, Alert, ButtonGroup, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { GridActionsCellItem } from "@mui/x-data-grid";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -25,10 +10,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PublicIcon from "@mui/icons-material/Public";
 import { formsApi, formEntriesApi } from "../../../utils/api/coreapi";
-import {
-    transformFormSchema,
-    formatDateTime,
-} from "../../../utils/form-studio/formUtils";
+import { transformFormSchema, formatDateTime } from "../../../utils/form-studio/formUtils";
 import { useAuth } from "../../../contexts/AuthContext";
 import { PageHeader } from "../../../components/common/PageHeader";
 import { PageContent } from "../../../components/common/PageContent";
@@ -74,8 +56,7 @@ export default function FormEntriesPage() {
     });
 
     const formSchema = formSchemaRaw;
-    const isSingleRecordForm =
-        formSchema?.settings?.isSingleRecordForm === true;
+    const isSingleRecordForm = formSchema?.settings?.isSingleRecordForm === true;
     const formType = String(formSchema?.formType || "").toLowerCase();
     const isMasterForm = formType === "master_form";
 
@@ -99,19 +80,13 @@ export default function FormEntriesPage() {
                 page: page + 1,
                 limit: pageSize,
             }),
-        enabled:
-            (!!user?.tenantId || siteAdmin) &&
-            !!decodedFormName &&
-            !!formSchema &&
-            ((isSingleRecordForm && pageSize === 1) ||
-                (!isSingleRecordForm && pageSize !== 1)),
+        enabled: (!!user?.tenantId || siteAdmin) && !!decodedFormName && !!formSchema && ((isSingleRecordForm && pageSize === 1) || (!isSingleRecordForm && pageSize !== 1)),
         placeholderData: (prev) => prev,
     });
 
     const entries = entriesData?.data || [];
     const pagination = entriesData?.pagination;
-    const singleRecord =
-        isSingleRecordForm && entries.length > 0 ? entries[0] : null;
+    const singleRecord = isSingleRecordForm && entries.length > 0 ? entries[0] : null;
 
     const createMutation = useMutation({
         mutationFn: (payload) => formEntriesApi.create(payload),
@@ -124,8 +99,7 @@ export default function FormEntriesPage() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, payload, scope }) =>
-            formEntriesApi.update(id, payload, scope),
+        mutationFn: ({ id, payload, scope }) => formEntriesApi.update(id, payload, scope),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["formEntries", decodedFormName],
@@ -135,8 +109,7 @@ export default function FormEntriesPage() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: ({ entryId, scope }) =>
-            formEntriesApi.delete(entryId, decodedFormName, scope),
+        mutationFn: ({ entryId, scope }) => formEntriesApi.delete(entryId, decodedFormName, scope),
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["formEntries", decodedFormName],
@@ -167,9 +140,7 @@ export default function FormEntriesPage() {
 
     const buildColumns = () => {
         if (!formSchema) return [];
-        const allFields = formSchema.sections
-            ? formSchema.sections.flatMap((s) => s.fields)
-            : formSchema.fields || [];
+        const allFields = formSchema.sections ? formSchema.sections.flatMap((s) => s.fields) : formSchema.fields || [];
 
         const cols = [];
 
@@ -180,11 +151,8 @@ export default function FormEntriesPage() {
                     headerName: field.label,
                     flex: 1,
                     minWidth: 200,
-                    valueGetter: (_v, row) =>
-                        row.payload?.[field.name] ?? row[field.name],
-                    renderCell: (params) => (
-                        <FileDisplay fieldValue={params.value} />
-                    ),
+                    valueGetter: (_v, row) => row.payload?.[field.name] ?? row[field.name],
+                    renderCell: (params) => <FileDisplay fieldValue={params.value} />,
                 });
                 return;
             }
@@ -194,15 +162,8 @@ export default function FormEntriesPage() {
                     headerName: field.label,
                     flex: 1,
                     minWidth: 180,
-                    valueGetter: (_v, row) =>
-                        row.payload?.[field.name] ?? row[field.name],
-                    renderCell: (params) => (
-                        <CKEditorContentDisplay
-                            content={params.value || ""}
-                            maxLength={80}
-                            showViewButton
-                        />
-                    ),
+                    valueGetter: (_v, row) => row.payload?.[field.name] ?? row[field.name],
+                    renderCell: (params) => <CKEditorContentDisplay content={params.value || ""} maxLength={80} showViewButton />,
                 });
                 return;
             }
@@ -212,18 +173,15 @@ export default function FormEntriesPage() {
                 flex: 1,
                 minWidth: 120,
                 valueGetter: (_v, row) => {
-                    const fieldValue =
-                        row.payload?.[field.name] ?? row[field.name];
-                    if (fieldValue === null || fieldValue === undefined)
-                        return "";
+                    const fieldValue = row.payload?.[field.name] ?? row[field.name];
+                    if (fieldValue === null || fieldValue === undefined) return "";
                     if (field.type === "datepicker") {
                         const mode = field.datePickerMode || "date";
                         return formatDateTime(fieldValue, {
                             datePickerMode: mode,
                         });
                     }
-                    if (typeof fieldValue === "object")
-                        return JSON.stringify(fieldValue);
+                    if (typeof fieldValue === "object") return JSON.stringify(fieldValue);
                     return String(fieldValue);
                 },
             });
@@ -234,8 +192,7 @@ export default function FormEntriesPage() {
                 field: "scope",
                 headerName: "Source",
                 width: 110,
-                valueGetter: (_v, row) =>
-                    row.scope === "master" ? "Master" : "Tenant",
+                valueGetter: (_v, row) => (row.scope === "master" ? "Master" : "Tenant"),
             },
             {
                 field: "createdAt",
@@ -323,11 +280,7 @@ export default function FormEntriesPage() {
                 <PageHeader
                     title="Form entries"
                     actions={
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => navigate("/form-studio")}
-                        >
+                        <Button variant="outlined" size="small" onClick={() => navigate("/form-studio")}>
                             Back to Form Studio
                         </Button>
                     }
@@ -344,10 +297,7 @@ export default function FormEntriesPage() {
                             color: "text.secondary",
                         }}
                     >
-                        <Typography>
-                            Switch to a tenant account or use a Site Admin
-                            account.
-                        </Typography>
+                        <Typography>Switch to a tenant account or use a Site Admin account.</Typography>
                     </Box>
                 </PageContent>
             </Box>
@@ -375,10 +325,7 @@ export default function FormEntriesPage() {
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {formDefError?.message || "Form not found"}
                 </Alert>
-                <Button
-                    variant="outlined"
-                    onClick={() => navigate("/form-studio")}
-                >
+                <Button variant="outlined" onClick={() => navigate("/form-studio")}>
                     Back to Form Studio
                 </Button>
             </Box>
@@ -386,10 +333,7 @@ export default function FormEntriesPage() {
     }
 
     const columns = buildColumns();
-    const isBusy =
-        createMutation.isPending ||
-        updateMutation.isPending ||
-        deleteMutation.isPending;
+    const isBusy = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
     if (isSingleRecordForm && entriesLoading) {
         return (
@@ -441,13 +385,7 @@ export default function FormEntriesPage() {
                 </Tooltip>
             )}
             {!isSingleRecordForm && siteAdmin && (
-                <Tooltip
-                    title={
-                        isMobile
-                            ? "Add Master"
-                            : `Add Master ${formSchema.title}`
-                    }
-                >
+                <Tooltip title={isMobile ? "Add Master" : `Add Master ${formSchema.title}`}>
                     <Button
                         onClick={() => {
                             setSelectedEntry(null);
@@ -476,11 +414,7 @@ export default function FormEntriesPage() {
                 overflow: "hidden",
             }}
         >
-            <PageHeader
-                title={formSchema.title}
-                actions={actionButtons}
-                sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }}
-            />
+            <PageHeader title={formSchema.title} actions={actionButtons} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
 
             <PageContent>
                 {!isSingleRecordForm && (
@@ -500,18 +434,9 @@ export default function FormEntriesPage() {
                     variant={isSingleRecordForm ? "plain" : "drawer"}
                     open={isSingleRecordForm ? true : formDialogOpen}
                     formSysName={decodedFormName || undefined}
-                    recordId={
-                        formMode === "edit" || formMode === "view"
-                            ? (selectedEntry?._id ?? "draft")
-                            : "draft"
-                    }
+                    recordId={formMode === "edit" || formMode === "view" ? (selectedEntry?._id ?? "draft") : "draft"}
                     onSubmit={handleFormSubmit}
-                    initialValues={
-                        (formMode === "edit" || formMode === "view") &&
-                        selectedEntry?.payload
-                            ? { ...selectedEntry.payload }
-                            : undefined
-                    }
+                    initialValues={(formMode === "edit" || formMode === "view") && selectedEntry?.payload ? { ...selectedEntry.payload } : undefined}
                     title={
                         formMode === "edit"
                             ? `Edit ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}`
@@ -520,9 +445,7 @@ export default function FormEntriesPage() {
                               : `Add ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}`
                     }
                     mode={formMode}
-                    isLoading={
-                        createMutation.isPending || updateMutation.isPending
-                    }
+                    isLoading={createMutation.isPending || updateMutation.isPending}
                     onClose={
                         isSingleRecordForm
                             ? undefined
@@ -562,22 +485,13 @@ export default function FormEntriesPage() {
                 />
             </PageContent>
 
-            <Dialog
-                open={deleteDialogOpen}
-                onClose={() => !isBusy && setDeleteDialogOpen(false)}
-            >
+            <Dialog open={deleteDialogOpen} onClose={() => !isBusy && setDeleteDialogOpen(false)}>
                 <DialogTitle>Delete entry</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Delete this entry? This cannot be undone.
-                    </DialogContentText>
+                    <DialogContentText>Delete this entry? This cannot be undone.</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button
-                        size="small"
-                        onClick={() => setDeleteDialogOpen(false)}
-                        disabled={isBusy}
-                    >
+                    <Button size="small" onClick={() => setDeleteDialogOpen(false)} disabled={isBusy}>
                         Cancel
                     </Button>
                     <Button

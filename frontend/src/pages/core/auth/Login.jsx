@@ -25,9 +25,7 @@ export default function Login() {
             await login(formData);
             navigate("/dashboard");
         } catch (err) {
-            setError(
-                err.message || "Login failed. Please check your credentials.",
-            );
+            setError(err.message || "Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
@@ -46,12 +44,7 @@ export default function Login() {
                 <div>
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                            <svg
-                                className="w-7 h-7 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -60,9 +53,7 @@ export default function Login() {
                                 />
                             </svg>
                         </div>
-                        <span className="text-xl font-bold text-white">
-                            Brick ERP
-                        </span>
+                        <span className="text-xl font-bold text-white">Brick ERP</span>
                     </div>
                 </div>
 
@@ -70,48 +61,27 @@ export default function Login() {
                     <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
                         Manage your organization
                         <br />
-                        <span className="text-primary-200">
-                            with confidence
-                        </span>
+                        <span className="text-primary-200">with confidence</span>
                     </h1>
-                    <p className="mt-6 text-lg text-primary-100 max-w-md">
-                        Secure, scalable multi-tenant platform for teams and
-                        enterprises.
-                    </p>
+                    <p className="mt-6 text-lg text-primary-100 max-w-md">Secure, scalable multi-tenant platform for teams and enterprises.</p>
                     <ul className="mt-12 space-y-6">
                         {features.map((item, i) => (
                             <li key={i} className="flex items-start gap-4">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                                    <svg
-                                        className="w-5 h-5 text-primary-200"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M5 13l4 4L19 7"
-                                        />
+                                    <svg className="w-5 h-5 text-primary-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-white">
-                                        {item.title}
-                                    </p>
-                                    <p className="text-sm text-primary-200">
-                                        {item.desc}
-                                    </p>
+                                    <p className="font-semibold text-white">{item.title}</p>
+                                    <p className="text-sm text-primary-200">{item.desc}</p>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                <p className="text-sm text-primary-200/80">
-                    © {new Date().getFullYear()} Brick ERP. All rights reserved.
-                </p>
+                <p className="text-sm text-primary-200/80">© {new Date().getFullYear()} Brick ERP. All rights reserved.</p>
             </div>
 
             {/* Right side - Login form */}
@@ -120,12 +90,7 @@ export default function Login() {
                     {/* Mobile logo */}
                     <div className="lg:hidden flex items-center gap-2 mb-8">
                         <div className="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center">
-                            <svg
-                                className="w-5 h-5 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -134,27 +99,17 @@ export default function Login() {
                                 />
                             </svg>
                         </div>
-                        <span className="text-lg font-bold text-gray-900">
-                            Brick ERP
-                        </span>
+                        <span className="text-lg font-bold text-gray-900">Brick ERP</span>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 sm:p-10">
                         <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                Welcome back
-                            </h2>
-                            <p className="mt-1 text-gray-500">
-                                Sign in to your account
-                            </p>
+                            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+                            <p className="mt-1 text-gray-500">Sign in to your account</p>
                         </div>
 
                         <form className="space-y-5" onSubmit={handleSubmit}>
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                    {error}
-                                </div>
-                            )}
+                            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
                             <Input
                                 label="Email or mobile number"
                                 type="text"
@@ -165,21 +120,8 @@ export default function Login() {
                                 placeholder="you@company.com or +91 98765 43210"
                                 required
                             />
-                            <Input
-                                label="Password"
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                required
-                            />
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full"
-                                size="lg"
-                            >
+                            <Input label="Password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password" required />
+                            <Button type="submit" disabled={loading} className="w-full" size="lg">
                                 {loading ? "Signing in..." : "Sign in"}
                             </Button>
                         </form>

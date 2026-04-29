@@ -1,21 +1,7 @@
-import {
-    Drawer as MuiDrawer,
-    Box,
-    IconButton,
-    Typography,
-    Toolbar,
-    useTheme,
-} from "@mui/material";
+import { Drawer as MuiDrawer, Box, IconButton, Typography, Toolbar, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-export function AppDrawer({
-    open,
-    onClose,
-    title,
-    children,
-    width = 400,
-    anchor = "right",
-}) {
+export function AppDrawer({ open, onClose, title, children, width = 400, anchor = "right" }) {
     const theme = useTheme();
 
     return (
@@ -31,10 +17,7 @@ export function AppDrawer({
                     width: { xs: "100%", sm: width },
                     boxSizing: "border-box",
                     borderRadius: 0,
-                    height:
-                        anchor === "right" || anchor === "left"
-                            ? "100%"
-                            : "auto",
+                    height: anchor === "right" || anchor === "left" ? "100%" : "auto",
                 },
             }}
         >
@@ -58,17 +41,11 @@ export function AppDrawer({
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                         {title}
                     </Typography>
-                    <IconButton
-                        onClick={onClose}
-                        size="small"
-                        sx={{ color: "text.secondary" }}
-                    >
+                    <IconButton onClick={onClose} size="small" sx={{ color: "text.secondary" }}>
                         <CloseIcon />
                     </IconButton>
                 </Toolbar>
-                <Box sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
-                    {children}
-                </Box>
+                <Box sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>{children}</Box>
             </Box>
         </MuiDrawer>
     );

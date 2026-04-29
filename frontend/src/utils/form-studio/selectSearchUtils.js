@@ -5,9 +5,6 @@ export function filterOptions(options, searchTerm) {
     return options.filter((opt) => {
         const label = typeof opt === "string" ? opt : opt.label || "";
         const value = typeof opt === "string" ? opt : opt.value || "";
-        return (
-            String(label).toLowerCase().includes(q) ||
-            String(value).toLowerCase().includes(q)
-        );
+        return String(label).toLowerCase().includes(q) || String(value).toLowerCase().includes(q);
     });
 }

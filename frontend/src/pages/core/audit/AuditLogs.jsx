@@ -46,8 +46,7 @@ export default function AuditLogs() {
             field: "timestamp",
             headerName: "Timestamp",
             width: 170,
-            valueGetter: (_, row) =>
-                formatDate(row.timestamp, "DD MMM YYYY hh:mm:ss A"),
+            valueGetter: (_, row) => formatDate(row.timestamp, "DD MMM YYYY hh:mm:ss A"),
         },
         {
             field: "userName",
@@ -71,9 +70,7 @@ export default function AuditLogs() {
             field: "action",
             headerName: "Action",
             width: 140,
-            renderCell: (params) => (
-                <StatusLabel value={params.row.action} variant="action" />
-            ),
+            renderCell: (params) => <StatusLabel value={params.row.action} variant="action" />,
         },
         {
             field: "resourceType",
@@ -91,19 +88,13 @@ export default function AuditLogs() {
 
     return (
         <div className="px-4 sm:px-0 flex flex-col gap-4 min-h-0 flex-1">
-            <PageHeader
-                title="Audit Logs"
-                subtitle="View and filter system activity logs"
-                icon={<HistoryIcon fontSize="small" color="primary" />}
-            />
+            <PageHeader title="Audit Logs" subtitle="View and filter system activity logs" icon={<HistoryIcon fontSize="small" color="primary" />} />
             <PageContent>
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Select
                         label="Action"
                         value={filters.action}
-                        onChange={(e) =>
-                            setFilters({ ...filters, action: e.target.value })
-                        }
+                        onChange={(e) => setFilters({ ...filters, action: e.target.value })}
                         options={[
                             { value: "", label: "All Actions" },
                             { value: "LOGIN_SUCCESS", label: "Login Success" },
@@ -159,23 +150,13 @@ export default function AuditLogs() {
                             })
                         }
                     />
-                    <Input
-                        label="End Date"
-                        type="date"
-                        value={filters.endDate}
-                        onChange={(e) =>
-                            setFilters({ ...filters, endDate: e.target.value })
-                        }
-                    />
+                    <Input label="End Date" type="date" value={filters.endDate} onChange={(e) => setFilters({ ...filters, endDate: e.target.value })} />
                 </div>
 
                 <AppDataTable
                     rows={data?.logs || []}
                     columns={columns}
-                    getRowId={(row) =>
-                        row.id ??
-                        `${row.timestamp}-${row.userEmail}-${row.action}`
-                    }
+                    getRowId={(row) => row.id ?? `${row.timestamp}-${row.userEmail}-${row.action}`}
                     loading={isLoading}
                     height={500}
                     serverPagination={!!data?.pagination}

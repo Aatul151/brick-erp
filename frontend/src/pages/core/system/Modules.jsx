@@ -14,14 +14,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Button from "../../../components/ui/Button";
 import Modal from "../../../components/ui/Modal";
 import Input from "../../../components/ui/Input";
-import {
-    Box,
-    Switch,
-    FormControlLabel,
-    ToggleButtonGroup,
-    ToggleButton,
-    Typography,
-} from "@mui/material";
+import { Box, Switch, FormControlLabel, ToggleButtonGroup, ToggleButton, Typography } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -38,12 +31,7 @@ export default function Modules() {
 
     const { data: modules, isLoading } = useQuery({
         queryKey: ["modules", activeFilter],
-        queryFn: () =>
-            moduleApi.getAll(
-                ACTIVE_FILTER[activeFilter] != null
-                    ? { active: ACTIVE_FILTER[activeFilter] }
-                    : {},
-            ),
+        queryFn: () => moduleApi.getAll(ACTIVE_FILTER[activeFilter] != null ? { active: ACTIVE_FILTER[activeFilter] } : {}),
     });
 
     const createMutation = useMutation({
@@ -86,9 +74,7 @@ export default function Modules() {
             field: "isActive",
             headerName: "Active",
             width: 90,
-            renderCell: (params) => (
-                <StatusLabel value={params.row.isActive} variant="active" />
-            ),
+            renderCell: (params) => <StatusLabel value={params.row.isActive} variant="active" />,
         },
         {
             field: "actions",
@@ -114,13 +100,10 @@ export default function Modules() {
                             action: ACTION.DELETE,
                             variant: "danger",
                             onClick: async () => {
-                                const ok = await confirm(
-                                    "Delete this module? Permissions using this module may be affected.",
-                                    {
-                                        confirmText: "Delete",
-                                        confirmVariant: "danger",
-                                    },
-                                );
+                                const ok = await confirm("Delete this module? Permissions using this module may be affected.", {
+                                    confirmText: "Delete",
+                                    confirmVariant: "danger",
+                                });
                                 if (ok) deleteMutation.mutate(row.id);
                             },
                         },
@@ -195,12 +178,7 @@ export default function Modules() {
                     globalSearchPlaceholder="Search modules..."
                 />
 
-                <CreateModuleModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={(data) => createMutation.mutate(data)}
-                    isLoading={createMutation.isPending}
-                />
+                <CreateModuleModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={(data) => createMutation.mutate(data)} isLoading={createMutation.isPending} />
 
                 {selectedModule && (
                     <EditModuleModal
@@ -268,32 +246,14 @@ function CreateModuleModal({ isOpen, onClose, onSubmit, isLoading }) {
                         setFormData({
                             ...formData,
                             name: e.target.value,
-                            slug:
-                                formData.slug ||
-                                handleSlugFromName(e.target.value),
+                            slug: formData.slug || handleSlugFromName(e.target.value),
                         })
                     }
                     placeholder="e.g. Tenants"
                     required
                 />
-                <Input
-                    label="Slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                    }
-                    placeholder="e.g. tenants (used for permissions)"
-                />
-                <Input
-                    label="Icon"
-                    name="icon"
-                    value={formData.icon}
-                    onChange={(e) =>
-                        setFormData({ ...formData, icon: e.target.value })
-                    }
-                    placeholder="e.g. Business (MUI icon name)"
-                />
+                <Input label="Slug" name="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="e.g. tenants (used for permissions)" />
+                <Input label="Icon" name="icon" value={formData.icon} onChange={(e) => setFormData({ ...formData, icon: e.target.value })} placeholder="e.g. Business (MUI icon name)" />
                 <Input
                     label="Description"
                     name="description"
@@ -383,31 +343,9 @@ function EditModuleModal({ isOpen, onClose, module, onSubmit, isLoading }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Edit Module" size="md">
             <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                    label="Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                />
-                <Input
-                    label="Slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                    }
-                />
-                <Input
-                    label="Icon"
-                    name="icon"
-                    value={formData.icon}
-                    onChange={(e) =>
-                        setFormData({ ...formData, icon: e.target.value })
-                    }
-                />
+                <Input label="Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <Input label="Slug" name="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
+                <Input label="Icon" name="icon" value={formData.icon} onChange={(e) => setFormData({ ...formData, icon: e.target.value })} />
                 <Input
                     label="Description"
                     name="description"

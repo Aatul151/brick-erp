@@ -13,15 +13,7 @@ export const AuditResourceType = Object.freeze({
     SYSTEM: "system",
 });
 
-export const logAudit = async ({
-    userId,
-    tenantId,
-    action,
-    resourceType,
-    resourceId,
-    details,
-    ipAddress,
-}) => {
+export const logAudit = async ({ userId, tenantId, action, resourceType, resourceId, details, ipAddress }) => {
     try {
         await db.insert(auditLogs).values({
             userId: userId || null,
@@ -54,9 +46,7 @@ export const getAuditLogs = async (filters = {}) => {
             query = query.where(eq(auditLogs.action, filters.action));
         }
 
-        const logs = await query
-            .orderBy(desc(auditLogs.timestamp))
-            .limit(filters.limit || 100);
+        const logs = await query.orderBy(desc(auditLogs.timestamp)).limit(filters.limit || 100);
         return logs;
     } catch (error) {
         console.error("Failed to fetch audit logs:", error.message);

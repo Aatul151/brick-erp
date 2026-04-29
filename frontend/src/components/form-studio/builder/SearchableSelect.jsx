@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-    TextField,
-    MenuItem,
-    ListSubheader,
-    Box,
-    CircularProgress,
-} from "@mui/material";
+import { TextField, MenuItem, ListSubheader, Box, CircularProgress } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { filterOptions } from "../../../utils/form-studio/selectSearchUtils";
 
@@ -72,12 +66,7 @@ export function SearchableSelect({
                         onClick={(e) => e.stopPropagation()}
                         onKeyDown={(e) => e.stopPropagation()}
                         InputProps={{
-                            startAdornment: (
-                                <SearchIcon
-                                    fontSize="small"
-                                    sx={{ mr: 0.5, color: "text.secondary" }}
-                                />
-                            ),
+                            startAdornment: <SearchIcon fontSize="small" sx={{ mr: 0.5, color: "text.secondary" }} />,
                         }}
                     />
                 </ListSubheader>

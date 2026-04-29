@@ -42,8 +42,7 @@ export function transformFormSchema(form) {
 
 export function formatDateTime(value, options = {}) {
     const { format, datePickerMode = "date", emptyValue = "—" } = options;
-    if (value === null || value === undefined || value === "")
-        return emptyValue;
+    if (value === null || value === undefined || value === "") return emptyValue;
     try {
         const date = dayjs(value);
         if (!date.isValid()) return emptyValue;

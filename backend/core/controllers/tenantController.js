@@ -2,19 +2,12 @@ import { db } from "../../models/db.js";
 import { tenants, users, userRoles, roles } from "../../models/schema.js";
 import { eq, desc, sql, or, ilike, and } from "drizzle-orm";
 import { logAudit, AuditResourceType } from "../services/auditService.js";
-import {
-    sendTenantSuspensionEmail,
-    sendAccountReactivationEmail,
-} from "../services/emailService.js";
+import { sendTenantSuspensionEmail, sendAccountReactivationEmail } from "../services/emailService.js";
 
 function parseTenantUuid(value) {
     if (value == null || value === "") return null;
     const tenantId = String(value).trim();
-    if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            tenantId,
-        )
-    ) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
         return null;
     }
     return tenantId;
@@ -39,7 +32,10 @@ export const createTenant = async (req, res) => {
             action: "TENANT_CREATED",
             resourceType: AuditResourceType.TENANT,
             resourceId: tenant.id,
-            details: { name, subdomain },
+            details: {
+                name,
+                subdomain,
+            },
             ipAddress: req.ip,
         });
 
@@ -47,9 +43,13 @@ export const createTenant = async (req, res) => {
     } catch (error) {
         console.error("Create tenant error:", error);
         if (error.code === "23505") {
-            return res.status(409).json({ error: "Subdomain already exists" });
+            return res.status(409).json({
+                error: "Subdomain already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to create tenant" });
+        res.status(500).json({
+            error: "Failed to create tenant",
+        });
     }
 };
 
@@ -67,10 +67,7 @@ export const getTenants = async (req, res) => {
                 themeSetting: tenants.themeSetting,
                 createdAt: tenants.createdAt,
                 updatedAt: tenants.updatedAt,
-                userCount:
-                    sql`(SELECT COUNT(*) FROM users WHERE users.tenant_id = tenants.id)`.as(
-                        "userCount",
-                    ),
+                userCount: sql`(SELECT COUNT(*) FROM users WHERE users.tenant_id = tenants.id)`.as("userCount"),
             })
             .from(tenants);
 
@@ -81,25 +78,19 @@ export const getTenants = async (req, res) => {
         }
 
         if (search) {
-            conditions.push(
-                or(
-                    ilike(tenants.name, `%${search}%`),
-                    ilike(tenants.subdomain, `%${search}%`),
-                ),
-            );
+            conditions.push(or(ilike(tenants.name, `%${search}%`), ilike(tenants.subdomain, `%${search}%`)));
         }
 
         if (conditions.length > 0) {
             query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
         }
 
-        const allTenants = await query
-            .orderBy(desc(tenants.createdAt))
-            .limit(parseInt(limit))
-            .offset(offset);
+        const allTenants = await query.orderBy(desc(tenants.createdAt)).limit(parseInt(limit)).offset(offset);
 
         const [{ count }] = await db
-            .select({ count: sql`count(*)` })
+            .select({
+                count: sql`count(*)`,
+            })
             .from(tenants);
 
         res.json({
@@ -113,7 +104,9 @@ export const getTenants = async (req, res) => {
         });
     } catch (error) {
         console.error("Get tenants error:", error);
-        res.status(500).json({ error: "Failed to fetch tenants" });
+        res.status(500).json({
+            error: "Failed to fetch tenants",
+        });
     }
 };
 
@@ -122,7 +115,9 @@ export const getTenant = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
 
         const [tenant] = await db
             .select({
@@ -141,13 +136,17 @@ export const getTenant = async (req, res) => {
             .limit(1);
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         res.json(tenant);
     } catch (error) {
         console.error("Get tenant error:", error);
-        res.status(500).json({ error: "Failed to fetch tenant" });
+        res.status(500).json({
+            error: "Failed to fetch tenant",
+        });
     }
 };
 
@@ -156,7 +155,9 @@ export const updateTenant = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
         const { name, subdomain, status } = req.body;
 
         const updates = {};
@@ -165,14 +166,12 @@ export const updateTenant = async (req, res) => {
         if (status) updates.status = status;
         updates.updatedAt = new Date();
 
-        const [tenant] = await db
-            .update(tenants)
-            .set(updates)
-            .where(eq(tenants.id, tenantId))
-            .returning();
+        const [tenant] = await db.update(tenants).set(updates).where(eq(tenants.id, tenantId)).returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         await logAudit({
@@ -189,9 +188,13 @@ export const updateTenant = async (req, res) => {
     } catch (error) {
         console.error("Update tenant error:", error);
         if (error.code === "23505") {
-            return res.status(409).json({ error: "Subdomain already exists" });
+            return res.status(409).json({
+                error: "Subdomain already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to update tenant" });
+        res.status(500).json({
+            error: "Failed to update tenant",
+        });
     }
 };
 
@@ -200,16 +203,23 @@ export const suspendTenant = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
 
         const [tenant] = await db
             .update(tenants)
-            .set({ status: "suspended", updatedAt: new Date() })
+            .set({
+                status: "suspended",
+                updatedAt: new Date(),
+            })
             .where(eq(tenants.id, tenantId))
             .returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         const clientAdmins = await db
@@ -220,19 +230,10 @@ export const suspendTenant = async (req, res) => {
             .from(users)
             .innerJoin(userRoles, eq(users.id, userRoles.userId))
             .innerJoin(roles, eq(userRoles.roleId, roles.id))
-            .where(
-                and(
-                    eq(users.tenantId, tenantId),
-                    eq(roles.name, "Client Admin"),
-                ),
-            );
+            .where(and(eq(users.tenantId, tenantId), eq(roles.name, "Client Admin")));
 
         for (const admin of clientAdmins) {
-            await sendTenantSuspensionEmail(
-                admin.email,
-                tenant.name,
-                admin.fullName,
-            );
+            await sendTenantSuspensionEmail(admin.email, tenant.name, admin.fullName);
         }
 
         await logAudit({
@@ -244,10 +245,15 @@ export const suspendTenant = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Tenant suspended successfully", tenant });
+        res.json({
+            message: "Tenant suspended successfully",
+            tenant,
+        });
     } catch (error) {
         console.error("Suspend tenant error:", error);
-        res.status(500).json({ error: "Failed to suspend tenant" });
+        res.status(500).json({
+            error: "Failed to suspend tenant",
+        });
     }
 };
 
@@ -256,16 +262,23 @@ export const activateTenant = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
 
         const [tenant] = await db
             .update(tenants)
-            .set({ status: "active", updatedAt: new Date() })
+            .set({
+                status: "active",
+                updatedAt: new Date(),
+            })
             .where(eq(tenants.id, tenantId))
             .returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         const clientAdmins = await db
@@ -276,19 +289,10 @@ export const activateTenant = async (req, res) => {
             .from(users)
             .innerJoin(userRoles, eq(users.id, userRoles.userId))
             .innerJoin(roles, eq(userRoles.roleId, roles.id))
-            .where(
-                and(
-                    eq(users.tenantId, tenantId),
-                    eq(roles.name, "Client Admin"),
-                ),
-            );
+            .where(and(eq(users.tenantId, tenantId), eq(roles.name, "Client Admin")));
 
         for (const admin of clientAdmins) {
-            await sendAccountReactivationEmail(
-                admin.email,
-                admin.fullName,
-                tenant.name,
-            );
+            await sendAccountReactivationEmail(admin.email, admin.fullName, tenant.name);
         }
 
         await logAudit({
@@ -300,10 +304,15 @@ export const activateTenant = async (req, res) => {
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Tenant activated successfully", tenant });
+        res.json({
+            message: "Tenant activated successfully",
+            tenant,
+        });
     } catch (error) {
         console.error("Activate tenant error:", error);
-        res.status(500).json({ error: "Failed to activate tenant" });
+        res.status(500).json({
+            error: "Failed to activate tenant",
+        });
     }
 };
 
@@ -312,15 +321,16 @@ export const deleteTenant = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
 
-        const [tenant] = await db
-            .delete(tenants)
-            .where(eq(tenants.id, tenantId))
-            .returning();
+        const [tenant] = await db.delete(tenants).where(eq(tenants.id, tenantId)).returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         await logAudit({
@@ -328,14 +338,20 @@ export const deleteTenant = async (req, res) => {
             action: "TENANT_DELETED",
             resourceType: AuditResourceType.TENANT,
             resourceId: tenantId,
-            details: { name: tenant.name },
+            details: {
+                name: tenant.name,
+            },
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Tenant deleted successfully" });
+        res.json({
+            message: "Tenant deleted successfully",
+        });
     } catch (error) {
         console.error("Delete tenant error:", error);
-        res.status(500).json({ error: "Failed to delete tenant" });
+        res.status(500).json({
+            error: "Failed to delete tenant",
+        });
     }
 };
 
@@ -344,7 +360,9 @@ export const updateTenantThemeSetting = async (req, res) => {
         const { id } = req.params;
         const tenantId = parseTenantUuid(id);
         if (!tenantId)
-            return res.status(400).json({ error: "Invalid tenant id" });
+            return res.status(400).json({
+                error: "Invalid tenant id",
+            });
         const { themeSetting } = req.body;
 
         const [tenant] = await db
@@ -357,7 +375,9 @@ export const updateTenantThemeSetting = async (req, res) => {
             .returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         await logAudit({
@@ -366,42 +386,51 @@ export const updateTenantThemeSetting = async (req, res) => {
             action: "TENANT_THEME_UPDATED",
             resourceType: AuditResourceType.TENANT,
             resourceId: tenant.id,
-            details: { themeSetting },
+            details: {
+                themeSetting,
+            },
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Theme updated successfully", tenant });
+        res.json({
+            message: "Theme updated successfully",
+            tenant,
+        });
     } catch (error) {
         console.error("Update tenant theme error:", error);
-        res.status(500).json({ error: "Failed to update tenant theme" });
+        res.status(500).json({
+            error: "Failed to update tenant theme",
+        });
     }
 };
 
 export const updateMyTenantThemeMode = async (req, res) => {
     try {
         if (!req.user.tenantId) {
-            return res
-                .status(400)
-                .json({ error: "No tenant associated with user" });
+            return res.status(400).json({
+                error: "No tenant associated with user",
+            });
         }
 
         const { mode } = req.body;
         if (!mode || !["light", "dark"].includes(mode)) {
-            return res
-                .status(400)
-                .json({ error: 'Invalid mode. Use "light" or "dark"' });
+            return res.status(400).json({
+                error: 'Invalid mode. Use "light" or "dark"',
+            });
         }
 
         const [existing] = await db
-            .select({ themeSetting: tenants.themeSetting })
+            .select({
+                themeSetting: tenants.themeSetting,
+            })
             .from(tenants)
             .where(eq(tenants.id, req.user.tenantId))
             .limit(1);
-        const currentTheme =
-            existing?.themeSetting && typeof existing.themeSetting === "object"
-                ? existing.themeSetting
-                : {};
-        const newThemeSetting = { ...currentTheme, mode };
+        const currentTheme = existing?.themeSetting && typeof existing.themeSetting === "object" ? existing.themeSetting : {};
+        const newThemeSetting = {
+            ...currentTheme,
+            mode,
+        };
 
         const [tenant] = await db
             .update(tenants)
@@ -413,7 +442,9 @@ export const updateMyTenantThemeMode = async (req, res) => {
             .returning();
 
         if (!tenant) {
-            return res.status(404).json({ error: "Tenant not found" });
+            return res.status(404).json({
+                error: "Tenant not found",
+            });
         }
 
         await logAudit({
@@ -422,7 +453,9 @@ export const updateMyTenantThemeMode = async (req, res) => {
             action: "TENANT_THEME_MODE_UPDATED",
             resourceType: AuditResourceType.TENANT,
             resourceId: tenant.id,
-            details: { mode },
+            details: {
+                mode,
+            },
             ipAddress: req.ip,
         });
 
@@ -432,15 +465,15 @@ export const updateMyTenantThemeMode = async (req, res) => {
         });
     } catch (error) {
         console.error("Update tenant theme mode error:", error);
-        res.status(500).json({ error: "Failed to update theme mode" });
+        res.status(500).json({
+            error: "Failed to update theme mode",
+        });
     }
 };
 
 export const getTenantStats = async (req, res) => {
     try {
-        const isSiteAdmin = req.user.roles.some(
-            (r) => r.roleName === "Site Admin",
-        );
+        const isSiteAdmin = req.user.roles.some((r) => r.roleName === "Site Admin");
 
         if (isSiteAdmin) {
             const [stats] = await db
@@ -477,6 +510,8 @@ export const getTenantStats = async (req, res) => {
         }
     } catch (error) {
         console.error("Get tenant stats error:", error);
-        res.status(500).json({ error: "Failed to fetch statistics" });
+        res.status(500).json({
+            error: "Failed to fetch statistics",
+        });
     }
 };

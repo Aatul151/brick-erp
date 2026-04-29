@@ -1,13 +1,4 @@
-import {
-    Box,
-    Typography,
-    useTheme,
-    alpha,
-    TextField,
-    InputAdornment,
-    IconButton,
-    useMediaQuery,
-} from "@mui/material";
+import { Box, Typography, useTheme, alpha, TextField, InputAdornment, IconButton, useMediaQuery } from "@mui/material";
 import { DataGrid, GridColumnMenu } from "@mui/x-data-grid";
 import InboxIcon from "@mui/icons-material/Inbox";
 import SearchIcon from "@mui/icons-material/Search";
@@ -32,8 +23,7 @@ const EmptyStateOverlay = ({ title, message }) => (
                 width: 80,
                 height: 80,
                 borderRadius: "50%",
-                backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.1),
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -52,28 +42,15 @@ const EmptyStateOverlay = ({ title, message }) => (
         >
             {title}
         </Typography>
-        <Typography
-            variant="body2"
-            sx={{ color: "text.disabled", textAlign: "center", maxWidth: 400 }}
-        >
+        <Typography variant="body2" sx={{ color: "text.disabled", textAlign: "center", maxWidth: 400 }}>
             {message}
         </Typography>
     </Box>
 );
 
-const CustomNoRowsOverlay = () => (
-    <EmptyStateOverlay
-        title="No data found"
-        message="Start by adding your first item to get started."
-    />
-);
+const CustomNoRowsOverlay = () => <EmptyStateOverlay title="No data found" message="Start by adding your first item to get started." />;
 
-const CustomNoResultsOverlay = () => (
-    <EmptyStateOverlay
-        title="No results found"
-        message="Try adjusting your filters or search terms to find what you're looking for."
-    />
-);
+const CustomNoResultsOverlay = () => <EmptyStateOverlay title="No results found" message="Try adjusting your filters or search terms to find what you're looking for." />;
 
 // Filter rows by global search
 function filterRowsBySearchTerm(rows, columns, searchTerm, getRowId) {
@@ -82,24 +59,15 @@ function filterRowsBySearchTerm(rows, columns, searchTerm, getRowId) {
 
     return rows.filter((row) =>
         columns.some((col) => {
-            if (col.field === "__recordNo__" || col.type === "actions")
-                return false;
+            if (col.field === "__recordNo__" || col.type === "actions") return false;
             let val = row[col.field];
             if (col.valueGetter) {
                 try {
                     const apiRef = {
                         current: {
-                            getRowId: (r) =>
-                                getRowId
-                                    ? String(getRowId(r))
-                                    : String(r?.id ?? r),
+                            getRowId: (r) => (getRowId ? String(getRowId(r)) : String(r?.id ?? r)),
                             getSortedRows: () => rows,
-                            getSortedRowIds: () =>
-                                rows.map((r) =>
-                                    getRowId
-                                        ? String(getRowId(r))
-                                        : String(r?.id ?? r),
-                                ),
+                            getSortedRowIds: () => rows.map((r) => (getRowId ? String(getRowId(r)) : String(r?.id ?? r))),
                         },
                     };
                     val = col.valueGetter(null, row, col, apiRef);
@@ -177,9 +145,7 @@ export function AppDataTable({
             const sortedIds = apiRef.current.getSortedRowIds();
             const idx = sortedIds.indexOf(currentRowId);
             if (serverPagination && paginationModel) {
-                return (
-                    paginationModel.page * paginationModel.pageSize + idx + 1
-                );
+                return paginationModel.page * paginationModel.pageSize + idx + 1;
             }
             return idx + 1;
         },
@@ -205,16 +171,7 @@ export function AppDataTable({
         });
     }, [columns, flexColumn, serverPagination, paginationModel]);
 
-    const filteredRows = useMemo(
-        () =>
-            filterRowsBySearchTerm(
-                rows,
-                columnsWithRecordNo,
-                globalSearchTerm,
-                getRowId,
-            ),
-        [rows, columnsWithRecordNo, globalSearchTerm, getRowId],
-    );
+    const filteredRows = useMemo(() => filterRowsBySearchTerm(rows, columnsWithRecordNo, globalSearchTerm, getRowId), [rows, columnsWithRecordNo, globalSearchTerm, getRowId]);
 
     const paginationProps = serverPagination
         ? {
@@ -229,8 +186,7 @@ export function AppDataTable({
         borderRadius: 0,
         "& .MuiDataGrid-root": { borderRadius: 0 },
         "& .MuiDataGrid-cell": {
-            borderBottom: (t) =>
-                `1px solid ${alpha(t.palette.primary.main, 0.2)}`,
+            borderBottom: (t) => `1px solid ${alpha(t.palette.primary.main, 0.2)}`,
             textAlign: "left",
             display: "flex",
             alignItems: "center",
@@ -241,10 +197,7 @@ export function AppDataTable({
             justifyContent: "center",
         },
         "& .MuiDataGrid-row:nth-of-type(odd)": {
-            backgroundColor:
-                theme.palette.mode === "dark"
-                    ? alpha(theme.palette.common.white, 0.02)
-                    : alpha(theme.palette.primary.main, 0.02),
+            backgroundColor: theme.palette.mode === "dark" ? alpha(theme.palette.common.white, 0.02) : alpha(theme.palette.primary.main, 0.02),
             "&:hover": {
                 backgroundColor: alpha(theme.palette.primary.main, 0.08),
             },
@@ -256,9 +209,7 @@ export function AppDataTable({
         },
     };
 
-    const mergedSx = sx
-        ? [defaultSx, ...(Array.isArray(sx) ? sx : [sx])]
-        : defaultSx;
+    const mergedSx = sx ? [defaultSx, ...(Array.isArray(sx) ? sx : [sx])] : defaultSx;
 
     const initialState = serverPagination
         ? {}
@@ -289,13 +240,8 @@ export function AppDataTable({
                     }}
                 >
                     {globalSearchTerm.trim() && (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mr: 2 }}
-                        >
-                            Showing {filteredRows.length} of {rows.length}{" "}
-                            results
+                        <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+                            Showing {filteredRows.length} of {rows.length} results
                         </Typography>
                     )}
                     <TextField
@@ -307,37 +253,18 @@ export function AppDataTable({
                             endAdornment: (
                                 <InputAdornment position="end">
                                     {globalSearchTerm ? (
-                                        <IconButton
-                                            size="small"
-                                            onClick={() =>
-                                                setGlobalSearchTerm("")
-                                            }
-                                            edge="end"
-                                        >
+                                        <IconButton size="small" onClick={() => setGlobalSearchTerm("")} edge="end">
                                             <ClearIcon fontSize="small" />
                                         </IconButton>
                                     ) : null}
-                                    <SearchIcon
-                                        sx={{ ml: 1 }}
-                                        fontSize="small"
-                                        color="primary"
-                                    />
+                                    <SearchIcon sx={{ ml: 1 }} fontSize="small" color="primary" />
                                 </InputAdornment>
                             ),
                         }}
                         sx={{
                             width: isMobile ? "100%" : 300,
                             "& .MuiOutlinedInput-root": {
-                                backgroundColor:
-                                    theme.palette.mode === "dark"
-                                        ? alpha(
-                                              theme.palette.common.white,
-                                              0.05,
-                                          )
-                                        : alpha(
-                                              theme.palette.common.black,
-                                              0.02,
-                                          ),
+                                backgroundColor: theme.palette.mode === "dark" ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.02),
                             },
                         }}
                     />

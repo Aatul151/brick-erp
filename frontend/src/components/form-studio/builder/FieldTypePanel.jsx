@@ -40,20 +40,11 @@ export const referenceFieldTypes = [
     { type: "apiReference", label: "API Reference", icon: <ApiIcon /> },
 ];
 
-export function FieldTypePanel({
-    fieldTypes,
-    onAddField,
-    disabled = false,
-    showDisabledMessage = true,
-}) {
+export function FieldTypePanel({ fieldTypes, onAddField, disabled = false, showDisabledMessage = true }) {
     return (
         <Box sx={{ opacity: disabled ? 0.6 : 1 }}>
             {disabled && showDisabledMessage && (
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mb: 1, display: "block" }}
-                >
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: "block" }}>
                     Expand a section to add fields
                 </Typography>
             )}

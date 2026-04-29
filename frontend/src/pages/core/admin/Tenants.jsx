@@ -12,14 +12,7 @@ import { StatusLabel } from "../../../components/common/StatusLabel";
 import { useConfirm } from "../../../components/common/ConfirmDialog";
 import BusinessIcon from "@mui/icons-material/Business";
 import AddIcon from "@mui/icons-material/Add";
-import {
-    Box,
-    Typography,
-    Switch,
-    FormControlLabel,
-    ToggleButtonGroup,
-    ToggleButton,
-} from "@mui/material";
+import { Box, Typography, Switch, FormControlLabel, ToggleButtonGroup, ToggleButton } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BlockIcon from "@mui/icons-material/Block";
@@ -48,10 +41,7 @@ export default function Tenants() {
 
     const { data, isLoading } = useQuery({
         queryKey: ["tenants", statusFilter],
-        queryFn: () =>
-            tenantApi.getAll(
-                statusFilter === "all" ? {} : { status: statusFilter },
-            ),
+        queryFn: () => tenantApi.getAll(statusFilter === "all" ? {} : { status: statusFilter }),
     });
 
     const createMutation = useMutation({
@@ -86,8 +76,7 @@ export default function Tenants() {
     });
 
     const updateThemeMutation = useMutation({
-        mutationFn: ({ id, themeSetting }) =>
-            tenantApi.updateThemeSetting(id, themeSetting),
+        mutationFn: ({ id, themeSetting }) => tenantApi.updateThemeSetting(id, themeSetting),
         onSuccess: () => {
             queryClient.invalidateQueries(["tenants"]);
             setThemeTenant(null);
@@ -106,9 +95,7 @@ export default function Tenants() {
             field: "status",
             headerName: "Status",
             width: 110,
-            renderCell: (params) => (
-                <StatusLabel value={params.row.status} variant="status" />
-            ),
+            renderCell: (params) => <StatusLabel value={params.row.status} variant="status" />,
         },
         { field: "userCount", headerName: "Users", width: 80 },
         {
@@ -141,13 +128,10 @@ export default function Tenants() {
                             action: ACTION.DELETE,
                             variant: "danger",
                             onClick: async () => {
-                                const ok = await confirm(
-                                    "Delete this tenant? This action cannot be undone.",
-                                    {
-                                        confirmText: "Delete",
-                                        confirmVariant: "danger",
-                                    },
-                                );
+                                const ok = await confirm("Delete this tenant? This action cannot be undone.", {
+                                    confirmText: "Delete",
+                                    confirmVariant: "danger",
+                                });
                                 if (ok) deleteMutation.mutate(row.id);
                             },
                         },
@@ -168,15 +152,11 @@ export default function Tenants() {
                                       variant: "danger",
                                       dividerBefore: true,
                                       onClick: async () => {
-                                          const ok = await confirm(
-                                              "Suspend this tenant?",
-                                              {
-                                                  confirmText: "Suspend",
-                                                  confirmVariant: "danger",
-                                              },
-                                          );
-                                          if (ok)
-                                              suspendMutation.mutate(row.id);
+                                          const ok = await confirm("Suspend this tenant?", {
+                                              confirmText: "Suspend",
+                                              confirmVariant: "danger",
+                                          });
+                                          if (ok) suspendMutation.mutate(row.id);
                                       },
                                   },
                               ]
@@ -188,8 +168,7 @@ export default function Tenants() {
                                       action: ACTION.UPDATE,
                                       variant: "success",
                                       dividerBefore: true,
-                                      onClick: () =>
-                                          activateMutation.mutate(row.id),
+                                      onClick: () => activateMutation.mutate(row.id),
                                   },
                               ]),
                     ]}
@@ -255,20 +234,9 @@ export default function Tenants() {
                     </ToggleButtonGroup>
                 </Box>
 
-                <AppDataTable
-                    rows={data?.tenants || []}
-                    columns={columns}
-                    getRowId={(row) => row.id}
-                    loading={isLoading}
-                    height={500}
-                />
+                <AppDataTable rows={data?.tenants || []} columns={columns} getRowId={(row) => row.id} loading={isLoading} height={500} />
 
-                <CreateTenantModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={(data) => createMutation.mutate(data)}
-                    isLoading={createMutation.isPending}
-                />
+                <CreateTenantModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={(data) => createMutation.mutate(data)} isLoading={createMutation.isPending} />
 
                 {themeTenant && (
                     <TenantThemeModal
@@ -333,25 +301,15 @@ const PREDEFINED_THEMES = [
 ];
 
 function TenantThemeModal({ isOpen, onClose, tenant, onSubmit, isLoading }) {
-    const existing =
-        tenant?.themeSetting && typeof tenant.themeSetting === "object"
-            ? tenant.themeSetting
-            : {};
+    const existing = tenant?.themeSetting && typeof tenant.themeSetting === "object" ? tenant.themeSetting : {};
     const [mode, setMode] = useState(existing.mode ?? "light");
-    const [primaryColor, setPrimaryColor] = useState(
-        existing.primaryColor ?? "#2563eb",
-    );
-    const [secondaryColor, setSecondaryColor] = useState(
-        existing.secondaryColor ?? "#64748b",
-    );
+    const [primaryColor, setPrimaryColor] = useState(existing.primaryColor ?? "#2563eb");
+    const [secondaryColor, setSecondaryColor] = useState(existing.secondaryColor ?? "#64748b");
     const [error, setError] = useState("");
 
     useEffect(() => {
         if (isOpen && tenant) {
-            const ex =
-                tenant.themeSetting && typeof tenant.themeSetting === "object"
-                    ? tenant.themeSetting
-                    : {};
+            const ex = tenant.themeSetting && typeof tenant.themeSetting === "object" ? tenant.themeSetting : {};
             setMode(ex.mode ?? "light");
             setPrimaryColor(ex.primaryColor ?? "#2563eb");
             setSecondaryColor(ex.secondaryColor ?? "#64748b");
@@ -368,22 +326,12 @@ function TenantThemeModal({ isOpen, onClose, tenant, onSubmit, isLoading }) {
         }
     };
 
-    const isActive = (cfg) =>
-        cfg.primaryColor === primaryColor &&
-        cfg.secondaryColor === secondaryColor;
+    const isActive = (cfg) => cfg.primaryColor === primaryColor && cfg.secondaryColor === secondaryColor;
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={`Setup Theme - ${tenant?.name}`}
-        >
+        <Modal isOpen={isOpen} onClose={onClose} title={`Setup Theme - ${tenant?.name}`}>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
                 <Box sx={{ mb: 2 }}>
                     <Typography
                         variant="caption"
@@ -396,15 +344,7 @@ function TenantThemeModal({ isOpen, onClose, tenant, onSubmit, isLoading }) {
                         Mode
                     </Typography>
                     <FormControlLabel
-                        control={
-                            <Switch
-                                checked={mode === "dark"}
-                                onChange={(e) =>
-                                    setMode(e.target.checked ? "dark" : "light")
-                                }
-                                size="small"
-                            />
-                        }
+                        control={<Switch checked={mode === "dark"} onChange={(e) => setMode(e.target.checked ? "dark" : "light")} size="small" />}
                         label={mode === "dark" ? "Dark" : "Light"}
                         sx={{
                             mt: 0.5,
@@ -497,29 +437,9 @@ function CreateTenantModal({ isOpen, onClose, onSubmit, isLoading }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Create New Tenant">
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
-                <Input
-                    label="Tenant Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                />
-                <Input
-                    label="Subdomain"
-                    name="subdomain"
-                    value={formData.subdomain}
-                    onChange={(e) =>
-                        setFormData({ ...formData, subdomain: e.target.value })
-                    }
-                    placeholder="e.g., acme-corp"
-                />
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+                <Input label="Tenant Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <Input label="Subdomain" name="subdomain" value={formData.subdomain} onChange={(e) => setFormData({ ...formData, subdomain: e.target.value })} placeholder="e.g., acme-corp" />
                 <div className="flex justify-end space-x-3 mt-6">
                     <Button variant="secondary" onClick={onClose} type="button">
                         Cancel
@@ -554,35 +474,14 @@ function EditTenantModal({ isOpen, onClose, tenant, onSubmit, isLoading }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Edit Tenant">
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
-                <Input
-                    label="Tenant Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                />
-                <Input
-                    label="Subdomain"
-                    name="subdomain"
-                    value={formData.subdomain}
-                    onChange={(e) =>
-                        setFormData({ ...formData, subdomain: e.target.value })
-                    }
-                />
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+                <Input label="Tenant Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <Input label="Subdomain" name="subdomain" value={formData.subdomain} onChange={(e) => setFormData({ ...formData, subdomain: e.target.value })} />
                 <Select
                     label="Status"
                     name="status"
                     value={formData.status}
-                    onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     options={[
                         { value: "active", label: "Active" },
                         { value: "suspended", label: "Suspended" },

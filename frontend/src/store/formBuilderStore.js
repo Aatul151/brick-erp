@@ -38,29 +38,19 @@ export const useFormBuilderStore = create((set, get) => ({
 
     updateSection: (sectionId, updates) => {
         set((state) => {
-            const newSections = state.sections.map((s) =>
-                s.id === sectionId ? { ...s, ...updates } : s,
-            );
+            const newSections = state.sections.map((s) => (s.id === sectionId ? { ...s, ...updates } : s));
             return { sections: newSections, fields: getAllFields(newSections) };
         });
     },
 
     removeSection: (sectionId) => {
         set((state) => {
-            const newSections = state.sections.filter(
-                (s) => s.id !== sectionId,
-            );
+            const newSections = state.sections.filter((s) => s.id !== sectionId);
             return {
                 sections: newSections,
                 fields: getAllFields(newSections),
-                selectedField:
-                    state.selectedFieldPath?.sectionId === sectionId
-                        ? null
-                        : state.selectedField,
-                selectedFieldPath:
-                    state.selectedFieldPath?.sectionId === sectionId
-                        ? null
-                        : state.selectedFieldPath,
+                selectedField: state.selectedFieldPath?.sectionId === sectionId ? null : state.selectedField,
+                selectedFieldPath: state.selectedFieldPath?.sectionId === sectionId ? null : state.selectedFieldPath,
             };
         });
     },
@@ -76,9 +66,7 @@ export const useFormBuilderStore = create((set, get) => ({
 
     addField: (sectionId, field) => {
         set((state) => {
-            const newSections = state.sections.map((s) =>
-                s.id === sectionId ? { ...s, fields: [...s.fields, field] } : s,
-            );
+            const newSections = state.sections.map((s) => (s.id === sectionId ? { ...s, fields: [...s.fields, field] } : s));
             return { sections: newSections, fields: getAllFields(newSections) };
         });
     },
@@ -89,9 +77,7 @@ export const useFormBuilderStore = create((set, get) => ({
                 s.id === sectionId
                     ? {
                           ...s,
-                          fields: s.fields.map((f, i) =>
-                              i === fieldIndex ? { ...f, ...field } : f,
-                          ),
+                          fields: s.fields.map((f, i) => (i === fieldIndex ? { ...f, ...field } : f)),
                       }
                     : s,
             );
@@ -109,9 +95,7 @@ export const useFormBuilderStore = create((set, get) => ({
                       }
                     : s,
             );
-            const isSelected =
-                state.selectedFieldPath?.sectionId === sectionId &&
-                state.selectedFieldPath?.fieldIndex === fieldIndex;
+            const isSelected = state.selectedFieldPath?.sectionId === sectionId && state.selectedFieldPath?.fieldIndex === fieldIndex;
             return {
                 sections: newSections,
                 fields: getAllFields(newSections),
@@ -138,10 +122,7 @@ export const useFormBuilderStore = create((set, get) => ({
         set({
             selectedField: field,
             selectedSectionId: sectionId || null,
-            selectedFieldPath:
-                field && sectionId !== undefined && fieldIndex !== undefined
-                    ? { sectionId, fieldIndex }
-                    : null,
+            selectedFieldPath: field && sectionId !== undefined && fieldIndex !== undefined ? { sectionId, fieldIndex } : null,
         });
     },
 

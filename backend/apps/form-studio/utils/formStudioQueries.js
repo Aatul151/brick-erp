@@ -6,11 +6,7 @@ import { isSiteAdmin } from "./tenantScope.js";
 function parseTenantUuid(value) {
     if (value == null || value === "") return null;
     const tenantId = String(value).trim();
-    if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            tenantId,
-        )
-    ) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
         return null;
     }
     return tenantId;
@@ -32,11 +28,7 @@ const selectShape = {
 const FORM_TYPE_MASTER = "master_form";
 
 async function selectById(id) {
-    const [row] = await db
-        .select(selectShape)
-        .from(formDefinitions)
-        .where(eq(formDefinitions.id, id))
-        .limit(1);
+    const [row] = await db.select(selectShape).from(formDefinitions).where(eq(formDefinitions.id, id)).limit(1);
     return row || null;
 }
 
@@ -56,18 +48,15 @@ export async function findFormDefinitionByName(req, formName) {
             const [row] = await db
                 .select(selectShape)
                 .from(formDefinitions)
-                .where(
-                    and(
-                        eq(formDefinitions.name, decoded),
-                        eq(formDefinitions.tenantId, tid),
-                    ),
-                )
+                .where(and(eq(formDefinitions.name, decoded), eq(formDefinitions.tenantId, tid)))
                 .limit(1);
             return row || null;
         }
 
         const matches = await db
-            .select({ id: formDefinitions.id })
+            .select({
+                id: formDefinitions.id,
+            })
             .from(formDefinitions)
             .where(eq(formDefinitions.name, decoded));
 
@@ -81,12 +70,7 @@ export async function findFormDefinitionByName(req, formName) {
     const [row] = await db
         .select(selectShape)
         .from(formDefinitions)
-        .where(
-            and(
-                eq(formDefinitions.name, decoded),
-                eq(formDefinitions.tenantId, req.user.tenantId),
-            ),
-        )
+        .where(and(eq(formDefinitions.name, decoded), eq(formDefinitions.tenantId, req.user.tenantId)))
         .limit(1);
 
     if (row) return row;
@@ -94,12 +78,7 @@ export async function findFormDefinitionByName(req, formName) {
     const [masterRow] = await db
         .select(selectShape)
         .from(formDefinitions)
-        .where(
-            and(
-                eq(formDefinitions.name, decoded),
-                eq(formDefinitions.formType, FORM_TYPE_MASTER),
-            ),
-        )
+        .where(and(eq(formDefinitions.name, decoded), eq(formDefinitions.formType, FORM_TYPE_MASTER)))
         .limit(1);
 
     return masterRow || null;

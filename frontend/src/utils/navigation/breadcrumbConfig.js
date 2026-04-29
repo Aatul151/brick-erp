@@ -26,9 +26,7 @@ export function getBreadcrumbFromRoute(path) {
               ];
     }
     if (path.startsWith("/form-studio/entries/")) {
-        const name = path.split("/")[3]
-            ? decodeURIComponent(path.split("/")[3])
-            : "";
+        const name = path.split("/")[3] ? decodeURIComponent(path.split("/")[3]) : "";
         return [
             { label: "Dashboard", path: "/dashboard", isLast: false },
             { label: "Form Studio", path: "/form-studio", isLast: false },

@@ -1,18 +1,5 @@
 import { useState } from "react";
-import {
-    Box,
-    Typography,
-    IconButton,
-    Divider,
-    alpha,
-    Tooltip,
-    ButtonGroup,
-    Button,
-    Menu,
-    MenuItem,
-    ListItemIcon,
-    ListItemText,
-} from "@mui/material";
+import { Box, Typography, IconButton, Divider, alpha, Tooltip, ButtonGroup, Button, Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -47,17 +34,7 @@ import { useAuth } from "../../contexts/AuthContext";
  * @param {boolean} [showDivider] - Show bottom divider (default false)
  * @param {object} [sx] - Optional MUI sx prop for additional styling
  */
-export function PageHeader({
-    title,
-    subtitle,
-    icon,
-    fallbackIcon: FallbackIcon = DescriptionIcon,
-    actions,
-    backTo,
-    backLabel = "Go back",
-    showDivider = false,
-    sx,
-}) {
+export function PageHeader({ title, subtitle, icon, fallbackIcon: FallbackIcon = DescriptionIcon, actions, backTo, backLabel = "Go back", showDivider = false, sx }) {
     const navigate = useNavigate();
     const { hasPermission } = useAuth();
     const [menuAnchor, setMenuAnchor] = useState(null);
@@ -66,23 +43,13 @@ export function PageHeader({
         if (!actions) return null;
         if (Array.isArray(actions) && actions.length === 0) return null;
         if (Array.isArray(actions)) {
-            const filteredActions = actions.filter(
-                (a) =>
-                    !a.resource ||
-                    !a.action ||
-                    hasPermission(a.resource, a.action),
-            );
+            const filteredActions = actions.filter((a) => !a.resource || !a.action || hasPermission(a.resource, a.action));
             if (filteredActions.length === 0) return null;
 
-            const primaryActions = filteredActions.filter(
-                (a) => a.primary !== false,
-            );
-            const menuActions = filteredActions.filter(
-                (a) => a.primary === false,
-            );
+            const primaryActions = filteredActions.filter((a) => a.primary !== false);
+            const menuActions = filteredActions.filter((a) => a.primary === false);
 
-            const hasAnyActions =
-                primaryActions.length > 0 || menuActions.length > 0;
+            const hasAnyActions = primaryActions.length > 0 || menuActions.length > 0;
             if (!hasAnyActions) return null;
 
             return (
@@ -97,25 +64,11 @@ export function PageHeader({
                         }}
                     >
                         {primaryActions.map((action) => {
-                            const {
-                                label,
-                                icon: actionIcon,
-                                onClick,
-                                tooltip,
-                                variant = "outlined",
-                                color = "primary",
-                                disabled,
-                                id,
-                            } = action;
+                            const { label, icon: actionIcon, onClick, tooltip, variant = "outlined", color = "primary", disabled, id } = action;
                             const key = id ?? label;
                             const tooltipText = tooltip ?? label;
                             return (
-                                <Tooltip
-                                    key={key}
-                                    title={tooltipText}
-                                    placement="bottom"
-                                    arrow
-                                >
+                                <Tooltip key={key} title={tooltipText} placement="bottom" arrow>
                                     <Button
                                         size="medium"
                                         color={color}
@@ -136,18 +89,12 @@ export function PageHeader({
                             );
                         })}
                         {menuActions.length > 0 && (
-                            <Tooltip
-                                title="More actions"
-                                placement="bottom"
-                                arrow
-                            >
+                            <Tooltip title="More actions" placement="bottom" arrow>
                                 <Button
                                     size="medium"
                                     variant="outlined"
                                     color="primary"
-                                    onClick={(e) =>
-                                        setMenuAnchor(e.currentTarget)
-                                    }
+                                    onClick={(e) => setMenuAnchor(e.currentTarget)}
                                     aria-label="More actions"
                                     sx={{
                                         minWidth: 0,
@@ -177,13 +124,7 @@ export function PageHeader({
                             slotProps={{ paper: { sx: { minWidth: 180 } } }}
                         >
                             {menuActions.map((action, index) => {
-                                const {
-                                    label,
-                                    icon: actionIcon,
-                                    onClick,
-                                    disabled,
-                                    id,
-                                } = action;
+                                const { label, icon: actionIcon, onClick, disabled, id } = action;
                                 const key = id ?? label;
                                 return (
                                     <MenuItem
@@ -193,17 +134,9 @@ export function PageHeader({
                                             px: 1,
                                             color: "text.primary",
                                             "&:hover": {
-                                                backgroundColor: (theme) =>
-                                                    alpha(
-                                                        theme.palette.primary
-                                                            .main,
-                                                        0.08,
-                                                    ),
+                                                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
                                             },
-                                            borderTop: (theme) =>
-                                                index > 0
-                                                    ? `1px solid ${theme.palette.divider}`
-                                                    : "none",
+                                            borderTop: (theme) => (index > 0 ? `1px solid ${theme.palette.divider}` : "none"),
                                         }}
                                         key={key}
                                         onClick={() => {
@@ -212,9 +145,7 @@ export function PageHeader({
                                         }}
                                         disabled={disabled}
                                     >
-                                        <ListItemIcon sx={{ minWidth: 36 }}>
-                                            {actionIcon}
-                                        </ListItemIcon>
+                                        <ListItemIcon sx={{ minWidth: 36 }}>{actionIcon}</ListItemIcon>
                                         <ListItemText
                                             primary={label}
                                             primaryTypographyProps={{
@@ -274,8 +205,7 @@ export function PageHeader({
                             sx={{
                                 color: "primary.main",
                                 "&:hover": {
-                                    backgroundColor: (theme) =>
-                                        alpha(theme.palette.primary.main, 0.08),
+                                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
                                 },
                             }}
                         >
@@ -290,17 +220,12 @@ export function PageHeader({
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: (theme) =>
-                                alpha(theme.palette.primary.main, 0.12),
+                            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
                             color: "primary.main",
                             flexShrink: 0,
                         }}
                     >
-                        {icon ? (
-                            icon
-                        ) : (
-                            <FallbackIcon fontSize="small" color="primary" />
-                        )}
+                        {icon ? icon : <FallbackIcon fontSize="small" color="primary" />}
                     </Box>
                     <Box sx={{ minWidth: 0 }}>
                         <Typography
@@ -315,11 +240,7 @@ export function PageHeader({
                             {title}
                         </Typography>
                         {subtitle && (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mt: 0.25, fontSize: "0.875rem" }}
-                            >
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, fontSize: "0.875rem" }}>
                                 {subtitle}
                             </Typography>
                         )}

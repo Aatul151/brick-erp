@@ -14,11 +14,7 @@ dayjs.extend(utc);
  * @param {string} [fallback='-'] - Value to return when date is invalid
  * @returns {string} Formatted date string in user's local timezone, or fallback
  */
-export function formatDate(
-    date,
-    format = "DD MMM YYYY hh:mm A",
-    fallback = "-",
-) {
+export function formatDate(date, format = "DD MMM YYYY hh:mm A", fallback = "-") {
     if (date == null || date === "") return fallback;
     const d = dayjs.utc(date).local();
     if (!d.isValid()) return fallback;

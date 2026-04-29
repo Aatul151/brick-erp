@@ -3,7 +3,9 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-config({ path: join(__dirname, "..", ".env") });
+config({
+    path: join(__dirname, "..", ".env"),
+});
 
 import express from "express";
 import cors from "cors";
@@ -21,9 +23,17 @@ const app = express();
 const PORT = process.env.BACKEND_PORT;
 
 app.use(helmet());
-app.use(cors({ origin: "*" }));
+app.use(
+    cors({
+        origin: "*",
+    }),
+);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+    express.urlencoded({
+        extended: true,
+    }),
+);
 app.use(morgan("combined"));
 
 app.use("/api", apiLimiter);

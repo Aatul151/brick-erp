@@ -1,15 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-    Box,
-    Button,
-    Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    DialogContentText,
-    Alert,
-} from "@mui/material";
+import { Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, Alert } from "@mui/material";
 import { GridActionsCellItem } from "@mui/x-data-grid";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -40,15 +30,11 @@ export default function FormStudioList() {
 
     const queryClient = useQueryClient();
 
-    const formsQueryKey = [
-        "forms",
-        user?.tenantId ?? "no-tenant",
-        user?.id ?? user?._id ?? "anon",
-    ];
+    const formsQueryKey = ["forms", user?.tenantId ?? "no-tenant", user?.id ?? user?._id ?? "anon"];
 
     const { data: allForms = [], isLoading } = useQuery({
         queryKey: formsQueryKey,
-        queryFn: () => formsApi.getAllWithMaster(),
+        queryFn: () => formsApi.getAll(),
         enabled: !!user?.tenantId,
         retry: false,
     });
@@ -60,8 +46,7 @@ export default function FormStudioList() {
 
     const canManageFormDefinition = (form) => {
         if (!form) return false;
-        if (form.formType === "system" || form.formType === "master_form")
-            return siteAdmin;
+        if (form.formType === "system" || form.formType === "master_form") return siteAdmin;
         return true;
     };
 
@@ -154,10 +139,7 @@ export default function FormStudioList() {
             width: 100,
             valueGetter: (_v, row) => {
                 if (row.sections) {
-                    return row.sections.reduce(
-                        (t, s) => t + (s.fields?.length || 0),
-                        0,
-                    );
+                    return row.sections.reduce((t, s) => t + (s.fields?.length || 0), 0);
                 }
                 return row.fields?.length || 0;
             },
@@ -167,8 +149,7 @@ export default function FormStudioList() {
             headerName: "Created At",
             flex: 1,
             minWidth: 180,
-            valueFormatter: (value) =>
-                value ? new Date(value).toLocaleString() : "-",
+            valueFormatter: (value) => (value ? new Date(value).toLocaleString() : "-"),
         },
         {
             field: "actions",
@@ -178,27 +159,9 @@ export default function FormStudioList() {
             getActions: (params) => {
                 const row = params.row;
                 return [
-                    <GridActionsCellItem
-                        key="entries"
-                        icon={<DynamicFormIcon />}
-                        label="Entries"
-                        onClick={() => handleOpenEntries(row)}
-                    />,
-                    <GridActionsCellItem
-                        key="edit"
-                        icon={<EditIcon />}
-                        label="Edit"
-                        onClick={() => handleEdit(row)}
-                        disabled={!canManageFormDefinition(row)}
-                    />,
-                    <GridActionsCellItem
-                        key="delete"
-                        icon={<DeleteIcon />}
-                        label="Delete"
-                        onClick={() => handleDelete(row)}
-                        disabled={!canManageFormDefinition(row)}
-                        showInMenu
-                    />,
+                    <GridActionsCellItem key="entries" icon={<DynamicFormIcon />} label="Entries" onClick={() => handleOpenEntries(row)} />,
+                    <GridActionsCellItem key="edit" icon={<EditIcon />} label="Edit" onClick={() => handleEdit(row)} disabled={!canManageFormDefinition(row)} />,
+                    <GridActionsCellItem key="delete" icon={<DeleteIcon />} label="Delete" onClick={() => handleDelete(row)} disabled={!canManageFormDefinition(row)} showInMenu />,
                 ];
             },
         },
@@ -214,9 +177,7 @@ export default function FormStudioList() {
                     {
                         id: "new-form",
                         label: "New form",
-                        tooltip: hasNoTenant
-                            ? "Available for tenant users only"
-                            : "New form",
+                        tooltip: hasNoTenant ? "Available for tenant users only" : "New form",
                         icon: <AddIcon fontSize="small" />,
                         onClick: handleAddForm,
                         resource: RESOURCE.FORM_STUDIO,
@@ -229,8 +190,7 @@ export default function FormStudioList() {
 
             {hasNoTenant && (
                 <Alert severity="info" sx={{ mb: 2 }}>
-                    Form Studio is available for tenant users. Site Admin cannot
-                    access tenant apps.
+                    Form Studio is available for tenant users. Site Admin cannot access tenant apps.
                 </Alert>
             )}
 
@@ -243,9 +203,7 @@ export default function FormStudioList() {
                             color: "text.secondary",
                         }}
                     >
-                        <Typography>
-                            Switch to a tenant account to use Form Studio.
-                        </Typography>
+                        <Typography>Switch to a tenant account to use Form Studio.</Typography>
                     </Box>
                 ) : (
                     <Box>
@@ -262,10 +220,7 @@ export default function FormStudioList() {
                 )}
             </PageContent>
 
-            <Dialog
-                open={deleteDialogOpen}
-                onClose={() => setDeleteDialogOpen(false)}
-            >
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
                 <DialogTitle>Delete Form</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -274,19 +229,10 @@ export default function FormStudioList() {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button
-                        size="small"
-                        onClick={() => setDeleteDialogOpen(false)}
-                    >
+                    <Button size="small" onClick={() => setDeleteDialogOpen(false)}>
                         Cancel
                     </Button>
-                    <Button
-                        size="small"
-                        onClick={confirmDelete}
-                        color="error"
-                        variant="contained"
-                        disabled={deleteMutation.isPending}
-                    >
+                    <Button size="small" onClick={confirmDelete} color="error" variant="contained" disabled={deleteMutation.isPending}>
                         {deleteMutation.isPending ? "Deleting..." : "Delete"}
                     </Button>
                 </DialogActions>

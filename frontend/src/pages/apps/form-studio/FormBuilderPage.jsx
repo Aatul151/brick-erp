@@ -1,32 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-    Box,
-    Grid,
-    TextField,
-    Button,
-    Typography,
-    Alert,
-    Paper,
-    Tabs,
-    Tab,
-    FormControlLabel,
-    Switch,
-    RadioGroup,
-    Radio,
-    FormControl,
-} from "@mui/material";
+import { Box, Grid, TextField, Button, Typography, Alert, Paper, Tabs, Tab, FormControlLabel, Switch, RadioGroup, Radio, FormControl } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import ClearIcon from "@mui/icons-material/Clear";
 import BuildIcon from "@mui/icons-material/Build";
 import PreviewIcon from "@mui/icons-material/Preview";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
-import {
-    FieldTypePanel,
-    regularFieldTypes,
-    referenceFieldTypes,
-} from "../../../components/form-studio/builder/FieldTypePanel";
+import { FieldTypePanel, regularFieldTypes, referenceFieldTypes } from "../../../components/form-studio/builder/FieldTypePanel";
 import { FormCanvas } from "../../../components/form-studio/builder/FormCanvas";
 import { FieldConfigDrawer } from "../../../components/form-studio/builder/FieldConfigDrawer";
 import { SectionConfigDrawer } from "../../../components/form-studio/builder/SectionConfigDrawer";
@@ -69,8 +50,7 @@ export default function FormBuilderPage() {
         formType: "custom",
     });
     const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
-    const [sectionConfigDrawerOpen, setSectionConfigDrawerOpen] =
-        useState(false);
+    const [sectionConfigDrawerOpen, setSectionConfigDrawerOpen] = useState(false);
     const [selectedSectionId, setSelectedSectionId] = useState(null);
     const [editingSectionId, setEditingSectionId] = useState(null);
     const [saveError, setSaveError] = useState(null);
@@ -88,9 +68,7 @@ export default function FormBuilderPage() {
 
     const queryClient = useQueryClient();
 
-    const showAlertRef = useRef((severity, msg) =>
-        console[severity === "error" ? "error" : "log"](msg),
-    );
+    const showAlertRef = useRef((severity, msg) => console[severity === "error" ? "error" : "log"](msg));
 
     useEffect(() => {
         if (sections.length > 0 && !selectedSectionId) {
@@ -99,8 +77,7 @@ export default function FormBuilderPage() {
     }, [sections, selectedSectionId]);
 
     useEffect(() => {
-        if (selectedFieldPath)
-            setSelectedSectionId(selectedFieldPath.sectionId);
+        if (selectedFieldPath) setSelectedSectionId(selectedFieldPath.sectionId);
     }, [selectedFieldPath]);
 
     useEffect(() => {
@@ -134,10 +111,7 @@ export default function FormBuilderPage() {
                 decoded = formName;
             }
             loadFormByName(decoded).catch((err) => {
-                showAlertRef.current(
-                    "error",
-                    err?.message || "Failed to load form",
-                );
+                showAlertRef.current("error", err?.message || "Failed to load form");
             });
         } else {
             clearForm();
@@ -162,12 +136,9 @@ export default function FormBuilderPage() {
         }));
     };
 
-    const [prevSectionsLength, setPrevSectionsLength] = useState(
-        sections.length,
-    );
+    const [prevSectionsLength, setPrevSectionsLength] = useState(sections.length);
     const currentFormType = currentForm?.formType || formDetails.formType;
-    const isAdminManagedForm =
-        currentFormType === "system" || currentFormType === "master_form";
+    const isAdminManagedForm = currentFormType === "system" || currentFormType === "master_form";
     const canManageFormDefinition = !isAdminManagedForm || siteAdmin;
 
     const handleAddSection = () => {
@@ -184,26 +155,16 @@ export default function FormBuilderPage() {
         setPrevSectionsLength(sections.length);
     }, [sections.length, prevSectionsLength, sections]);
 
-    const isFieldNameUnique = (
-        fieldName,
-        excludeSectionId,
-        excludeFieldIndex,
-    ) => {
+    const isFieldNameUnique = (fieldName, excludeSectionId, excludeFieldIndex) => {
         const normalized = fieldName.toLowerCase().trim();
         return sections.every((section) => {
             if (excludeSectionId && section.id === excludeSectionId) {
                 return section.fields.every((field, index) => {
-                    if (
-                        excludeFieldIndex !== undefined &&
-                        index === excludeFieldIndex
-                    )
-                        return true;
+                    if (excludeFieldIndex !== undefined && index === excludeFieldIndex) return true;
                     return field.name.toLowerCase().trim() !== normalized;
                 });
             }
-            return section.fields.every(
-                (field) => field.name.toLowerCase().trim() !== normalized,
-            );
+            return section.fields.every((field) => field.name.toLowerCase().trim() !== normalized);
         });
     };
 
@@ -245,21 +206,11 @@ export default function FormBuilderPage() {
     const handleFieldConfigSave = (field) => {
         if (!canManageFormDefinition) return;
         if (selectedFieldPath) {
-            if (
-                !isFieldNameUnique(
-                    field.name,
-                    selectedFieldPath.sectionId,
-                    selectedFieldPath.fieldIndex,
-                )
-            ) {
+            if (!isFieldNameUnique(field.name, selectedFieldPath.sectionId, selectedFieldPath.fieldIndex)) {
                 setSaveError(`Field name "${field.name}" already exists.`);
                 return;
             }
-            updateField(
-                selectedFieldPath.sectionId,
-                selectedFieldPath.fieldIndex,
-                field,
-            );
+            updateField(selectedFieldPath.sectionId, selectedFieldPath.fieldIndex, field);
             selectField(null);
             setConfigDrawerOpen(false);
         }
@@ -274,10 +225,7 @@ export default function FormBuilderPage() {
     const handleFieldDelete = (sectionId, fieldIndex) => {
         if (!canManageFormDefinition) return;
         removeField(sectionId, fieldIndex);
-        if (
-            selectedFieldPath?.sectionId === sectionId &&
-            selectedFieldPath?.fieldIndex === fieldIndex
-        ) {
+        if (selectedFieldPath?.sectionId === sectionId && selectedFieldPath?.fieldIndex === fieldIndex) {
             setConfigDrawerOpen(false);
             selectField(null);
         }
@@ -295,15 +243,10 @@ export default function FormBuilderPage() {
             return;
         }
         if (!/^[a-z0-9_]+$/.test(formDetails.name)) {
-            setSaveError(
-                "Form name must contain only lowercase letters, numbers, and underscores",
-            );
+            setSaveError("Form name must contain only lowercase letters, numbers, and underscores");
             return;
         }
-        const totalFields = sections.reduce(
-            (sum, s) => sum + s.fields.length,
-            0,
-        );
+        const totalFields = sections.reduce((sum, s) => sum + s.fields.length, 0);
         if (totalFields === 0) {
             setSaveError("Please add at least one field to the form");
             return;
@@ -351,21 +294,10 @@ export default function FormBuilderPage() {
                 icon={<BuildIcon />}
                 actions={
                     <>
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<ClearIcon />}
-                            onClick={handleCancel}
-                        >
+                        <Button variant="outlined" size="small" startIcon={<ClearIcon />} onClick={handleCancel}>
                             Cancel
                         </Button>
-                        <Button
-                            variant="contained"
-                            size="small"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSave}
-                            disabled={!canManageFormDefinition}
-                        >
+                        <Button variant="contained" size="small" startIcon={<SaveIcon />} onClick={handleSave} disabled={!canManageFormDefinition}>
                             Save
                         </Button>
                     </>
@@ -388,20 +320,12 @@ export default function FormBuilderPage() {
                         </Alert>
                     )}
                     {saveError && (
-                        <Alert
-                            severity="error"
-                            sx={{ mb: 1.5 }}
-                            onClose={() => setSaveError(null)}
-                        >
+                        <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSaveError(null)}>
                             {saveError}
                         </Alert>
                     )}
                     {saveSuccess && (
-                        <Alert
-                            severity="success"
-                            sx={{ mb: 1.5 }}
-                            onClose={() => setSaveSuccess(false)}
-                        >
+                        <Alert severity="success" sx={{ mb: 1.5 }} onClose={() => setSaveSuccess(false)}>
                             Form saved successfully!
                         </Alert>
                     )}
@@ -425,9 +349,7 @@ export default function FormBuilderPage() {
                                     fullWidth
                                     size="small"
                                     value={formDetails.title}
-                                    onChange={(e) =>
-                                        handleFormTitleChange(e.target.value)
-                                    }
+                                    onChange={(e) => handleFormTitleChange(e.target.value)}
                                     required
                                     disabled={!canManageFormDefinition}
                                 />
@@ -439,9 +361,7 @@ export default function FormBuilderPage() {
                                     size="small"
                                     value={formDetails.name}
                                     onChange={(e) => {
-                                        const v = e.target.value
-                                            .toLowerCase()
-                                            .replace(/[^a-z0-9_]/g, "");
+                                        const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
                                         setFormDetails((prev) => ({
                                             ...prev,
                                             name: v,
@@ -467,17 +387,11 @@ export default function FormBuilderPage() {
                                     }
                                     SelectProps={{ native: true }}
                                     disabled={!siteAdmin}
-                                    helperText={
-                                        siteAdmin
-                                            ? "System/master forms are manageable by Site Admin only"
-                                            : "Managed by Site Admin"
-                                    }
+                                    helperText={siteAdmin ? "System/master forms are manageable by Site Admin only" : "Managed by Site Admin"}
                                 >
                                     <option value="custom">Custom</option>
                                     <option value="system">System</option>
-                                    <option value="master_form">
-                                        Master Form
-                                    </option>
+                                    <option value="master_form">Master Form</option>
                                 </TextField>
                             </Grid>
                         </Grid>
@@ -494,26 +408,10 @@ export default function FormBuilderPage() {
                         }}
                     >
                         <Paper sx={{ flexShrink: 0 }}>
-                            <Tabs
-                                value={activeTab}
-                                onChange={(_, v) => setActiveTab(v)}
-                                sx={{ minHeight: 40 }}
-                            >
-                                <Tab
-                                    icon={<BuildIcon />}
-                                    iconPosition="start"
-                                    label="Form Canvas"
-                                />
-                                <Tab
-                                    icon={<SettingsIcon />}
-                                    iconPosition="start"
-                                    label="Settings"
-                                />
-                                <Tab
-                                    icon={<PreviewIcon />}
-                                    iconPosition="start"
-                                    label="Preview"
-                                />
+                            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ minHeight: 40 }}>
+                                <Tab icon={<BuildIcon />} iconPosition="start" label="Form Canvas" />
+                                <Tab icon={<SettingsIcon />} iconPosition="start" label="Settings" />
+                                <Tab icon={<PreviewIcon />} iconPosition="start" label="Preview" />
                             </Tabs>
                         </Paper>
 
@@ -583,11 +481,7 @@ export default function FormBuilderPage() {
                                             <FieldTypePanel
                                                 fieldTypes={regularFieldTypes}
                                                 onAddField={handleAddField}
-                                                disabled={
-                                                    sections.length === 0 ||
-                                                    !hasExpandedSection ||
-                                                    !canManageFormDefinition
-                                                }
+                                                disabled={sections.length === 0 || !hasExpandedSection || !canManageFormDefinition}
                                             />
                                         </Box>
                                     </Paper>
@@ -603,29 +497,16 @@ export default function FormBuilderPage() {
                                             sections={sections}
                                             onFieldSelect={handleFieldSelect}
                                             onFieldDelete={handleFieldDelete}
-                                            onFieldReorder={
-                                                canManageFormDefinition
-                                                    ? reorderFields
-                                                    : () => {}
-                                            }
+                                            onFieldReorder={canManageFormDefinition ? reorderFields : () => {}}
                                             selectedField={selectedField}
-                                            selectedSectionId={
-                                                selectedSectionId
-                                            }
-                                            onSectionSelect={
-                                                canManageFormDefinition
-                                                    ? setSelectedSectionId
-                                                    : () => {}
-                                            }
+                                            selectedSectionId={selectedSectionId}
+                                            onSectionSelect={canManageFormDefinition ? setSelectedSectionId : () => {}}
                                             onSectionEdit={handleSectionEdit}
                                             onSectionDelete={(id) => {
-                                                if (!canManageFormDefinition)
-                                                    return;
+                                                if (!canManageFormDefinition) return;
                                                 removeSection(id);
                                             }}
-                                            onExpandedSectionsChange={
-                                                setHasExpandedSection
-                                            }
+                                            onExpandedSectionsChange={setHasExpandedSection}
                                         />
                                     </Box>
                                     <Paper
@@ -651,11 +532,7 @@ export default function FormBuilderPage() {
                                         <FieldTypePanel
                                             fieldTypes={referenceFieldTypes}
                                             onAddField={handleAddField}
-                                            disabled={
-                                                sections.length === 0 ||
-                                                !hasExpandedSection ||
-                                                !canManageFormDefinition
-                                            }
+                                            disabled={sections.length === 0 || !hasExpandedSection || !canManageFormDefinition}
                                         />
                                     </Paper>
                                 </Box>
@@ -686,19 +563,14 @@ export default function FormBuilderPage() {
                                                 label="Form Icon (MUI icon name)"
                                                 fullWidth
                                                 size="small"
-                                                value={
-                                                    formSettings.formIcon || ""
-                                                }
+                                                value={formSettings.formIcon || ""}
                                                 onChange={(e) =>
                                                     setFormSettings((prev) => ({
                                                         ...prev,
-                                                        formIcon:
-                                                            e.target.value,
+                                                        formIcon: e.target.value,
                                                     }))
                                                 }
-                                                disabled={
-                                                    !canManageFormDefinition
-                                                }
+                                                disabled={!canManageFormDefinition}
                                                 helperText="Optional icon key for navigation"
                                             />
                                         </Grid>
@@ -706,76 +578,38 @@ export default function FormBuilderPage() {
                                             <TextField
                                                 select
                                                 label="Fields Per Row"
-                                                value={
-                                                    formSettings.fieldsPerRow ||
-                                                    1
-                                                }
+                                                value={formSettings.fieldsPerRow || 1}
                                                 onChange={(e) =>
                                                     setFormSettings((prev) => ({
                                                         ...prev,
-                                                        fieldsPerRow: parseInt(
-                                                            e.target.value,
-                                                            10,
-                                                        ),
+                                                        fieldsPerRow: parseInt(e.target.value, 10),
                                                     }))
                                                 }
                                                 fullWidth
                                                 size="small"
                                                 SelectProps={{ native: true }}
-                                                disabled={
-                                                    !canManageFormDefinition
-                                                }
+                                                disabled={!canManageFormDefinition}
                                             >
-                                                <option value={1}>
-                                                    1 Field
-                                                </option>
-                                                <option value={2}>
-                                                    2 Fields
-                                                </option>
-                                                <option value={3}>
-                                                    3 Fields
-                                                </option>
+                                                <option value={1}>1 Field</option>
+                                                <option value={2}>2 Fields</option>
+                                                <option value={3}>3 Fields</option>
                                             </TextField>
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={4}>
-                                            <FormControl
-                                                component="fieldset"
-                                                fullWidth
-                                            >
+                                            <FormControl component="fieldset" fullWidth>
                                                 <RadioGroup
                                                     row
-                                                    value={
-                                                        formSettings.sectionDisplayMode ||
-                                                        "panel"
-                                                    }
+                                                    value={formSettings.sectionDisplayMode || "panel"}
                                                     onChange={(e) =>
-                                                        setFormSettings(
-                                                            (prev) => ({
-                                                                ...prev,
-                                                                sectionDisplayMode:
-                                                                    e.target
-                                                                        .value,
-                                                            }),
-                                                        )
+                                                        setFormSettings((prev) => ({
+                                                            ...prev,
+                                                            sectionDisplayMode: e.target.value,
+                                                        }))
                                                     }
-                                                    disabled={
-                                                        !canManageFormDefinition
-                                                    }
+                                                    disabled={!canManageFormDefinition}
                                                 >
-                                                    <FormControlLabel
-                                                        value="panel"
-                                                        control={
-                                                            <Radio size="small" />
-                                                        }
-                                                        label="Panel"
-                                                    />
-                                                    <FormControlLabel
-                                                        value="stepper"
-                                                        control={
-                                                            <Radio size="small" />
-                                                        }
-                                                        label="Stepper"
-                                                    />
+                                                    <FormControlLabel value="panel" control={<Radio size="small" />} label="Panel" />
+                                                    <FormControlLabel value="stepper" control={<Radio size="small" />} label="Stepper" />
                                                 </RadioGroup>
                                                 <Typography
                                                     variant="caption"
@@ -785,8 +619,7 @@ export default function FormBuilderPage() {
                                                         mt: 0.5,
                                                     }}
                                                 >
-                                                    Sections as accordion panels
-                                                    or stepper
+                                                    Sections as accordion panels or stepper
                                                 </Typography>
                                             </FormControl>
                                         </Grid>
@@ -794,23 +627,14 @@ export default function FormBuilderPage() {
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={
-                                                            formSettings.isPublic ||
-                                                            false
-                                                        }
+                                                        checked={formSettings.isPublic || false}
                                                         onChange={(e) =>
-                                                            setFormSettings(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    isPublic:
-                                                                        e.target
-                                                                            .checked,
-                                                                }),
-                                                            )
+                                                            setFormSettings((prev) => ({
+                                                                ...prev,
+                                                                isPublic: e.target.checked,
+                                                            }))
                                                         }
-                                                        disabled={
-                                                            !canManageFormDefinition
-                                                        }
+                                                        disabled={!canManageFormDefinition}
                                                     />
                                                 }
                                                 label="Public Form"
@@ -820,23 +644,14 @@ export default function FormBuilderPage() {
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={
-                                                            formSettings.isSingleRecordForm ||
-                                                            false
-                                                        }
+                                                        checked={formSettings.isSingleRecordForm || false}
                                                         onChange={(e) =>
-                                                            setFormSettings(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    isSingleRecordForm:
-                                                                        e.target
-                                                                            .checked,
-                                                                }),
-                                                            )
+                                                            setFormSettings((prev) => ({
+                                                                ...prev,
+                                                                isSingleRecordForm: e.target.checked,
+                                                            }))
                                                         }
-                                                        disabled={
-                                                            !canManageFormDefinition
-                                                        }
+                                                        disabled={!canManageFormDefinition}
                                                     />
                                                 }
                                                 label="Single Record Form"
@@ -846,23 +661,14 @@ export default function FormBuilderPage() {
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={
-                                                            formSettings.allowManageFromEntryPage ||
-                                                            false
-                                                        }
+                                                        checked={formSettings.allowManageFromEntryPage || false}
                                                         onChange={(e) =>
-                                                            setFormSettings(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    allowManageFromEntryPage:
-                                                                        e.target
-                                                                            .checked,
-                                                                }),
-                                                            )
+                                                            setFormSettings((prev) => ({
+                                                                ...prev,
+                                                                allowManageFromEntryPage: e.target.checked,
+                                                            }))
                                                         }
-                                                        disabled={
-                                                            !canManageFormDefinition
-                                                        }
+                                                        disabled={!canManageFormDefinition}
                                                     />
                                                 }
                                                 label="Allow Manage From Entry Page"
@@ -880,9 +686,7 @@ export default function FormBuilderPage() {
                                         maxHeight: "100%",
                                     }}
                                 >
-                                    {sections.some(
-                                        (s) => s.fields.length > 0,
-                                    ) ? (
+                                    {sections.some((s) => s.fields.length > 0) ? (
                                         <FormContainer
                                             formSchema={{
                                                 title: formDetails.title,
@@ -896,12 +700,8 @@ export default function FormBuilderPage() {
                                             mode="view"
                                         />
                                     ) : (
-                                        <Typography
-                                            color="text.secondary"
-                                            sx={{ textAlign: "center", py: 4 }}
-                                        >
-                                            No fields yet. Add fields to
-                                            preview.
+                                        <Typography color="text.secondary" sx={{ textAlign: "center", py: 4 }}>
+                                            No fields yet. Add fields to preview.
                                         </Typography>
                                     )}
                                 </Paper>
@@ -923,11 +723,7 @@ export default function FormBuilderPage() {
                     onSave={handleFieldConfigSave}
                     onValidateName={(name) => {
                         if (selectedFieldPath) {
-                            return isFieldNameUnique(
-                                name,
-                                selectedFieldPath.sectionId,
-                                selectedFieldPath.fieldIndex,
-                            );
+                            return isFieldNameUnique(name, selectedFieldPath.sectionId, selectedFieldPath.fieldIndex);
                         }
                         return isFieldNameUnique(name);
                     }}
@@ -939,18 +735,11 @@ export default function FormBuilderPage() {
                         setSectionConfigDrawerOpen(false);
                         setEditingSectionId(null);
                     }}
-                    section={
-                        editingSectionId
-                            ? sections.find((s) => s.id === editingSectionId) ||
-                              null
-                            : null
-                    }
+                    section={editingSectionId ? sections.find((s) => s.id === editingSectionId) || null : null}
                     onSave={(updates) => {
                         if (editingSectionId) {
                             if (!canManageFormDefinition) return;
-                            useFormBuilderStore
-                                .getState()
-                                .updateSection(editingSectionId, updates);
+                            useFormBuilderStore.getState().updateSection(editingSectionId, updates);
                             setSectionConfigDrawerOpen(false);
                             setEditingSectionId(null);
                         }

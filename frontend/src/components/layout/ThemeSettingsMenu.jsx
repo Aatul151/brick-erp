@@ -24,9 +24,7 @@ export function ThemeSettingsMenu({ open, onClose }) {
     const theme = useTheme();
     const { primaryColor, secondaryColor, updateTheme } = useThemeSettings();
 
-    const isPredefinedThemeActive = (themeConfig) =>
-        themeConfig.primaryColor === primaryColor &&
-        themeConfig.secondaryColor === secondaryColor;
+    const isPredefinedThemeActive = (themeConfig) => themeConfig.primaryColor === primaryColor && themeConfig.secondaryColor === secondaryColor;
 
     const handlePredefinedTheme = (themeConfig) => {
         updateTheme({
@@ -57,8 +55,7 @@ export function ThemeSettingsMenu({ open, onClose }) {
                 <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                         {PREDEFINED_THEMES.map((themeConfig, index) => {
-                            const isActive =
-                                isPredefinedThemeActive(themeConfig);
+                            const isActive = isPredefinedThemeActive(themeConfig);
                             return (
                                 <Box
                                     key={index}
@@ -76,9 +73,7 @@ export function ThemeSettingsMenu({ open, onClose }) {
                                             transform: "scale(1.1)",
                                         },
                                     }}
-                                    onClick={() =>
-                                        handlePredefinedTheme(themeConfig)
-                                    }
+                                    onClick={() => handlePredefinedTheme(themeConfig)}
                                     title={themeConfig.name}
                                 >
                                     {isActive && (
@@ -87,8 +82,7 @@ export function ThemeSettingsMenu({ open, onClose }) {
                                                 position: "absolute",
                                                 top: "50%",
                                                 left: "50%",
-                                                transform:
-                                                    "translate(-50%, -50%)",
+                                                transform: "translate(-50%, -50%)",
                                                 color: "white",
                                                 fontSize: 22,
                                                 filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",

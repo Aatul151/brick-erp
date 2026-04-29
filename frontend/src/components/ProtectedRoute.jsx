@@ -50,9 +50,7 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
         if (user?.permissions?.length) {
             hasAccess = hasPermission(permission.resource, permission.action);
         } else if (roles.length > 0) {
-            hasAccess = roles.some((role) =>
-                user.roles?.some((r) => r.roleName === role),
-            );
+            hasAccess = roles.some((role) => user.roles?.some((r) => r.roleName === role));
         }
         if (hasAccess && modules?.length) {
             const module = modules.find((m) => m.slug === permission.resource);
@@ -62,9 +60,7 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
             }
         }
     } else if (roles.length > 0) {
-        hasAccess = roles.some((role) =>
-            user.roles?.some((r) => r.roleName === role),
-        );
+        hasAccess = roles.some((role) => user.roles?.some((r) => r.roleName === role));
     }
 
     if (!hasAccess) {
@@ -108,16 +104,8 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
                             justifyContent: "center",
                             mx: "auto",
                             mb: 2,
-                            backgroundColor: (theme) =>
-                                alpha(
-                                    isModuleInactive
-                                        ? theme.palette.warning.main
-                                        : theme.palette.error.main,
-                                    0.12,
-                                ),
-                            color: isModuleInactive
-                                ? "warning.main"
-                                : "error.main",
+                            backgroundColor: (theme) => alpha(isModuleInactive ? theme.palette.warning.main : theme.palette.error.main, 0.12),
+                            color: isModuleInactive ? "warning.main" : "error.main",
                         }}
                     >
                         <Icon sx={{ fontSize: 40 }} />
@@ -125,17 +113,10 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
                     <Typography variant="h5" fontWeight={600} sx={{ mb: 1.5 }}>
                         {title}
                     </Typography>
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 3, lineHeight: 1.6 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
                         {description}
                     </Typography>
-                    <Button
-                        variant="secondary"
-                        onClick={() => navigate("/dashboard")}
-                    >
+                    <Button variant="secondary" onClick={() => navigate("/dashboard")}>
                         Go to Dashboard
                     </Button>
                 </Paper>

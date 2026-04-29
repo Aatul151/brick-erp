@@ -11,10 +11,7 @@ export function ThemeSync() {
     useEffect(() => {
         const root = document.documentElement;
         root.style.setProperty("--primary-main", theme.palette.primary.main);
-        root.style.setProperty(
-            "--secondary-main",
-            theme.palette.secondary?.main || "#64748b",
-        );
+        root.style.setProperty("--secondary-main", theme.palette.secondary?.main || "#64748b");
     }, [theme]);
 
     return null;

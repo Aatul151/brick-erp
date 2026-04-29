@@ -1,14 +1,4 @@
-import {
-    pgTable,
-    serial,
-    varchar,
-    timestamp,
-    integer,
-    uuid,
-    index,
-    uniqueIndex,
-    jsonb,
-} from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, timestamp, integer, uuid, index, uniqueIndex, jsonb } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { tenants, users } from "../../../models/schema.js";
 
@@ -19,13 +9,23 @@ export const formDefinitions = pgTable(
         id: uuid("id").defaultRandom().primaryKey(),
         tenantId: uuid("tenant_id")
             .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        name: varchar("name", { length: 200 }).notNull(),
-        title: varchar("title", { length: 500 }).notNull(),
-        formType: varchar("form_type", { length: 20 })
+            .references(() => tenants.id, {
+                onDelete: "cascade",
+            }),
+        name: varchar("name", {
+            length: 200,
+        }).notNull(),
+        title: varchar("title", {
+            length: 500,
+        }).notNull(),
+        formType: varchar("form_type", {
+            length: 20,
+        })
             .notNull()
             .default("custom"),
-        collectionName: varchar("collection_name", { length: 200 }),
+        collectionName: varchar("collection_name", {
+            length: 200,
+        }),
         sections: jsonb("sections")
             .notNull()
             .default(sql`'[]'::jsonb`),
@@ -36,18 +36,19 @@ export const formDefinitions = pgTable(
         updatedBy: integer("updated_by").references(() => users.id, {
             onDelete: "set null",
         }),
-        createdAt: timestamp("created_at", { withTimezone: true })
+        createdAt: timestamp("created_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { withTimezone: true })
+        updatedAt: timestamp("updated_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
     },
     (table) => ({
-        tenantNameUnique: uniqueIndex("form_def_tenant_name_uidx").on(
-            table.tenantId,
-            table.name,
-        ),
+        tenantNameUnique: uniqueIndex("form_def_tenant_name_uidx").on(table.tenantId, table.name),
         tenantIdx: index("form_def_tenant_idx").on(table.tenantId),
     }),
 );
@@ -58,33 +59,34 @@ export const formEntries = pgTable(
         id: uuid("id").defaultRandom().primaryKey(),
         tenantId: uuid("tenant_id")
             .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
+            .references(() => tenants.id, {
+                onDelete: "cascade",
+            }),
         formDefinitionId: uuid("form_definition_id")
             .notNull()
-            .references(() => formDefinitions.id, { onDelete: "cascade" }),
+            .references(() => formDefinitions.id, {
+                onDelete: "cascade",
+            }),
         payload: jsonb("payload")
             .notNull()
             .default(sql`'{}'::jsonb`),
         submittedBy: integer("submitted_by").references(() => users.id, {
             onDelete: "set null",
         }),
-        createdAt: timestamp("created_at", { withTimezone: true })
+        createdAt: timestamp("created_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { withTimezone: true })
+        updatedAt: timestamp("updated_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
     },
     (table) => ({
-        tenantFormCreatedIdx: index("form_entries_tenant_form_created_idx").on(
-            table.tenantId,
-            table.formDefinitionId,
-            table.createdAt,
-        ),
-        payloadIdx: index("form_entries_payload_gin_idx").using(
-            "gin",
-            table.payload,
-        ),
+        tenantFormCreatedIdx: index("form_entries_tenant_form_created_idx").on(table.tenantId, table.formDefinitionId, table.createdAt),
+        payloadIdx: index("form_entries_payload_gin_idx").using("gin", table.payload),
     }),
 );
 
@@ -92,29 +94,29 @@ export const masterFormEntries = pgTable(
     "master_form_entries",
     {
         id: uuid("id").defaultRandom().primaryKey(),
-        formName: varchar("form_name", { length: 200 }).notNull(),
+        formName: varchar("form_name", {
+            length: 200,
+        }).notNull(),
         payload: jsonb("payload")
             .notNull()
             .default(sql`'{}'::jsonb`),
         submittedBy: integer("submitted_by").references(() => users.id, {
             onDelete: "set null",
         }),
-        createdAt: timestamp("created_at", { withTimezone: true })
+        createdAt: timestamp("created_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
-        updatedAt: timestamp("updated_at", { withTimezone: true })
+        updatedAt: timestamp("updated_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
     },
     (table) => ({
-        formNameCreatedIdx: index("master_form_entries_form_created_idx").on(
-            table.formName,
-            table.createdAt,
-        ),
-        payloadIdx: index("master_form_entries_payload_gin_idx").using(
-            "gin",
-            table.payload,
-        ),
+        formNameCreatedIdx: index("master_form_entries_form_created_idx").on(table.formName, table.createdAt),
+        payloadIdx: index("master_form_entries_payload_gin_idx").using("gin", table.payload),
     }),
 );
 
@@ -125,19 +127,39 @@ export const formUploadedFiles = pgTable(
         id: serial("id").primaryKey(),
         tenantId: uuid("tenant_id")
             .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        formName: varchar("form_name", { length: 200 }).notNull(),
-        fieldName: varchar("field_name", { length: 200 }).notNull(),
-        publicId: varchar("public_id", { length: 12 }).notNull().unique(),
-        storagePath: varchar("storage_path", { length: 1000 }).notNull(),
-        originalName: varchar("original_name", { length: 500 }).notNull(),
-        fileName: varchar("file_name", { length: 255 }).notNull(),
-        mimeType: varchar("mime_type", { length: 200 }),
+            .references(() => tenants.id, {
+                onDelete: "cascade",
+            }),
+        formName: varchar("form_name", {
+            length: 200,
+        }).notNull(),
+        fieldName: varchar("field_name", {
+            length: 200,
+        }).notNull(),
+        publicId: varchar("public_id", {
+            length: 12,
+        })
+            .notNull()
+            .unique(),
+        storagePath: varchar("storage_path", {
+            length: 1000,
+        }).notNull(),
+        originalName: varchar("original_name", {
+            length: 500,
+        }).notNull(),
+        fileName: varchar("file_name", {
+            length: 255,
+        }).notNull(),
+        mimeType: varchar("mime_type", {
+            length: 200,
+        }),
         size: integer("size"),
         uploadedBy: integer("uploaded_by").references(() => users.id, {
             onDelete: "set null",
         }),
-        createdAt: timestamp("created_at", { withTimezone: true })
+        createdAt: timestamp("created_at", {
+            withTimezone: true,
+        })
             .notNull()
             .defaultNow(),
     },
@@ -146,20 +168,17 @@ export const formUploadedFiles = pgTable(
     }),
 );
 
-export const formDefinitionsRelations = relations(
-    formDefinitions,
-    ({ one, many }) => ({
-        tenant: one(tenants, {
-            fields: [formDefinitions.tenantId],
-            references: [tenants.id],
-        }),
-        createdByUser: one(users, {
-            fields: [formDefinitions.createdBy],
-            references: [users.id],
-        }),
-        entries: many(formEntries),
+export const formDefinitionsRelations = relations(formDefinitions, ({ one, many }) => ({
+    tenant: one(tenants, {
+        fields: [formDefinitions.tenantId],
+        references: [tenants.id],
     }),
-);
+    createdByUser: one(users, {
+        fields: [formDefinitions.createdBy],
+        references: [users.id],
+    }),
+    entries: many(formEntries),
+}));
 
 export const formEntriesRelations = relations(formEntries, ({ one }) => ({
     formDefinition: one(formDefinitions, {
@@ -176,22 +195,16 @@ export const formEntriesRelations = relations(formEntries, ({ one }) => ({
     }),
 }));
 
-export const masterFormEntriesRelations = relations(
-    masterFormEntries,
-    ({ one }) => ({
-        submittedByUser: one(users, {
-            fields: [masterFormEntries.submittedBy],
-            references: [users.id],
-        }),
+export const masterFormEntriesRelations = relations(masterFormEntries, ({ one }) => ({
+    submittedByUser: one(users, {
+        fields: [masterFormEntries.submittedBy],
+        references: [users.id],
     }),
-);
+}));
 
-export const formUploadedFilesRelations = relations(
-    formUploadedFiles,
-    ({ one }) => ({
-        tenant: one(tenants, {
-            fields: [formUploadedFiles.tenantId],
-            references: [tenants.id],
-        }),
+export const formUploadedFilesRelations = relations(formUploadedFiles, ({ one }) => ({
+    tenant: one(tenants, {
+        fields: [formUploadedFiles.tenantId],
+        references: [tenants.id],
     }),
-);
+}));

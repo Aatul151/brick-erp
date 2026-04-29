@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-    Box,
-    Typography,
-    List,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    alpha,
-    TextField,
-    Alert,
-    Divider,
-    Stack,
-} from "@mui/material";
+import { Box, Typography, List, ListItemButton, ListItemIcon, ListItemText, alpha, TextField, Alert, Divider, Stack } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import EditIcon from "@mui/icons-material/Edit";
@@ -40,17 +28,10 @@ function InfoRow({ label, value }) {
                 flexWrap: "wrap",
             }}
         >
-            <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontWeight: 500, minWidth: 120 }}
-            >
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, minWidth: 120 }}>
                 {label}
             </Typography>
-            <Box
-                component="span"
-                sx={{ flex: 1, color: "text.primary", fontSize: "0.875rem" }}
-            >
+            <Box component="span" sx={{ flex: 1, color: "text.primary", fontSize: "0.875rem" }}>
                 {value}
             </Box>
         </Box>
@@ -90,14 +71,9 @@ export default function Profile() {
         mutationFn: authApi.updateProfile,
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries(["profile"]);
-            if (
-                variables.fullName != null ||
-                variables.email != null ||
-                "mobile" in variables
-            ) {
+            if (variables.fullName != null || variables.email != null || "mobile" in variables) {
                 const updates = {};
-                if (variables.fullName != null)
-                    updates.fullName = variables.fullName;
+                if (variables.fullName != null) updates.fullName = variables.fullName;
                 if (variables.email != null) updates.email = variables.email;
                 if ("mobile" in variables) updates.mobile = variables.mobile;
                 updateUser?.(updates);
@@ -123,25 +99,16 @@ export default function Profile() {
         e.preventDefault();
         setError("");
         setSuccess("");
-        const formMobileDigits =
-            String(accountForm.mobile ?? "").replace(/\D/g, "") || null;
-        const userMobileDigits =
-            String(user?.mobile ?? "").replace(/\D/g, "") || null;
-        if (
-            accountForm.fullName === user?.fullName &&
-            accountForm.email === user?.email &&
-            formMobileDigits === userMobileDigits
-        ) {
+        const formMobileDigits = String(accountForm.mobile ?? "").replace(/\D/g, "") || null;
+        const userMobileDigits = String(user?.mobile ?? "").replace(/\D/g, "") || null;
+        if (accountForm.fullName === user?.fullName && accountForm.email === user?.email && formMobileDigits === userMobileDigits) {
             setIsEditing(false);
             return;
         }
         updateMutation.mutate({
             fullName: accountForm.fullName,
             email: accountForm.email,
-            mobile:
-                String(accountForm.mobile ?? "").trim() === ""
-                    ? null
-                    : accountForm.mobile,
+            mobile: String(accountForm.mobile ?? "").trim() === "" ? null : accountForm.mobile,
         });
     };
 
@@ -183,11 +150,7 @@ export default function Profile() {
     console.log(user);
     return (
         <div className="px-4 sm:px-0 flex flex-col gap-4 min-h-0 flex-1">
-            <PageHeader
-                title="Profile Settings"
-                subtitle="Manage your account and security"
-                icon={<PersonIcon fontSize="small" color="primary" />}
-            />
+            <PageHeader title="Profile Settings" subtitle="Manage your account and security" icon={<PersonIcon fontSize="small" color="primary" />} />
             <PageContent
                 sx={{
                     display: "flex",
@@ -210,10 +173,7 @@ export default function Profile() {
                         backgroundColor: "background.paper",
                         borderRadius: 2,
                         border: (theme) => `1px solid ${theme.palette.divider}`,
-                        boxShadow: (theme) =>
-                            theme.palette.mode === "light"
-                                ? "0 2px 8px rgba(0,0,0,0.06)"
-                                : "0 2px 8px rgba(0,0,0,0.25)",
+                        boxShadow: (theme) => (theme.palette.mode === "light" ? "0 2px 8px rgba(0,0,0,0.06)" : "0 2px 8px rgba(0,0,0,0.25)"),
                         overflow: "hidden",
                     }}
                 >
@@ -236,20 +196,11 @@ export default function Profile() {
                                         mx: 0.5,
                                         borderRadius: 1,
                                         "&.Mui-selected": {
-                                            backgroundColor: (theme) =>
-                                                alpha(
-                                                    theme.palette.primary.main,
-                                                    0.12,
-                                                ),
+                                            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
                                             borderLeft: "3px solid",
                                             borderLeftColor: "primary.main",
                                             "&:hover": {
-                                                backgroundColor: (theme) =>
-                                                    alpha(
-                                                        theme.palette.primary
-                                                            .main,
-                                                        0.16,
-                                                    ),
+                                                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.16),
                                             },
                                         },
                                     }}
@@ -257,9 +208,7 @@ export default function Profile() {
                                     <ListItemIcon
                                         sx={{
                                             minWidth: 40,
-                                            color: selected
-                                                ? "primary.main"
-                                                : "text.secondary",
+                                            color: selected ? "primary.main" : "text.secondary",
                                         }}
                                     >
                                         <Icon fontSize="small" />
@@ -288,27 +237,16 @@ export default function Profile() {
                         backgroundColor: "background.paper",
                         borderRadius: 2,
                         border: (theme) => `1px solid ${theme.palette.divider}`,
-                        boxShadow: (theme) =>
-                            theme.palette.mode === "light"
-                                ? "0 2px 8px rgba(0,0,0,0.06)"
-                                : "0 2px 8px rgba(0,0,0,0.25)",
+                        boxShadow: (theme) => (theme.palette.mode === "light" ? "0 2px 8px rgba(0,0,0,0.06)" : "0 2px 8px rgba(0,0,0,0.25)"),
                     }}
                 >
                     {error && (
-                        <Alert
-                            severity="error"
-                            sx={{ mb: 2 }}
-                            onClose={() => setError("")}
-                        >
+                        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
                             {error}
                         </Alert>
                     )}
                     {success && (
-                        <Alert
-                            severity="success"
-                            sx={{ mb: 2 }}
-                            onClose={() => setSuccess("")}
-                        >
+                        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess("")}>
                             {success}
                         </Alert>
                     )}
@@ -316,24 +254,12 @@ export default function Profile() {
                     {/* Account tab */}
                     {activeTab === "account" && (
                         <Box>
-                            <Stack
-                                direction="row"
-                                alignItems="center"
-                                justifyContent="space-between"
-                                sx={{ mb: 3 }}
-                            >
+                            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
                                 <Typography variant="h6" fontWeight={600}>
                                     Account Information
                                 </Typography>
                                 {!isEditing && (
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        startIcon={
-                                            <EditIcon sx={{ fontSize: 18 }} />
-                                        }
-                                        onClick={() => setIsEditing(true)}
-                                    >
+                                    <Button variant="secondary" size="sm" startIcon={<EditIcon sx={{ fontSize: 18 }} />} onClick={() => setIsEditing(true)}>
                                         Edit
                                     </Button>
                                 )}
@@ -383,29 +309,11 @@ export default function Profile() {
                                             fullWidth
                                             size="small"
                                         />
-                                        <Stack
-                                            direction="row"
-                                            spacing={1}
-                                            sx={{ mt: 1 }}
-                                        >
-                                            <Button
-                                                type="submit"
-                                                disabled={
-                                                    updateMutation.isPending
-                                                }
-                                            >
-                                                {updateMutation.isPending
-                                                    ? "Saving..."
-                                                    : "Save Changes"}
+                                        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                                            <Button type="submit" disabled={updateMutation.isPending}>
+                                                {updateMutation.isPending ? "Saving..." : "Save Changes"}
                                             </Button>
-                                            <Button
-                                                variant="secondary"
-                                                type="button"
-                                                onClick={handleCancelEdit}
-                                                disabled={
-                                                    updateMutation.isPending
-                                                }
-                                            >
+                                            <Button variant="secondary" type="button" onClick={handleCancelEdit} disabled={updateMutation.isPending}>
                                                 Cancel
                                             </Button>
                                         </Stack>
@@ -414,41 +322,13 @@ export default function Profile() {
                             ) : (
                                 <Stack spacing={0} divider={<Divider />}>
                                     <InfoRow label="User ID" value={user?.id} />
-                                    <InfoRow
-                                        label="Full Name"
-                                        value={user?.fullName}
-                                    />
-                                    <InfoRow
-                                        label="Email"
-                                        value={user?.email}
-                                    />
-                                    <InfoRow
-                                        label="Mobile"
-                                        value={user?.mobile || "—"}
-                                    />
-                                    <InfoRow
-                                        label="Roles"
-                                        value={user?.roles
-                                            ?.map((r) => r.roleName)
-                                            .join(", ")}
-                                    />
-                                    <InfoRow
-                                        label="Tenant"
-                                        value={user?.tenantId || "System"}
-                                    />
-                                    <InfoRow
-                                        label="Status"
-                                        value={
-                                            <StatusLabel
-                                                value={user?.status}
-                                                variant="status"
-                                            />
-                                        }
-                                    />
-                                    <InfoRow
-                                        label="Member Since"
-                                        value={formatDate(user?.createdAt)}
-                                    />
+                                    <InfoRow label="Full Name" value={user?.fullName} />
+                                    <InfoRow label="Email" value={user?.email} />
+                                    <InfoRow label="Mobile" value={user?.mobile || "—"} />
+                                    <InfoRow label="Roles" value={user?.roles?.map((r) => r.roleName).join(", ")} />
+                                    <InfoRow label="Tenant" value={user?.tenantId || "System"} />
+                                    <InfoRow label="Status" value={<StatusLabel value={user?.status} variant="status" />} />
+                                    <InfoRow label="Member Since" value={formatDate(user?.createdAt)} />
                                 </Stack>
                             )}
                         </Box>
@@ -457,20 +337,11 @@ export default function Profile() {
                     {/* Password tab */}
                     {activeTab === "password" && (
                         <Box>
-                            <Typography
-                                variant="h6"
-                                fontWeight={600}
-                                sx={{ mb: 1 }}
-                            >
+                            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
                                 Change Password
                             </Typography>
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mb: 3 }}
-                            >
-                                Update your password to keep your account
-                                secure.
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                Update your password to keep your account secure.
                             </Typography>
                             <form onSubmit={handlePasswordSubmit}>
                                 <Stack spacing={2} sx={{ maxWidth: 420 }}>
@@ -521,13 +392,8 @@ export default function Profile() {
                                         size="small"
                                     />
                                     <Box sx={{ pt: 1 }}>
-                                        <Button
-                                            type="submit"
-                                            disabled={updateMutation.isPending}
-                                        >
-                                            {updateMutation.isPending
-                                                ? "Updating..."
-                                                : "Update Password"}
+                                        <Button type="submit" disabled={updateMutation.isPending}>
+                                            {updateMutation.isPending ? "Updating..." : "Update Password"}
                                         </Button>
                                     </Box>
                                 </Stack>

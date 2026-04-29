@@ -1,16 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    IconButton,
-    Box,
-    Typography,
-    CircularProgress,
-    Alert,
-    Tooltip,
-    Button,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, CircularProgress, Alert, Tooltip, Button } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
 import { downloadFile, authorizedFileFetch } from "../../utils/fileDownload";
@@ -55,13 +44,7 @@ function getFileType(file) {
     return "other";
 }
 
-export function FilePreviewDialog({
-    open,
-    file,
-    onClose,
-    onDownloadError,
-    getAccessToken,
-}) {
+export function FilePreviewDialog({ open, file, onClose, onDownloadError, getAccessToken }) {
     const [textContent, setTextContent] = useState("");
     const [mediaUrl, setMediaUrl] = useState("");
     const [loading, setLoading] = useState(false);
@@ -118,11 +101,7 @@ export function FilePreviewDialog({
             };
         }
 
-        if (
-            fileType === "image" ||
-            fileType === "pdf" ||
-            fileType === "video"
-        ) {
+        if (fileType === "image" || fileType === "pdf" || fileType === "video") {
             setLoading(true);
             authorizedFileFetch(file.fileUrl, token)
                 .then((res) => {
@@ -160,12 +139,7 @@ export function FilePreviewDialog({
     const displayName = file.originalName || file.fileName || "File";
 
     const handleDownload = () => {
-        downloadFile(
-            file.fileUrl,
-            displayName,
-            onDownloadError,
-            getAccessToken?.(),
-        );
+        downloadFile(file.fileUrl, displayName, onDownloadError, getAccessToken?.());
     };
 
     const renderPreview = () => {
@@ -208,18 +182,12 @@ export function FilePreviewDialog({
                         }}
                     >
                         <Typography variant="body1" color="text.secondary">
-                            This image format (TIFF, HEIC, etc.) cannot be shown
-                            in the browser preview. Download the file to open it
-                            in another application.
+                            This image format (TIFF, HEIC, etc.) cannot be shown in the browser preview. Download the file to open it in another application.
                         </Typography>
                         <Typography variant="body2" color="text.disabled">
                             {file.mimeType || "Image"}
                         </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<DownloadIcon />}
-                            onClick={handleDownload}
-                        >
+                        <Button variant="contained" startIcon={<DownloadIcon />} onClick={handleDownload}>
                             Download
                         </Button>
                     </Box>
@@ -281,14 +249,8 @@ export function FilePreviewDialog({
                             maxHeight: "70vh",
                         }}
                     >
-                        <video
-                            controls
-                            style={{ maxWidth: "100%", maxHeight: "70vh" }}
-                        >
-                            <source
-                                src={mediaUrl}
-                                type={file.mimeType || "video/mp4"}
-                            />
+                        <video controls style={{ maxWidth: "100%", maxHeight: "70vh" }}>
+                            <source src={mediaUrl} type={file.mimeType || "video/mp4"} />
                             Your browser does not support the video tag.
                         </video>
                     </Box>
@@ -375,23 +337,11 @@ export function FilePreviewDialog({
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                     <Tooltip title="Download file" placement="bottom" arrow>
-                        <IconButton
-                            edge="end"
-                            color="inherit"
-                            onClick={handleDownload}
-                            aria-label="download"
-                            size="small"
-                        >
+                        <IconButton edge="end" color="inherit" onClick={handleDownload} aria-label="download" size="small">
                             <DownloadIcon />
                         </IconButton>
                     </Tooltip>
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={onClose}
-                        aria-label="close"
-                        size="small"
-                    >
+                    <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close" size="small">
                         <CloseIcon />
                     </IconButton>
                 </Box>

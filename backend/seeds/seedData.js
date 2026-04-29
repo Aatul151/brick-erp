@@ -1,14 +1,5 @@
 import { db } from "../models/db.js";
-import {
-    tenants,
-    users,
-    roles,
-    permissions,
-    rolePermissions,
-    userRoles,
-    auditLogs,
-    modules,
-} from "../models/schema.js";
+import { tenants, users, roles, permissions, rolePermissions, userRoles, auditLogs, modules } from "../models/schema.js";
 import { AuditResourceType } from "../core/services/auditService.js";
 import { hashPassword } from "../utils/password.js";
 import { eq, and } from "drizzle-orm";
@@ -17,11 +8,7 @@ const SITE_ADMIN_TENANT_SUBDOMAIN = "system";
 const SITE_ADMIN_TENANT_NAME = "System Administration";
 
 async function ensureSiteAdminTenantAndUserBinding() {
-    let [systemTenant] = await db
-        .select()
-        .from(tenants)
-        .where(eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN))
-        .limit(1);
+    let [systemTenant] = await db.select().from(tenants).where(eq(tenants.subdomain, SITE_ADMIN_TENANT_SUBDOMAIN)).limit(1);
 
     if (!systemTenant) {
         [systemTenant] = await db
@@ -48,7 +35,10 @@ async function ensureSiteAdminTenantAndUserBinding() {
         if (adminUser.tenantId !== systemTenant.id) {
             await db
                 .update(users)
-                .set({ tenantId: systemTenant.id, updatedAt: new Date() })
+                .set({
+                    tenantId: systemTenant.id,
+                    updatedAt: new Date(),
+                })
                 .where(eq(users.id, adminUser.id));
         }
     }
@@ -102,7 +92,11 @@ const permissionData = [
         action: "update",
         description: "Update user information",
     },
-    { resourceName: "users", action: "delete", description: "Delete users" },
+    {
+        resourceName: "users",
+        action: "delete",
+        description: "Delete users",
+    },
     {
         resourceName: "roles",
         action: "menu",
@@ -123,7 +117,11 @@ const permissionData = [
         action: "update",
         description: "Update role information",
     },
-    { resourceName: "roles", action: "delete", description: "Delete roles" },
+    {
+        resourceName: "roles",
+        action: "delete",
+        description: "Delete roles",
+    },
     {
         resourceName: "permissions",
         action: "menu",
@@ -189,7 +187,11 @@ const permissionData = [
         action: "menu",
         description: "Show settings in menu",
     },
-    { resourceName: "settings", action: "read", description: "View settings" },
+    {
+        resourceName: "settings",
+        action: "read",
+        description: "View settings",
+    },
     {
         resourceName: "settings",
         action: "update",
@@ -222,88 +224,83 @@ const permissionData = [
     },
 ];
 
-async function ensureFormStudioApp(
-    db,
-    permissionsTable,
-    rolePermissions,
-    roles,
-) {
-    const formStudioPermissionData = permissionData.filter(
-        (p) => p.resourceName === "form_studio",
-    );
+async function ensureFormStudioApp(db, permissionsTable, rolePermissions, roles) {
+    const formStudioPermissionData = permissionData.filter((p) => p.resourceName === "form_studio");
     for (const perm of formStudioPermissionData) {
         const existing = await db
             .select()
             .from(permissionsTable)
-            .where(
-                and(
-                    eq(permissionsTable.resourceName, perm.resourceName),
-                    eq(permissionsTable.action, perm.action),
-                ),
-            )
+            .where(and(eq(permissionsTable.resourceName, perm.resourceName), eq(permissionsTable.action, perm.action)))
             .limit(1);
         if (existing.length === 0) {
             await db.insert(permissionsTable).values(perm);
         }
     }
-    const formPerms = await db
-        .select()
-        .from(permissionsTable)
-        .where(eq(permissionsTable.resourceName, "form_studio"));
-    const siteAdminRole = await db
-        .select()
-        .from(roles)
-        .where(eq(roles.name, "Site Admin"))
-        .limit(1);
-    const clientAdminRole = await db
-        .select()
-        .from(roles)
-        .where(eq(roles.name, "Client Admin"))
-        .limit(1);
-    const clientUserRole = await db
-        .select()
-        .from(roles)
-        .where(eq(roles.name, "Client User"))
-        .limit(1);
-    const rolesToAssign = [
-        siteAdminRole[0],
-        clientAdminRole[0],
-        clientUserRole[0],
-    ].filter(Boolean);
+    const formPerms = await db.select().from(permissionsTable).where(eq(permissionsTable.resourceName, "form_studio"));
+    const siteAdminRole = await db.select().from(roles).where(eq(roles.name, "Site Admin")).limit(1);
+    const clientAdminRole = await db.select().from(roles).where(eq(roles.name, "Client Admin")).limit(1);
+    const clientUserRole = await db.select().from(roles).where(eq(roles.name, "Client User")).limit(1);
+    const rolesToAssign = [siteAdminRole[0], clientAdminRole[0], clientUserRole[0]].filter(Boolean);
     for (const perm of formPerms) {
         for (const role of rolesToAssign) {
             const existing = await db
                 .select()
                 .from(rolePermissions)
-                .where(
-                    and(
-                        eq(rolePermissions.roleId, role.id),
-                        eq(rolePermissions.permissionId, perm.id),
-                    ),
-                )
+                .where(and(eq(rolePermissions.roleId, role.id), eq(rolePermissions.permissionId, perm.id)))
                 .limit(1);
             if (existing.length === 0) {
-                await db
-                    .insert(rolePermissions)
-                    .values({ roleId: role.id, permissionId: perm.id });
+                await db.insert(rolePermissions).values({
+                    roleId: role.id,
+                    permissionId: perm.id,
+                });
             }
         }
     }
 }
 
 const DEFAULT_MODULES = [
-    { name: "Tenants", slug: "tenants", icon: "Business", sortOrder: 1 },
-    { name: "Users", slug: "users", icon: "People", sortOrder: 2 },
-    { name: "Roles", slug: "roles", icon: "AdminPanelSettings", sortOrder: 3 },
+    {
+        name: "Tenants",
+        slug: "tenants",
+        icon: "Business",
+        sortOrder: 1,
+    },
+    {
+        name: "Users",
+        slug: "users",
+        icon: "People",
+        sortOrder: 2,
+    },
+    {
+        name: "Roles",
+        slug: "roles",
+        icon: "AdminPanelSettings",
+        sortOrder: 3,
+    },
     {
         name: "Permissions",
         slug: "permissions",
         icon: "Security",
         sortOrder: 4,
     },
-    { name: "Modules", slug: "modules", icon: "Extension", sortOrder: 5 },
-    { name: "Audit Logs", slug: "audit_logs", icon: "History", sortOrder: 6 },
-    { name: "Settings", slug: "settings", icon: "Settings", sortOrder: 7 },
+    {
+        name: "Modules",
+        slug: "modules",
+        icon: "Extension",
+        sortOrder: 5,
+    },
+    {
+        name: "Audit Logs",
+        slug: "audit_logs",
+        icon: "History",
+        sortOrder: 6,
+    },
+    {
+        name: "Settings",
+        slug: "settings",
+        icon: "Settings",
+        sortOrder: 7,
+    },
     {
         name: "Form Studio",
         slug: "form_studio",
@@ -321,11 +318,7 @@ export const seedDatabase = async () => {
             console.log("Seeding default modules...");
             await db.insert(modules).values(DEFAULT_MODULES);
         } else {
-            const formStudioModule = await db
-                .select()
-                .from(modules)
-                .where(eq(modules.slug, "form_studio"))
-                .limit(1);
+            const formStudioModule = await db.select().from(modules).where(eq(modules.slug, "form_studio")).limit(1);
             if (formStudioModule.length === 0) {
                 console.log("Adding Form Studio module...");
                 await db.insert(modules).values({
@@ -372,10 +365,7 @@ export const seedDatabase = async () => {
             .returning();
 
         console.log("Creating permissions...");
-        const createdPermissions = await db
-            .insert(permissions)
-            .values(permissionData)
-            .returning();
+        const createdPermissions = await db.insert(permissions).values(permissionData).returning();
 
         console.log("Assigning permissions to Site Admin role...");
         for (const permission of createdPermissions) {
@@ -386,11 +376,7 @@ export const seedDatabase = async () => {
         }
 
         console.log("Assigning permissions to Client Admin role...");
-        const clientAdminPermissions = createdPermissions.filter((p) =>
-            ["users", "audit_logs", "settings", "form_studio"].includes(
-                p.resourceName,
-            ),
-        );
+        const clientAdminPermissions = createdPermissions.filter((p) => ["users", "audit_logs", "settings", "form_studio"].includes(p.resourceName));
         for (const permission of clientAdminPermissions) {
             await db.insert(rolePermissions).values({
                 roleId: clientAdminRole.id,
@@ -399,11 +385,7 @@ export const seedDatabase = async () => {
         }
 
         console.log("Assigning permissions to Client User role...");
-        const clientUserPermissions = createdPermissions.filter(
-            (p) =>
-                (p.resourceName === "settings" && p.action === "read") ||
-                p.resourceName === "form_studio",
-        );
+        const clientUserPermissions = createdPermissions.filter((p) => (p.resourceName === "settings" && p.action === "read") || p.resourceName === "form_studio");
         for (const permission of clientUserPermissions) {
             await db.insert(rolePermissions).values({
                 roleId: clientUserRole.id,
@@ -422,16 +404,13 @@ export const seedDatabase = async () => {
             .returning();
 
         console.log("Creating default Site Admin user...");
-        const adminPassword = await hashPassword(
-            process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123456",
-        );
+        const adminPassword = await hashPassword(process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123456");
         const [siteAdmin] = await db
             .insert(users)
             .values({
                 email: process.env.DEFAULT_ADMIN_EMAIL || "admin@system.local",
                 passwordHash: adminPassword,
-                fullName:
-                    process.env.DEFAULT_ADMIN_NAME || "System Administrator",
+                fullName: process.env.DEFAULT_ADMIN_NAME || "System Administrator",
                 tenantId: siteAdminTenant.id,
                 status: "active",
             })
@@ -506,7 +485,9 @@ export const seedDatabase = async () => {
                 action: "TENANT_CREATED",
                 resourceType: AuditResourceType.TENANT,
                 resourceId: demoTenant.id,
-                details: JSON.stringify({ name: "Demo Company" }),
+                details: JSON.stringify({
+                    name: "Demo Company",
+                }),
                 ipAddress: "127.0.0.1",
             },
             {
@@ -515,7 +496,9 @@ export const seedDatabase = async () => {
                 action: "USER_CREATED",
                 resourceType: AuditResourceType.USER,
                 resourceId: user1.id,
-                details: JSON.stringify({ email: "user1@democompany.com" }),
+                details: JSON.stringify({
+                    email: "user1@democompany.com",
+                }),
                 ipAddress: "127.0.0.1",
             },
         ]);
@@ -523,12 +506,8 @@ export const seedDatabase = async () => {
         console.log("Database seeding completed successfully!");
         console.log("\n=== Default Credentials ===");
         console.log("Site Admin:");
-        console.log(
-            `  Email: ${process.env.DEFAULT_ADMIN_EMAIL || "admin@system.local"}`,
-        );
-        console.log(
-            `  Password: ${process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123456"}`,
-        );
+        console.log(`  Email: ${process.env.DEFAULT_ADMIN_EMAIL || "admin@system.local"}`);
+        console.log(`  Password: ${process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123456"}`);
         console.log("\nDemo Client Admin:");
         console.log("  Email: admin@democompany.com");
         console.log("  Password: ClientAdmin@123");

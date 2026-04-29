@@ -10,10 +10,7 @@ export const loginLimiter = rateLimit({
 });
 
 export const passwordResetLimiter = rateLimit({
-    windowMs:
-        parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW || 60) *
-        60 *
-        1000,
+    windowMs: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW || 60) * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_MAX || 3),
     message: "Too many password reset requests, please try again later",
     standardHeaders: true,

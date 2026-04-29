@@ -10,7 +10,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const UPLOAD_ROOT = join(__dirname, "../../../uploads");
 
 function ensureDir(p) {
-    mkdirSync(p, { recursive: true });
+    mkdirSync(p, {
+        recursive: true,
+    });
 }
 
 const FORMS_FALLBACK_DIR = "forms";
@@ -35,7 +37,9 @@ async function allocateUniquePublicId() {
     for (let attempt = 0; attempt < 12; attempt++) {
         const candidate = randomPublicId();
         const dup = await db
-            .select({ id: formUploadedFiles.id })
+            .select({
+                id: formUploadedFiles.id,
+            })
             .from(formUploadedFiles)
             .where(eq(formUploadedFiles.publicId, candidate))
             .limit(1);
@@ -113,7 +117,9 @@ export function createUploadMiddleware(multer) {
     });
     return multer({
         storage,
-        limits: { fileSize: 50 * 1024 * 1024 },
+        limits: {
+            fileSize: 50 * 1024 * 1024,
+        },
     });
 }
 
@@ -128,24 +134,23 @@ export const uploadFormFiles = async (req, res) => {
 
         const { formName, fieldName } = req.body;
         if (!formName || !fieldName) {
-            return res
-                .status(400)
-                .json({ error: "formName and fieldName are required" });
+            return res.status(400).json({
+                error: "formName and fieldName are required",
+            });
         }
 
         const files = req.files;
         if (!files?.length) {
-            return res.status(400).json({ error: "No files uploaded" });
+            return res.status(400).json({
+                error: "No files uploaded",
+            });
         }
 
         const baseUrl = `${req.protocol}://${req.get("host")}`;
         const results = [];
 
         for (const file of files) {
-            const storagePath = relative(UPLOAD_ROOT, file.path).replace(
-                /\\/g,
-                "/",
-            );
+            const storagePath = relative(UPLOAD_ROOT, file.path).replace(/\\/g, "/");
             const publicId = await allocateUniquePublicId();
             const [row] = await db
                 .insert(formUploadedFiles)
@@ -171,54 +176,58 @@ export const uploadFormFiles = async (req, res) => {
                 size: file.size,
                 mimeType: file.mimetype,
                 fileUrl,
-                uploadedAt:
-                    row.createdAt?.toISOString?.() || new Date().toISOString(),
+                uploadedAt: row.createdAt?.toISOString?.() || new Date().toISOString(),
             });
         }
 
-        res.json({ success: true, data: results });
+        res.json({
+            success: true,
+            data: results,
+        });
     } catch (error) {
         console.error("uploadFormFiles", error);
-        res.status(500).json({ error: error.message || "Upload failed" });
+        res.status(500).json({
+            error: error.message || "Upload failed",
+        });
     }
 };
 
 export const downloadFile = async (req, res) => {
     try {
         const publicId = req.params.publicId;
-        if (
-            !publicId ||
-            typeof publicId !== "string" ||
-            !PUBLIC_ID_REGEX.test(publicId)
-        ) {
-            return res.status(400).json({ error: "Invalid file reference" });
+        if (!publicId || typeof publicId !== "string" || !PUBLIC_ID_REGEX.test(publicId)) {
+            return res.status(400).json({
+                error: "Invalid file reference",
+            });
         }
 
-        const [row] = await db
-            .select()
-            .from(formUploadedFiles)
-            .where(eq(formUploadedFiles.publicId, publicId))
-            .limit(1);
-        if (!row) return res.status(404).json({ error: "File not found" });
+        const [row] = await db.select().from(formUploadedFiles).where(eq(formUploadedFiles.publicId, publicId)).limit(1);
+        if (!row)
+            return res.status(404).json({
+                error: "File not found",
+            });
 
         const tf = isSiteAdmin(req) ? null : req.user.tenantId;
         if (tf != null && row.tenantId !== tf) {
-            return res.status(403).json({ error: "Forbidden" });
+            return res.status(403).json({
+                error: "Forbidden",
+            });
         }
 
         const abs = join(UPLOAD_ROOT, row.storagePath);
         if (!existsSync(abs)) {
-            return res.status(404).json({ error: "File missing on disk" });
+            return res.status(404).json({
+                error: "File missing on disk",
+            });
         }
 
-        res.setHeader(
-            "Content-Disposition",
-            `inline; filename="${encodeURIComponent(row.originalName)}"`,
-        );
+        res.setHeader("Content-Disposition", `inline; filename="${encodeURIComponent(row.originalName)}"`);
         if (row.mimeType) res.setHeader("Content-Type", row.mimeType);
         createReadStream(abs).pipe(res);
     } catch (error) {
         console.error("downloadFile", error);
-        res.status(500).json({ error: "Failed to read file" });
+        res.status(500).json({
+            error: "Failed to read file",
+        });
     }
 };

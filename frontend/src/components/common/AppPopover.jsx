@@ -72,10 +72,7 @@ export function AppPopover({
             >
                 <Box sx={{ p: padding, ...contentSx }}>
                     {title ? (
-                        <Typography
-                            variant="subtitle2"
-                            sx={{ mb: 1, fontWeight: 600 }}
-                        >
+                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                             {title}
                         </Typography>
                     ) : null}

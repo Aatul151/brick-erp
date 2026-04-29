@@ -1,15 +1,4 @@
-import {
-    Toolbar,
-    IconButton,
-    Box,
-    Menu,
-    MenuItem,
-    Avatar,
-    Typography,
-    useTheme,
-    useMediaQuery,
-    alpha,
-} from "@mui/material";
+import { Toolbar, IconButton, Box, Menu, MenuItem, Avatar, Typography, useTheme, useMediaQuery, alpha } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -21,12 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { ThemeToggle } from "./ThemeToggle";
 
-export function Topbar({
-    onMenuClick,
-    sidebarWidth,
-    sidebarCollapsed,
-    onToggleSidebar,
-}) {
+export function Topbar({ onMenuClick, sidebarWidth, sidebarCollapsed, onToggleSidebar }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const navigate = useNavigate();
@@ -58,10 +42,7 @@ export function Topbar({
                 zIndex: theme.zIndex.drawer + 1,
                 backgroundColor: "background.paper",
                 borderBottom: `1px solid ${theme.palette.divider}`,
-                boxShadow:
-                    theme.palette.mode === "dark"
-                        ? "0 1px 3px rgba(0,0,0,0.3)"
-                        : "0 1px 3px rgba(0,0,0,0.08)",
+                boxShadow: theme.palette.mode === "dark" ? "0 1px 3px rgba(0,0,0,0.3)" : "0 1px 3px rgba(0,0,0,0.08)",
                 transition: theme.transitions.create(["left"], {
                     easing: theme.transitions.easing.sharp,
                     duration: theme.transitions.duration.leavingScreen,
@@ -77,11 +58,7 @@ export function Topbar({
             >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     {isMobile && (
-                        <IconButton
-                            edge="start"
-                            onClick={onMenuClick}
-                            sx={{ mr: 0.5 }}
-                        >
+                        <IconButton edge="start" onClick={onMenuClick} sx={{ mr: 0.5 }}>
                             <MenuIcon />
                         </IconButton>
                     )}
@@ -92,18 +69,13 @@ export function Topbar({
                             sx={{
                                 color: "text.secondary",
                                 "&:hover": {
-                                    backgroundColor: alpha(
-                                        theme.palette.action.hover,
-                                        0.1,
-                                    ),
+                                    backgroundColor: alpha(theme.palette.action.hover, 0.1),
                                 },
                             }}
                         >
                             <MenuOpenIcon
                                 sx={{
-                                    transform: sidebarCollapsed
-                                        ? "none"
-                                        : "scaleX(-1)",
+                                    transform: sidebarCollapsed ? "none" : "scaleX(-1)",
                                 }}
                             />
                         </IconButton>
@@ -166,9 +138,7 @@ export function Topbar({
                                     whiteSpace: "nowrap",
                                 }}
                             >
-                                {user?.roles
-                                    ?.map((r) => r.roleName)
-                                    .join(", ") || "-"}
+                                {user?.roles?.map((r) => r.roleName).join(", ") || "-"}
                             </Typography>
                         </Box>
                     </Box>

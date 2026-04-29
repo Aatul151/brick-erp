@@ -3,7 +3,9 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-config({ path: join(__dirname, "..", "..", ".env") });
+config({
+    path: join(__dirname, "..", "..", ".env"),
+});
 
 import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from "pg";
@@ -26,7 +28,9 @@ pool.on("connect", (client) => {
     client.query("SET time zone 'UTC'");
 });
 
-export const db = drizzle(pool, { schema });
+export const db = drizzle(pool, {
+    schema,
+});
 
 export const testConnection = async () => {
     try {

@@ -1,15 +1,5 @@
 import { Fragment, useState } from "react";
-import {
-    Box,
-    IconButton,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
-    Tooltip,
-    useTheme,
-    alpha,
-} from "@mui/material";
+import { Box, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, useTheme, alpha } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -34,19 +24,14 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
     const { hasPermission } = useAuth();
     const [anchorEl, setAnchorEl] = useState(null);
     const row = params?.row;
-    const actionsList =
-        typeof getActions === "function" ? getActions(row) : actions;
+    const actionsList = typeof getActions === "function" ? getActions(row) : actions;
 
     const isDisabled = (action) => {
         if (!action.disabled) return false;
-        return typeof action.disabled === "function"
-            ? action.disabled(row)
-            : action.disabled;
+        return typeof action.disabled === "function" ? action.disabled(row) : action.disabled;
     };
 
-    const filteredActions = actionsList.filter(
-        (a) => !a.resource || !a.action || hasPermission(a.resource, a.action),
-    );
+    const filteredActions = actionsList.filter((a) => !a.resource || !a.action || hasPermission(a.resource, a.action));
 
     const rootActions = filteredActions.filter((a) => {
         const atRoot = a.showAtRoot ?? (a.id === "edit" || a.id === "delete");
@@ -70,8 +55,7 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
         if (action.id === "delete") return <DeleteIcon fontSize="small" />;
         if (action.id === "setupTheme") return <PaletteIcon fontSize="small" />;
         if (action.id === "suspend") return <BlockIcon fontSize="small" />;
-        if (action.id === "activate")
-            return <CheckCircleIcon fontSize="small" />;
+        if (action.id === "activate") return <CheckCircleIcon fontSize="small" />;
         return null;
     };
 
@@ -84,8 +68,7 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
     const getColor = (action) => {
         if (action.variant === "danger") return "error.main";
         if (action.variant === "success") return "success.main";
-        if (action.id === "edit" || action.id === "setupTheme")
-            return "primary.main";
+        if (action.id === "edit" || action.id === "setupTheme") return "primary.main";
         return "primary.main";
     };
 
@@ -105,18 +88,9 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
             onClick={(e) => e.stopPropagation()}
         >
             {rootActions.map((action) => (
-                <Tooltip
-                    key={action.id}
-                    title={getTooltip(action)}
-                    placement="bottom"
-                    arrow
-                >
+                <Tooltip key={action.id} title={getTooltip(action)} placement="bottom" arrow>
                     <span>
-                        <IconButton
-                            size="small"
-                            onClick={(e) => handleClick(e, action)}
-                            sx={{ color: getColor(action) }}
-                        >
+                        <IconButton size="small" onClick={(e) => handleClick(e, action)} sx={{ color: getColor(action) }}>
                             {getIcon(action)}
                         </IconButton>
                     </span>
@@ -155,10 +129,7 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
                                 minWidth: 130,
                                 py: 0.25,
                                 borderRadius: 1,
-                                boxShadow:
-                                    theme.palette.mode === "dark"
-                                        ? "0 4px 20px rgba(0,0,0,0.4)"
-                                        : "0 4px 12px rgba(0,0,0,0.12)",
+                                boxShadow: theme.palette.mode === "dark" ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 12px rgba(0,0,0,0.12)",
                                 border: `1px solid ${theme.palette.divider}`,
                                 "& .MuiMenuItem-root": {
                                     borderRadius: 0.5,
@@ -186,15 +157,9 @@ export function ActionColumnCell({ params, actions = [], getActions }) {
                                             py: 0.5,
                                             px: 1,
                                             mx: 0.25,
-                                            color:
-                                                action.variant === "danger"
-                                                    ? "error.main"
-                                                    : "text.primary",
+                                            color: action.variant === "danger" ? "error.main" : "text.primary",
                                             "&:hover": {
-                                                backgroundColor: alpha(
-                                                    theme.palette.primary.main,
-                                                    0.08,
-                                                ),
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.08),
                                             },
                                         }}
                                     >

@@ -27,12 +27,7 @@ export function StatusLabel({ value, variant = "status", label }) {
                     };
                 return {
                     className: "bg-red-100 text-red-800",
-                    label:
-                        label ??
-                        (value
-                            ? String(value).charAt(0).toUpperCase() +
-                              String(value).slice(1).toLowerCase()
-                            : "Suspended"),
+                    label: label ?? (value ? String(value).charAt(0).toUpperCase() + String(value).slice(1).toLowerCase() : "Suspended"),
                 };
             }
             case "scope": {
@@ -49,20 +44,13 @@ export function StatusLabel({ value, variant = "status", label }) {
                     };
                 return {
                     className: "bg-gray-100 text-gray-600",
-                    label:
-                        label ??
-                        (value
-                            ? String(value).charAt(0).toUpperCase() +
-                              String(value).slice(1).toLowerCase()
-                            : "-"),
+                    label: label ?? (value ? String(value).charAt(0).toUpperCase() + String(value).slice(1).toLowerCase() : "-"),
                 };
             }
             case "active": {
                 const isActive = value === true || value === "true";
                 return {
-                    className: isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600",
+                    className: isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600",
                     label: label ?? (isActive ? "Yes" : "No"),
                 };
             }
@@ -83,11 +71,5 @@ export function StatusLabel({ value, variant = "status", label }) {
 
     const { className, label: displayLabel } = getConfig();
 
-    return (
-        <span
-            className={`px-2 py-1 text-xs font-semibold rounded-full ${className}`}
-        >
-            {displayLabel}
-        </span>
-    );
+    return <span className={`px-2 py-1 text-xs font-semibold rounded-full ${className}`}>{displayLabel}</span>;
 }

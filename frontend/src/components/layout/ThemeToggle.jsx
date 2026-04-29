@@ -14,36 +14,18 @@ export function ThemeToggle() {
     return (
         <>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-                <Tooltip
-                    title={
-                        mode === "dark"
-                            ? "Switch to light mode"
-                            : "Switch to dark mode"
-                    }
-                    placement="bottom"
-                    arrow
-                >
+                <Tooltip title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"} placement="bottom" arrow>
                     <IconButton
                         onClick={toggleMode}
                         size="small"
                         sx={{
-                            color:
-                                mode === "dark"
-                                    ? "primary.main"
-                                    : "text.secondary",
+                            color: mode === "dark" ? "primary.main" : "text.secondary",
                             "&:hover": {
-                                backgroundColor: alpha(
-                                    theme.palette.action.hover,
-                                    0.1,
-                                ),
+                                backgroundColor: alpha(theme.palette.action.hover, 0.1),
                             },
                         }}
                     >
-                        {mode === "dark" ? (
-                            <LightModeIcon fontSize="small" />
-                        ) : (
-                            <DarkModeIcon fontSize="small" />
-                        )}
+                        {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
                     </IconButton>
                 </Tooltip>
                 {!isTenantUser && (
@@ -54,10 +36,7 @@ export function ThemeToggle() {
                             sx={{
                                 color: "text.secondary",
                                 "&:hover": {
-                                    backgroundColor: alpha(
-                                        theme.palette.action.hover,
-                                        0.1,
-                                    ),
+                                    backgroundColor: alpha(theme.palette.action.hover, 0.1),
                                 },
                             }}
                         >
@@ -66,12 +45,7 @@ export function ThemeToggle() {
                     </Tooltip>
                 )}
             </Box>
-            {!isTenantUser && (
-                <ThemeSettingsMenu
-                    open={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
-                />
-            )}
+            {!isTenantUser && <ThemeSettingsMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />}
         </>
     );
 }

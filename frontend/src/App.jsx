@@ -1,19 +1,9 @@
 import { useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-    ThemeProvider,
-    CssBaseline,
-    CircularProgress,
-    Box,
-    Typography,
-} from "@mui/material";
+import { ThemeProvider, CssBaseline, CircularProgress, Box, Typography } from "@mui/material";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import {
-    ThemeProvider as AppThemeProvider,
-    useThemeSettings,
-    createAppTheme,
-} from "./contexts/ThemeContext";
+import { ThemeProvider as AppThemeProvider, useThemeSettings, createAppTheme } from "./contexts/ThemeContext";
 import { RESOURCE, ACTION } from "./utils/resources";
 import ProtectedLayout from "./components/ProtectedLayout";
 import { ThemeSync } from "./components/layout/ThemeSync";
@@ -134,58 +124,26 @@ function AppRoutes() {
 
     return (
         <Routes>
-            <Route
-                path="/login"
-                element={
-                    isAuthenticated ? (
-                        <Navigate to="/dashboard" replace />
-                    ) : (
-                        <Login />
-                    )
-                }
-            />
+            <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
 
             {/* Protected routes - ProtectedLayout wraps all (auth + Layout), permission applied per route */}
-            {PROTECTED_ROUTES.map(
-                ({ path, component: Component, permission, roles }) => (
-                    <Route
-                        key={path}
-                        path={path}
-                        element={
-                            <ProtectedLayout
-                                permission={permission}
-                                roles={roles}
-                            >
-                                <Component />
-                            </ProtectedLayout>
-                        }
-                    />
-                ),
-            )}
+            {PROTECTED_ROUTES.map(({ path, component: Component, permission, roles }) => (
+                <Route
+                    key={path}
+                    path={path}
+                    element={
+                        <ProtectedLayout permission={permission} roles={roles}>
+                            <Component />
+                        </ProtectedLayout>
+                    }
+                />
+            ))}
 
             {/* Exact / - redirect to dashboard or login */}
-            <Route
-                path="/"
-                element={
-                    isAuthenticated ? (
-                        <Navigate to="/dashboard" replace />
-                    ) : (
-                        <Login />
-                    )
-                }
-            />
+            <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
 
             {/* Default: redirect unknown paths to dashboard */}
-            <Route
-                path="*"
-                element={
-                    isAuthenticated ? (
-                        <Navigate to="/dashboard" replace />
-                    ) : (
-                        <Navigate to="/login" replace />
-                    )
-                }
-            />
+            <Route path="*" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
             <Route
                 path="/404"
                 element={
@@ -198,11 +156,7 @@ function AppRoutes() {
                         }}
                     >
                         <Box sx={{ textAlign: "center" }}>
-                            <Typography
-                                variant="h4"
-                                fontWeight="bold"
-                                sx={{ mb: 2 }}
-                            >
+                            <Typography variant="h4" fontWeight="bold" sx={{ mb: 2 }}>
                                 404
                             </Typography>
                             <Typography color="text.secondary" sx={{ mb: 2 }}>
@@ -229,10 +183,7 @@ function AppRoutes() {
 
 function AppThemeWrapper({ children }) {
     const { mode, primaryColor, secondaryColor } = useThemeSettings();
-    const theme = useMemo(
-        () => createAppTheme({ mode, primaryColor, secondaryColor }),
-        [mode, primaryColor, secondaryColor],
-    );
+    const theme = useMemo(() => createAppTheme({ mode, primaryColor, secondaryColor }), [mode, primaryColor, secondaryColor]);
     return (
         <ThemeProvider theme={theme}>
             <ThemeSync />

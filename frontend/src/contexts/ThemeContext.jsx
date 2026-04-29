@@ -18,10 +18,8 @@ function loadSettings() {
             const parsed = JSON.parse(stored);
             return {
                 mode: parsed.mode ?? defaultSettings.mode,
-                primaryColor:
-                    parsed.primaryColor ?? defaultSettings.primaryColor,
-                secondaryColor:
-                    parsed.secondaryColor ?? defaultSettings.secondaryColor,
+                primaryColor: parsed.primaryColor ?? defaultSettings.primaryColor,
+                secondaryColor: parsed.secondaryColor ?? defaultSettings.secondaryColor,
             };
         }
     } catch (e) {
@@ -45,10 +43,7 @@ export function ThemeProvider({ children }) {
     const [localSettings, setLocalSettings] = useState(loadSettings);
 
     const isTenantUser = user?.tenantId && !isSiteAdmin();
-    const tenantTheme =
-        user?.tenantThemeSetting && typeof user.tenantThemeSetting === "object"
-            ? user.tenantThemeSetting
-            : null;
+    const tenantTheme = user?.tenantThemeSetting && typeof user.tenantThemeSetting === "object" ? user.tenantThemeSetting : null;
 
     const settings = useMemo(() => {
         if (isTenantUser) {
@@ -56,8 +51,7 @@ export function ThemeProvider({ children }) {
             return {
                 mode: t.mode ?? defaultSettings.mode,
                 primaryColor: t.primaryColor ?? defaultSettings.primaryColor,
-                secondaryColor:
-                    t.secondaryColor ?? defaultSettings.secondaryColor,
+                secondaryColor: t.secondaryColor ?? defaultSettings.secondaryColor,
             };
         }
         return localSettings;
@@ -102,9 +96,7 @@ export function ThemeProvider({ children }) {
         [settings, isTenantUser],
     );
 
-    return (
-        <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-    );
+    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useThemeSettings() {

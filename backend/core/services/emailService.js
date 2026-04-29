@@ -1,7 +1,6 @@
 import sgMail from "@sendgrid/mail";
 
-const isConfigured =
-    process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL;
+const isConfigured = process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL;
 
 if (isConfigured) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -12,7 +11,10 @@ const sendEmail = async (to, subject, html) => {
         console.log("SendGrid not configured. Email would be sent to:", to);
         console.log("Subject:", subject);
         console.log("Content:", html);
-        return { success: true, message: "Email service not configured" };
+        return {
+            success: true,
+            message: "Email service not configured",
+        };
     }
 
     try {
@@ -27,10 +29,16 @@ const sendEmail = async (to, subject, html) => {
         };
 
         await sgMail.send(msg);
-        return { success: true, message: "Email sent successfully" };
+        return {
+            success: true,
+            message: "Email sent successfully",
+        };
     } catch (error) {
         console.error("Email sending failed:", error.message);
-        return { success: false, message: error.message };
+        return {
+            success: false,
+            message: error.message,
+        };
     }
 };
 
@@ -157,12 +165,7 @@ export const sendTenantSuspensionEmail = async (to, tenantName, adminName) => {
     return await sendEmail(to, "Account Suspended", html);
 };
 
-export const sendUserInvitationEmail = async (
-    to,
-    inviterName,
-    tenantName,
-    tempPassword,
-) => {
+export const sendUserInvitationEmail = async (to, inviterName, tenantName, tempPassword) => {
     const loginUrl = `${process.env.API_URL}`;
 
     const html = `
@@ -208,11 +211,7 @@ export const sendUserInvitationEmail = async (
     return await sendEmail(to, `Invitation to join ${tenantName}`, html);
 };
 
-export const sendAccountReactivationEmail = async (
-    to,
-    userName,
-    tenantName,
-) => {
+export const sendAccountReactivationEmail = async (to, userName, tenantName) => {
     const loginUrl = `${process.env.API_URL}`;
 
     const html = `

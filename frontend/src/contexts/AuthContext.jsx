@@ -1,10 +1,4 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    useCallback,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { authApi } from "../utils/api/coreapi";
 
 const AuthContext = createContext(null);
@@ -26,9 +20,7 @@ export const AuthProvider = ({ children }) => {
                     const updatedUser = {
                         ...parsed,
                         ...profile,
-                        tenantThemeSetting:
-                            profile.tenantThemeSetting ??
-                            parsed.tenantThemeSetting,
+                        tenantThemeSetting: profile.tenantThemeSetting ?? parsed.tenantThemeSetting,
                     };
                     setUser(updatedUser);
                     localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -70,11 +62,8 @@ export const AuthProvider = ({ children }) => {
     const hasPermission = (resourceName, action) => {
         if (!user?.permissions?.length) return false;
         const perms = user.permissions;
-        if (perms.some((p) => p.resourceName === "*" && p.action === "*"))
-            return true;
-        return perms.some(
-            (p) => p.resourceName === resourceName && p.action === action,
-        );
+        if (perms.some((p) => p.resourceName === "*" && p.action === "*")) return true;
+        return perms.some((p) => p.resourceName === resourceName && p.action === action);
     };
 
     const isSiteAdmin = () => hasRole("Site Admin");
@@ -90,10 +79,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     /** Current JWT for Authorization header (reads storage at call time). */
-    const getAccessToken = useCallback(
-        () => localStorage.getItem("accessToken"),
-        [],
-    );
+    const getAccessToken = useCallback(() => localStorage.getItem("accessToken"), []);
 
     return (
         <AuthContext.Provider

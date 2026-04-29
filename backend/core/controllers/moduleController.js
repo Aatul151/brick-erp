@@ -14,26 +14,20 @@ export const getModules = async (req, res) => {
             conditions.push(eq(modules.isActive, active === "true"));
         }
         if (search) {
-            conditions.push(
-                or(
-                    ilike(modules.name, `%${search}%`),
-                    ilike(modules.slug, `%${search}%`),
-                ),
-            );
+            conditions.push(or(ilike(modules.name, `%${search}%`), ilike(modules.slug, `%${search}%`)));
         }
         if (conditions.length > 0) {
             query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
         }
 
-        const allModules = await query.orderBy(
-            asc(modules.sortOrder),
-            asc(modules.name),
-        );
+        const allModules = await query.orderBy(asc(modules.sortOrder), asc(modules.name));
 
         res.json(allModules);
     } catch (error) {
         console.error("Get modules error:", error);
-        res.status(500).json({ error: "Failed to fetch modules" });
+        res.status(500).json({
+            error: "Failed to fetch modules",
+        });
     }
 };
 
@@ -48,13 +42,17 @@ export const getModule = async (req, res) => {
             .limit(1);
 
         if (!module) {
-            return res.status(404).json({ error: "Module not found" });
+            return res.status(404).json({
+                error: "Module not found",
+            });
         }
 
         res.json(module);
     } catch (error) {
         console.error("Get module error:", error);
-        res.status(500).json({ error: "Failed to fetch module" });
+        res.status(500).json({
+            error: "Failed to fetch module",
+        });
     }
 };
 
@@ -87,7 +85,10 @@ export const createModule = async (req, res) => {
             action: "MODULE_CREATED",
             resourceType: AuditResourceType.MODULE,
             resourceId: module.id,
-            details: { name, slug: slugValue },
+            details: {
+                name,
+                slug: slugValue,
+            },
             ipAddress: req.ip,
         });
 
@@ -95,11 +96,13 @@ export const createModule = async (req, res) => {
     } catch (error) {
         console.error("Create module error:", error);
         if (error.code === "23505") {
-            return res
-                .status(409)
-                .json({ error: "Module slug already exists" });
+            return res.status(409).json({
+                error: "Module slug already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to create module" });
+        res.status(500).json({
+            error: "Failed to create module",
+        });
     }
 };
 
@@ -124,7 +127,9 @@ export const updateModule = async (req, res) => {
             .returning();
 
         if (!module) {
-            return res.status(404).json({ error: "Module not found" });
+            return res.status(404).json({
+                error: "Module not found",
+            });
         }
 
         await logAudit({
@@ -141,11 +146,13 @@ export const updateModule = async (req, res) => {
     } catch (error) {
         console.error("Update module error:", error);
         if (error.code === "23505") {
-            return res
-                .status(409)
-                .json({ error: "Module slug already exists" });
+            return res.status(409).json({
+                error: "Module slug already exists",
+            });
         }
-        res.status(500).json({ error: "Failed to update module" });
+        res.status(500).json({
+            error: "Failed to update module",
+        });
     }
 };
 
@@ -160,12 +167,12 @@ export const deleteModule = async (req, res) => {
             .limit(1);
 
         if (!module) {
-            return res.status(404).json({ error: "Module not found" });
+            return res.status(404).json({
+                error: "Module not found",
+            });
         }
 
-        await db
-            .delete(permissions)
-            .where(eq(permissions.resourceName, module.slug));
+        await db.delete(permissions).where(eq(permissions.resourceName, module.slug));
         await db.delete(modules).where(eq(modules.id, parseInt(id)));
 
         await logAudit({
@@ -174,13 +181,20 @@ export const deleteModule = async (req, res) => {
             action: "MODULE_DELETED",
             resourceType: AuditResourceType.MODULE,
             resourceId: parseInt(id),
-            details: { name: module.name, slug: module.slug },
+            details: {
+                name: module.name,
+                slug: module.slug,
+            },
             ipAddress: req.ip,
         });
 
-        res.json({ message: "Module deleted successfully" });
+        res.json({
+            message: "Module deleted successfully",
+        });
     } catch (error) {
         console.error("Delete module error:", error);
-        res.status(500).json({ error: "Failed to delete module" });
+        res.status(500).json({
+            error: "Failed to delete module",
+        });
     }
 };

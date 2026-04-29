@@ -1,11 +1,4 @@
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    Box,
-    CircularProgress,
-    Alert,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Box, CircularProgress, Alert } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -61,10 +54,8 @@ export function FormContainer({
         refetchOnWindowFocus: false,
     });
 
-    const formSchema =
-        providedFormSchema || transformFormSchema(fetchedFormSchema || null);
-    const displayTitle =
-        title || (mode === "edit" ? "Edit" : mode === "view" ? "View" : "Add");
+    const formSchema = providedFormSchema || transformFormSchema(fetchedFormSchema || null);
+    const displayTitle = title || (mode === "edit" ? "Edit" : mode === "view" ? "View" : "Add");
 
     const handleSuccess = () => {
         onSuccess?.();
@@ -102,51 +93,24 @@ export function FormContainer({
         if (isPlainVariant) return loader;
         if (variant === "dialog") {
             return (
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                    maxWidth={maxWidth}
-                    fullWidth={fullWidth}
-                    disableEscapeKeyDown={
-                        disableEscapeKeyDown || overallLoading
-                    }
-                >
+                <Dialog open={open} onClose={handleClose} maxWidth={maxWidth} fullWidth={fullWidth} disableEscapeKeyDown={disableEscapeKeyDown || overallLoading}>
                     <DialogContent>{loader}</DialogContent>
                 </Dialog>
             );
         }
         return (
-            <AppDrawer
-                open={open}
-                onClose={handleClose}
-                title="Loading..."
-                anchor={anchor}
-                width={drawerWidth}
-            >
+            <AppDrawer open={open} onClose={handleClose} title="Loading..." anchor={anchor} width={drawerWidth}>
                 {loader}
             </AppDrawer>
         );
     }
 
     if (shouldFetch && formError && !formSchema) {
-        const errorMessage =
-            formError instanceof Error
-                ? formError.message
-                : formError?.response?.data?.message ||
-                  "Failed to load form definition";
-        if (isPlainVariant)
-            return <Alert severity="error">{errorMessage}</Alert>;
+        const errorMessage = formError instanceof Error ? formError.message : formError?.response?.data?.message || "Failed to load form definition";
+        if (isPlainVariant) return <Alert severity="error">{errorMessage}</Alert>;
         if (variant === "dialog") {
             return (
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                    maxWidth={maxWidth}
-                    fullWidth={fullWidth}
-                    disableEscapeKeyDown={
-                        disableEscapeKeyDown || overallLoading
-                    }
-                >
+                <Dialog open={open} onClose={handleClose} maxWidth={maxWidth} fullWidth={fullWidth} disableEscapeKeyDown={disableEscapeKeyDown || overallLoading}>
                     <DialogTitle>Error</DialogTitle>
                     <DialogContent>
                         <Alert severity="error" sx={{ mt: 1 }}>
@@ -157,13 +121,7 @@ export function FormContainer({
             );
         }
         return (
-            <AppDrawer
-                open={open}
-                onClose={handleClose}
-                title="Error"
-                anchor={anchor}
-                width={drawerWidth}
-            >
+            <AppDrawer open={open} onClose={handleClose} title="Error" anchor={anchor} width={drawerWidth}>
                 <Alert severity="error">{errorMessage}</Alert>
             </AppDrawer>
         );
@@ -171,23 +129,13 @@ export function FormContainer({
 
     if (!formSchema) return null;
 
-    const rendererServices = useMemo(
-        () => createFormRendererServices({ recordId }),
-        [recordId],
-    );
+    const rendererServices = useMemo(() => createFormRendererServices({ recordId }), [recordId]);
 
     const normalizedFormSchema = {
         ...formSchema,
         title: formSchema.title ?? "",
         name: formSchema.name ?? "",
-        module:
-            formSchema.module == null
-                ? undefined
-                : typeof formSchema.module === "string"
-                  ? formSchema.module
-                  : (formSchema.module?._id ??
-                    formSchema.module?.name ??
-                    undefined),
+        module: formSchema.module == null ? undefined : typeof formSchema.module === "string" ? formSchema.module : (formSchema.module?._id ?? formSchema.module?.name ?? undefined),
     };
 
     const formRendererProps = {
@@ -228,13 +176,7 @@ export function FormContainer({
     }
 
     return (
-        <AppDrawer
-            open={open}
-            onClose={handleClose}
-            title={displayTitle}
-            anchor={anchor}
-            width={drawerWidth}
-        >
+        <AppDrawer open={open} onClose={handleClose} title={displayTitle} anchor={anchor} width={drawerWidth}>
             {renderer}
         </AppDrawer>
     );

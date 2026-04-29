@@ -13,13 +13,7 @@ export function BreadcrumbProvider({ children }) {
         setCustomCrumbs(null);
     };
 
-    return (
-        <BreadcrumbContext.Provider
-            value={{ customCrumbs, setBreadcrumb, clearBreadcrumb }}
-        >
-            {children}
-        </BreadcrumbContext.Provider>
-    );
+    return <BreadcrumbContext.Provider value={{ customCrumbs, setBreadcrumb, clearBreadcrumb }}>{children}</BreadcrumbContext.Provider>;
 }
 
 export function useBreadcrumb() {

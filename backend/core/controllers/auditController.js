@@ -5,11 +5,7 @@ import { eq, desc, sql, gte, lte } from "drizzle-orm";
 function parseTenantUuid(value) {
     if (value == null || value === "") return null;
     const tenantId = String(value).trim();
-    if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            tenantId,
-        )
-    ) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
         return null;
     }
     return tenantId;
@@ -17,21 +13,10 @@ function parseTenantUuid(value) {
 
 export const getAuditLogs = async (req, res) => {
     try {
-        const {
-            userId,
-            tenantId,
-            action,
-            resourceType,
-            startDate,
-            endDate,
-            page = 1,
-            limit = 50,
-        } = req.query;
+        const { userId, tenantId, action, resourceType, startDate, endDate, page = 1, limit = 50 } = req.query;
 
         const offset = (parseInt(page) - 1) * parseInt(limit);
-        const isSiteAdmin = req.user.roles.some(
-            (r) => r.roleName === "Site Admin",
-        );
+        const isSiteAdmin = req.user.roles.some((r) => r.roleName === "Site Admin");
 
         let query = db
             .select({
@@ -59,7 +44,9 @@ export const getAuditLogs = async (req, res) => {
         } else if (tenantId) {
             const tenantUuid = parseTenantUuid(tenantId);
             if (!tenantUuid)
-                return res.status(400).json({ error: "Invalid tenantId" });
+                return res.status(400).json({
+                    error: "Invalid tenantId",
+                });
             conditions.push(eq(auditLogs.tenantId, tenantUuid));
         }
 
@@ -89,16 +76,15 @@ export const getAuditLogs = async (req, res) => {
             query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
         }
 
-        const logs = await query
-            .orderBy(desc(auditLogs.timestamp))
-            .limit(parseInt(limit))
-            .offset(offset);
+        const logs = await query.orderBy(desc(auditLogs.timestamp)).limit(parseInt(limit)).offset(offset);
 
-        let countQuery = db.select({ count: sql`count(*)` }).from(auditLogs);
+        let countQuery = db
+            .select({
+                count: sql`count(*)`,
+            })
+            .from(auditLogs);
         if (conditions.length > 0) {
-            countQuery = countQuery.where(
-                sql`${sql.join(conditions, sql` AND `)}`,
-            );
+            countQuery = countQuery.where(sql`${sql.join(conditions, sql` AND `)}`);
         }
         const [{ count }] = await countQuery;
 
@@ -113,15 +99,15 @@ export const getAuditLogs = async (req, res) => {
         });
     } catch (error) {
         console.error("Get audit logs error:", error);
-        res.status(500).json({ error: "Failed to fetch audit logs" });
+        res.status(500).json({
+            error: "Failed to fetch audit logs",
+        });
     }
 };
 
 export const getAuditLogStats = async (req, res) => {
     try {
-        const isSiteAdmin = req.user.roles.some(
-            (r) => r.roleName === "Site Admin",
-        );
+        const isSiteAdmin = req.user.roles.some((r) => r.roleName === "Site Admin");
 
         let query = db
             .select({
@@ -134,13 +120,13 @@ export const getAuditLogStats = async (req, res) => {
             query = query.where(eq(auditLogs.tenantId, req.user.tenantId));
         }
 
-        const stats = await query
-            .groupBy(auditLogs.action)
-            .orderBy(desc(sql`count(*)`));
+        const stats = await query.groupBy(auditLogs.action).orderBy(desc(sql`count(*)`));
 
         res.json(stats);
     } catch (error) {
         console.error("Get audit log stats error:", error);
-        res.status(500).json({ error: "Failed to fetch audit log statistics" });
+        res.status(500).json({
+            error: "Failed to fetch audit log statistics",
+        });
     }
 };

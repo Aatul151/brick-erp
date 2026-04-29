@@ -9,18 +9,8 @@ const variantMap = {
 
 const sizeMap = { sm: "small", md: "medium", lg: "large" };
 
-export default function Button({
-    children,
-    variant = "primary",
-    size = "md",
-    disabled = false,
-    type = "button",
-    onClick,
-    className = "",
-    ...rest
-}) {
-    const { color, variant: muiVariant } =
-        variantMap[variant] || variantMap.primary;
+export default function Button({ children, variant = "primary", size = "md", disabled = false, type = "button", onClick, className = "", ...rest }) {
+    const { color, variant: muiVariant } = variantMap[variant] || variantMap.primary;
     return (
         <MuiButton
             type={type}

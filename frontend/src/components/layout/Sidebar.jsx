@@ -127,7 +127,11 @@ const MENU_GROUPS = [
         slugs: ["modules", "settings"],
         icon: BuildIcon,
     },
-    { title: "Monitoring & Logs", slugs: ["audit_logs"], icon: HistoryIcon },
+    {
+        title: "Monitoring & Logs",
+        slugs: ["audit_logs"],
+        icon: HistoryIcon,
+    },
 ];
 
 export function Sidebar({ open, onClose, collapsed }) {
@@ -139,17 +143,15 @@ export function Sidebar({ open, onClose, collapsed }) {
 
     const { data: modulesData } = useQuery({
         queryKey: ["modules"],
-        queryFn: () => moduleApi.getAll({ active: "true" }),
+        queryFn: () =>
+            moduleApi.getAll({
+                active: "true",
+            }),
         staleTime: 5 * 60 * 1000,
     });
     const { data: formsData = [] } = useQuery({
-        queryKey: [
-            "forms",
-            "sidebar",
-            user?.tenantId ?? "no-tenant",
-            user?.id ?? user?._id ?? "anon",
-        ],
-        queryFn: () => formsApi.getAllWithMaster(),
+        queryKey: ["forms", "sidebar", user?.tenantId ?? "no-tenant", user?.id ?? user?._id ?? "anon"],
+        queryFn: () => formsApi.getMenu(),
         enabled: !!user?.tenantId,
         staleTime: 5 * 60 * 1000,
     });
@@ -174,8 +176,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                 name: fallback.name,
                 href: fallback.path,
                 resource: fallback.slug,
-                IconComponent:
-                    ICON_MAP[fallback.icon] || AdminPanelSettingsIcon,
+                IconComponent: ICON_MAP[fallback.icon] || AdminPanelSettingsIcon,
                 roles: fallback.roles,
             };
         }
@@ -191,33 +192,18 @@ export function Sidebar({ open, onClose, collapsed }) {
         if (user?.permissions?.length) {
             return hasPermission(item.resource, "menu");
         }
-        return item.roles?.length
-            ? item.roles.some((role) =>
-                  user?.roles?.some((r) => r.roleName === role),
-              )
-            : true;
+        return item.roles?.length ? item.roles.some((role) => user?.roles?.some((r) => r.roleName === role)) : true;
     };
 
-    const rootLevelApps = ROOT_LEVEL_APPS.map((s) =>
-        getItemData(s, true),
-    ).filter(Boolean);
-    const allMenuItems = [
-        ...rootLevelApps,
-        ...menuGroups.flatMap((g) => g.items),
-    ];
+    const rootLevelApps = ROOT_LEVEL_APPS.map((s) => getItemData(s, true)).filter(Boolean);
+    const allMenuItems = [...rootLevelApps, ...menuGroups.flatMap((g) => g.items)];
     const showMasterSection = !!user?.tenantId;
-    const masterForms = showMasterSection
-        ? formsData.filter((f) => f?.formType === "master_form" && f?.name)
-        : [];
+    const masterForms = showMasterSection ? formsData.filter((f) => f?.formType === "master_form" && f?.name) : [];
 
     const hasAdminAccess = allMenuItems.some(canAccess);
     const [groupOpen, setGroupOpen] = useState(() =>
         MENU_GROUPS.reduce((acc, g) => {
-            const hasRouteInGroup = g.slugs.some(
-                (slug) =>
-                    (FALLBACK_ITEMS[slug]?.path ||
-                        `/${slug.replace(/_/g, "-")}`) === pathname,
-            );
+            const hasRouteInGroup = g.slugs.some((slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, "-")}`) === pathname);
             acc[g.title] = hasRouteInGroup;
             return acc;
         }, {}),
@@ -227,7 +213,9 @@ export function Sidebar({ open, onClose, collapsed }) {
 
     useEffect(() => {
         setGroupOpen((prev) => {
-            const next = { ...prev };
+            const next = {
+                ...prev,
+            };
             MENU_GROUPS.forEach((g) => {
                 const hasRouteInGroup = g.slugs.some((slug) => {
                     const item = getItemData(slug);
@@ -282,9 +270,15 @@ export function Sidebar({ open, onClose, collapsed }) {
     };
 
     const itemStyles = {
-        minHeight: { xs: 40, sm: 38 },
+        minHeight: {
+            xs: 40,
+            sm: 38,
+        },
         px: collapsed ? 1.5 : 2.5,
-        py: { xs: 0.875, sm: 0.75 },
+        py: {
+            xs: 0.875,
+            sm: 0.75,
+        },
         textTransform: "capitalize",
         justifyContent: collapsed ? "center" : "flex-start",
         "&.Mui-selected": selectedStyles,
@@ -293,9 +287,7 @@ export function Sidebar({ open, onClose, collapsed }) {
         },
     };
 
-    const drawerWidth = collapsed
-        ? DRAWER_WIDTH_COLLAPSED
-        : DRAWER_WIDTH_EXPANDED;
+    const drawerWidth = collapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH_EXPANDED;
 
     const drawer = (
         <Box
@@ -319,7 +311,11 @@ export function Sidebar({ open, onClose, collapsed }) {
             >
                 {!collapsed && (
                     <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.5,
+                        }}
                     >
                         <Box
                             sx={{
@@ -335,7 +331,12 @@ export function Sidebar({ open, onClose, collapsed }) {
                             }}
                         >
                             <AdminPanelSettingsIcon
-                                sx={{ fontSize: { xs: 26, sm: 24 } }}
+                                sx={{
+                                    fontSize: {
+                                        xs: 26,
+                                        sm: 24,
+                                    },
+                                }}
                             />
                         </Box>
                         <Typography
@@ -343,7 +344,10 @@ export function Sidebar({ open, onClose, collapsed }) {
                             sx={{
                                 fontWeight: 600,
                                 color: "text.primary",
-                                fontSize: { xs: "1.2rem", sm: "1.125rem" },
+                                fontSize: {
+                                    xs: "1.2rem",
+                                    sm: "1.125rem",
+                                },
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
@@ -368,34 +372,39 @@ export function Sidebar({ open, onClose, collapsed }) {
                         }}
                     >
                         <AdminPanelSettingsIcon
-                            sx={{ fontSize: { xs: 26, sm: 24 } }}
+                            sx={{
+                                fontSize: {
+                                    xs: 26,
+                                    sm: 24,
+                                },
+                            }}
                         />
                     </Box>
                 )}
             </Toolbar>
 
             {/* Navigation Items */}
-            <Box sx={{ flexGrow: 1, overflow: "auto", py: 1 }}>
-                <List sx={{ px: 0 }}>
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    overflow: "auto",
+                    py: 1,
+                }}
+            >
+                <List
+                    sx={{
+                        px: 0,
+                    }}
+                >
                     {/* Dashboard */}
                     <ListItem disablePadding>
-                        <Tooltip
-                            title={collapsed ? "Dashboard" : ""}
-                            placement="right"
-                            arrow
-                        >
-                            <ListItemButton
-                                selected={isSelected("/dashboard")}
-                                onClick={() => handleNav("/dashboard")}
-                                sx={itemStyles}
-                            >
+                        <Tooltip title={collapsed ? "Dashboard" : ""} placement="right" arrow>
+                            <ListItemButton selected={isSelected("/dashboard")} onClick={() => handleNav("/dashboard")} sx={itemStyles}>
                                 <ListItemIcon
                                     sx={{
                                         minWidth: collapsed ? 0 : 36,
                                         justifyContent: "center",
-                                        color: isSelected("/dashboard")
-                                            ? theme.palette.primary.main
-                                            : "text.secondary",
+                                        color: isSelected("/dashboard") ? theme.palette.primary.main : "text.secondary",
                                         "& svg": {
                                             fontSize: {
                                                 xs: "1.35rem",
@@ -414,9 +423,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                 xs: "0.875rem",
                                                 sm: "0.8125rem",
                                             },
-                                            fontWeight: isSelected("/dashboard")
-                                                ? 500
-                                                : 400,
+                                            fontWeight: isSelected("/dashboard") ? 500 : 400,
                                         }}
                                     />
                                 )}
@@ -429,23 +436,13 @@ export function Sidebar({ open, onClose, collapsed }) {
                         const Icon = app.IconComponent;
                         return (
                             <ListItem key={app.resource} disablePadding>
-                                <Tooltip
-                                    title={collapsed ? app.name : ""}
-                                    placement="right"
-                                    arrow
-                                >
-                                    <ListItemButton
-                                        selected={isSelected(app.href)}
-                                        onClick={() => handleNav(app.href)}
-                                        sx={itemStyles}
-                                    >
+                                <Tooltip title={collapsed ? app.name : ""} placement="right" arrow>
+                                    <ListItemButton selected={isSelected(app.href)} onClick={() => handleNav(app.href)} sx={itemStyles}>
                                         <ListItemIcon
                                             sx={{
                                                 minWidth: collapsed ? 0 : 36,
                                                 justifyContent: "center",
-                                                color: isSelected(app.href)
-                                                    ? theme.palette.primary.main
-                                                    : "text.secondary",
+                                                color: isSelected(app.href) ? theme.palette.primary.main : "text.secondary",
                                                 "& svg": {
                                                     fontSize: {
                                                         xs: "1.35rem",
@@ -464,11 +461,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                         xs: "0.875rem",
                                                         sm: "0.8125rem",
                                                     },
-                                                    fontWeight: isSelected(
-                                                        app.href,
-                                                    )
-                                                        ? 500
-                                                        : 400,
+                                                    fontWeight: isSelected(app.href) ? 500 : 400,
                                                 }}
                                             />
                                         )}
@@ -480,9 +473,18 @@ export function Sidebar({ open, onClose, collapsed }) {
 
                     {showMasterSection && (
                         <>
-                            <Divider sx={{ my: 1 }} />
+                            <Divider
+                                sx={{
+                                    my: 1,
+                                }}
+                            />
                             {!collapsed && (
-                                <ListItem sx={{ px: 2.5, py: 0.5 }}>
+                                <ListItem
+                                    sx={{
+                                        px: 2.5,
+                                        py: 0.5,
+                                    }}
+                                >
                                     <Typography
                                         variant="caption"
                                         sx={{
@@ -500,19 +502,8 @@ export function Sidebar({ open, onClose, collapsed }) {
                                 const href = `/form-studio/entries/${encodeURIComponent(form.name)}`;
                                 const selected = isSelected(href);
                                 return (
-                                    <ListItem
-                                        key={form.id || form._id || form.name}
-                                        disablePadding
-                                    >
-                                        <Tooltip
-                                            title={
-                                                collapsed
-                                                    ? form.title || form.name
-                                                    : ""
-                                            }
-                                            placement="right"
-                                            arrow
-                                        >
+                                    <ListItem key={form.id || form._id || form.name} disablePadding>
+                                        <Tooltip title={collapsed ? form.title || form.name : ""} placement="right" arrow>
                                             <ListItemButton
                                                 selected={selected}
                                                 onClick={() => handleNav(href)}
@@ -524,15 +515,9 @@ export function Sidebar({ open, onClose, collapsed }) {
                                             >
                                                 <ListItemIcon
                                                     sx={{
-                                                        minWidth: collapsed
-                                                            ? 0
-                                                            : 32,
-                                                        justifyContent:
-                                                            "center",
-                                                        color: selected
-                                                            ? theme.palette
-                                                                  .primary.main
-                                                            : "text.secondary",
+                                                        minWidth: collapsed ? 0 : 32,
+                                                        justifyContent: "center",
+                                                        color: selected ? theme.palette.primary.main : "text.secondary",
                                                         "& svg": {
                                                             fontSize: {
                                                                 xs: "1.2rem",
@@ -545,18 +530,13 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                 </ListItemIcon>
                                                 {!collapsed && (
                                                     <ListItemText
-                                                        primary={
-                                                            form.title ||
-                                                            form.name
-                                                        }
+                                                        primary={form.title || form.name}
                                                         primaryTypographyProps={{
                                                             fontSize: {
                                                                 xs: "0.8125rem",
                                                                 sm: "0.75rem",
                                                             },
-                                                            fontWeight: selected
-                                                                ? 500
-                                                                : 400,
+                                                            fontWeight: selected ? 500 : 400,
                                                         }}
                                                     />
                                                 )}
@@ -566,10 +546,17 @@ export function Sidebar({ open, onClose, collapsed }) {
                                 );
                             })}
                             {!collapsed && masterForms.length === 0 && (
-                                <ListItem sx={{ px: 2.5, py: 0.5 }}>
+                                <ListItem
+                                    sx={{
+                                        px: 2.5,
+                                        py: 0.5,
+                                    }}
+                                >
                                     <Typography
                                         variant="caption"
-                                        sx={{ color: "text.disabled" }}
+                                        sx={{
+                                            color: "text.disabled",
+                                        }}
                                     >
                                         No master forms
                                     </Typography>
@@ -581,47 +568,26 @@ export function Sidebar({ open, onClose, collapsed }) {
                     {/* Menu groups */}
                     {hasAdminAccess && (
                         <>
-                            <Divider sx={{ my: 1 }} />
+                            <Divider
+                                sx={{
+                                    my: 1,
+                                }}
+                            />
                             {menuGroups.map((group) => {
-                                const accessibleItems =
-                                    group.items.filter(canAccess);
+                                const accessibleItems = group.items.filter(canAccess);
                                 if (accessibleItems.length === 0) return null;
                                 const isGroupOpen = groupOpen[group.title];
-                                const isGroupSelected = accessibleItems.some(
-                                    (item) => pathname === item.href,
-                                );
+                                const isGroupSelected = accessibleItems.some((item) => pathname === item.href);
                                 return (
                                     <Box key={group.title}>
                                         <ListItem disablePadding>
-                                            <Tooltip
-                                                title={
-                                                    collapsed ? group.title : ""
-                                                }
-                                                placement="right"
-                                                arrow
-                                            >
-                                                <ListItemButton
-                                                    selected={isGroupSelected}
-                                                    onClick={(e) =>
-                                                        handleGroupClick(
-                                                            group.title,
-                                                            e,
-                                                        )
-                                                    }
-                                                    sx={itemStyles}
-                                                >
+                                            <Tooltip title={collapsed ? group.title : ""} placement="right" arrow>
+                                                <ListItemButton selected={isGroupSelected} onClick={(e) => handleGroupClick(group.title, e)} sx={itemStyles}>
                                                     <ListItemIcon
                                                         sx={{
-                                                            minWidth: collapsed
-                                                                ? 0
-                                                                : 36,
-                                                            justifyContent:
-                                                                "center",
-                                                            color: isGroupSelected
-                                                                ? theme.palette
-                                                                      .primary
-                                                                      .main
-                                                                : "text.secondary",
+                                                            minWidth: collapsed ? 0 : 36,
+                                                            justifyContent: "center",
+                                                            color: isGroupSelected ? theme.palette.primary.main : "text.secondary",
                                                             "& svg": {
                                                                 fontSize: {
                                                                     xs: "1.35rem",
@@ -631,45 +597,30 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                         }}
                                                     >
                                                         {(() => {
-                                                            const GroupIcon =
-                                                                group.icon;
-                                                            return (
-                                                                <GroupIcon />
-                                                            );
+                                                            const GroupIcon = group.icon;
+                                                            return <GroupIcon />;
                                                         })()}
                                                     </ListItemIcon>
                                                     {!collapsed && (
                                                         <>
                                                             <ListItemText
-                                                                primary={
-                                                                    group.title
-                                                                }
+                                                                primary={group.title}
                                                                 primaryTypographyProps={{
                                                                     fontSize: {
                                                                         xs: "0.875rem",
                                                                         sm: "0.8125rem",
                                                                     },
-                                                                    fontWeight:
-                                                                        isGroupSelected
-                                                                            ? 500
-                                                                            : 400,
+                                                                    fontWeight: isGroupSelected ? 500 : 400,
                                                                 }}
                                                             />
-                                                            {isGroupOpen ? (
-                                                                <ExpandLess />
-                                                            ) : (
-                                                                <ExpandMore />
-                                                            )}
+                                                            {isGroupOpen ? <ExpandLess /> : <ExpandMore />}
                                                         </>
                                                     )}
                                                 </ListItemButton>
                                             </Tooltip>
                                         </ListItem>
                                         <Popover
-                                            open={
-                                                Boolean(popoverAnchor) &&
-                                                popoverGroup === group.title
-                                            }
+                                            open={Boolean(popoverAnchor) && popoverGroup === group.title}
                                             anchorEl={popoverAnchor}
                                             onClose={handlePopoverClose}
                                             anchorOrigin={{
@@ -684,27 +635,21 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                 sx: {
                                                     mt: 0.5,
                                                     minWidth: 200,
-                                                    boxShadow:
-                                                        "0 4px 12px rgba(0,0,0,0.15)",
+                                                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                                                     borderRadius: 2,
                                                 },
                                             }}
                                         >
                                             <MenuList dense>
                                                 {accessibleItems.map((item) => {
-                                                    const selected = isSelected(
-                                                        item.href,
-                                                    );
-                                                    const Icon =
-                                                        item.IconComponent;
+                                                    const selected = isSelected(item.href);
+                                                    const Icon = item.IconComponent;
                                                     return (
                                                         <MenuItem
                                                             key={item.name}
                                                             selected={selected}
                                                             onClick={() => {
-                                                                handleNav(
-                                                                    item.href,
-                                                                );
+                                                                handleNav(item.href);
                                                                 handlePopoverClose();
                                                             }}
                                                             sx={{
@@ -717,80 +662,42 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                                     xs: 0.875,
                                                                     sm: 0.75,
                                                                 },
-                                                                textTransform:
-                                                                    "capitalize",
-                                                                "&.Mui-selected":
-                                                                    {
-                                                                        backgroundColor:
-                                                                            alpha(
-                                                                                theme
-                                                                                    .palette
-                                                                                    .primary
-                                                                                    .main,
-                                                                                0.08,
-                                                                            ),
-                                                                        color: theme
-                                                                            .palette
-                                                                            .primary
-                                                                            .main,
-                                                                        "&:hover":
-                                                                            {
-                                                                                backgroundColor:
-                                                                                    alpha(
-                                                                                        theme
-                                                                                            .palette
-                                                                                            .primary
-                                                                                            .main,
-                                                                                        0.12,
-                                                                                    ),
-                                                                            },
-                                                                        "& .MuiListItemIcon-root":
-                                                                            {
-                                                                                color: theme
-                                                                                    .palette
-                                                                                    .primary
-                                                                                    .main,
-                                                                            },
+                                                                textTransform: "capitalize",
+                                                                "&.Mui-selected": {
+                                                                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                                                                    color: theme.palette.primary.main,
+                                                                    "&:hover": {
+                                                                        backgroundColor: alpha(theme.palette.primary.main, 0.12),
                                                                     },
+                                                                    "& .MuiListItemIcon-root": {
+                                                                        color: theme.palette.primary.main,
+                                                                    },
+                                                                },
                                                             }}
                                                         >
                                                             <ListItemIcon
                                                                 sx={{
                                                                     minWidth: 32,
-                                                                    justifyContent:
-                                                                        "center",
-                                                                    color: selected
-                                                                        ? theme
-                                                                              .palette
-                                                                              .primary
-                                                                              .main
-                                                                        : "text.secondary",
+                                                                    justifyContent: "center",
+                                                                    color: selected ? theme.palette.primary.main : "text.secondary",
                                                                     "& svg": {
-                                                                        fontSize:
-                                                                            {
-                                                                                xs: "1.2rem",
-                                                                                sm: "1.15rem",
-                                                                            },
+                                                                        fontSize: {
+                                                                            xs: "1.2rem",
+                                                                            sm: "1.15rem",
+                                                                        },
                                                                     },
                                                                 }}
                                                             >
-                                                                {Icon && (
-                                                                    <Icon />
-                                                                )}
+                                                                {Icon && <Icon />}
                                                             </ListItemIcon>
                                                             <ListItemText
-                                                                primary={
-                                                                    item.name
-                                                                }
+                                                                primary={item.name}
                                                                 primaryTypographyProps={{
                                                                     fontSize: {
                                                                         xs: "0.875rem",
                                                                         sm: "0.8125rem",
                                                                     },
-                                                                    fontWeight:
-                                                                        selected
-                                                                            ? 500
-                                                                            : 400,
+                                                                    fontWeight: selected ? 500 : 400,
                                                                 }}
                                                             />
                                                         </MenuItem>
@@ -798,44 +705,17 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                 })}
                                             </MenuList>
                                         </Popover>
-                                        <Collapse
-                                            in={isGroupOpen && !collapsed}
-                                            timeout="auto"
-                                            unmountOnExit
-                                        >
-                                            <List
-                                                component="div"
-                                                disablePadding
-                                            >
+                                        <Collapse in={isGroupOpen && !collapsed} timeout="auto" unmountOnExit>
+                                            <List component="div" disablePadding>
                                                 {accessibleItems.map((item) => {
-                                                    const selected = isSelected(
-                                                        item.href,
-                                                    );
-                                                    const Icon =
-                                                        item.IconComponent;
+                                                    const selected = isSelected(item.href);
+                                                    const Icon = item.IconComponent;
                                                     return (
-                                                        <ListItem
-                                                            key={item.name}
-                                                            disablePadding
-                                                        >
-                                                            <Tooltip
-                                                                title={
-                                                                    collapsed
-                                                                        ? item.name
-                                                                        : ""
-                                                                }
-                                                                placement="right"
-                                                                arrow
-                                                            >
+                                                        <ListItem key={item.name} disablePadding>
+                                                            <Tooltip title={collapsed ? item.name : ""} placement="right" arrow>
                                                                 <ListItemButton
-                                                                    selected={
-                                                                        selected
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleNav(
-                                                                            item.href,
-                                                                        )
-                                                                    }
+                                                                    selected={selected}
+                                                                    onClick={() => handleNav(item.href)}
                                                                     sx={{
                                                                         ...itemStyles,
                                                                         pl: 5,
@@ -845,42 +725,26 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                                     <ListItemIcon
                                                                         sx={{
                                                                             minWidth: 32,
-                                                                            justifyContent:
-                                                                                "center",
-                                                                            color: selected
-                                                                                ? theme
-                                                                                      .palette
-                                                                                      .primary
-                                                                                      .main
-                                                                                : "text.secondary",
-                                                                            "& svg":
-                                                                                {
-                                                                                    fontSize:
-                                                                                        {
-                                                                                            xs: "1.2rem",
-                                                                                            sm: "1.15rem",
-                                                                                        },
+                                                                            justifyContent: "center",
+                                                                            color: selected ? theme.palette.primary.main : "text.secondary",
+                                                                            "& svg": {
+                                                                                fontSize: {
+                                                                                    xs: "1.2rem",
+                                                                                    sm: "1.15rem",
                                                                                 },
+                                                                            },
                                                                         }}
                                                                     >
-                                                                        {Icon && (
-                                                                            <Icon />
-                                                                        )}
+                                                                        {Icon && <Icon />}
                                                                     </ListItemIcon>
                                                                     <ListItemText
-                                                                        primary={
-                                                                            item.name
-                                                                        }
+                                                                        primary={item.name}
                                                                         primaryTypographyProps={{
-                                                                            fontSize:
-                                                                                {
-                                                                                    xs: "0.8125rem",
-                                                                                    sm: "0.75rem",
-                                                                                },
-                                                                            fontWeight:
-                                                                                selected
-                                                                                    ? 500
-                                                                                    : 400,
+                                                                            fontSize: {
+                                                                                xs: "0.8125rem",
+                                                                                sm: "0.75rem",
+                                                                            },
+                                                                            fontWeight: selected ? 500 : 400,
                                                                         }}
                                                                     />
                                                                 </ListItemButton>
@@ -903,7 +767,10 @@ export function Sidebar({ open, onClose, collapsed }) {
                 sx={{
                     borderTop: `1px solid ${theme.palette.divider}`,
                     pt: 1,
-                    pb: { xs: 2, sm: 1.5 },
+                    pb: {
+                        xs: 2,
+                        sm: 1.5,
+                    },
                     px: collapsed ? 1.5 : 2,
                 }}
             >
@@ -912,23 +779,29 @@ export function Sidebar({ open, onClose, collapsed }) {
                         <ListItemButton
                             onClick={handleLogout}
                             sx={{
-                                minHeight: { xs: 40, sm: 36 },
+                                minHeight: {
+                                    xs: 40,
+                                    sm: 36,
+                                },
                                 px: 1.5,
-                                py: { xs: 0.875, sm: 0.75 },
+                                py: {
+                                    xs: 0.875,
+                                    sm: 0.75,
+                                },
                                 borderRadius: 1,
                                 justifyContent: "center",
                                 color: theme.palette.error.main,
                                 "&:hover": {
-                                    backgroundColor: alpha(
-                                        theme.palette.error.main,
-                                        0.12,
-                                    ),
+                                    backgroundColor: alpha(theme.palette.error.main, 0.12),
                                 },
                             }}
                         >
                             <LogoutIcon
                                 sx={{
-                                    fontSize: { xs: "1.35rem", sm: "1.25rem" },
+                                    fontSize: {
+                                        xs: "1.35rem",
+                                        sm: "1.25rem",
+                                    },
                                 }}
                             />
                         </ListItemButton>
@@ -942,21 +815,24 @@ export function Sidebar({ open, onClose, collapsed }) {
                         onClick={handleLogout}
                         startIcon={<LogoutIcon />}
                         sx={{
-                            minHeight: { xs: 48, sm: 40 },
+                            minHeight: {
+                                xs: 48,
+                                sm: 40,
+                            },
                             py: 1.25,
                             px: 2,
                             justifyContent: "flex-start",
                             textTransform: "none",
-                            fontSize: { xs: "0.9375rem", sm: "0.875rem" },
+                            fontSize: {
+                                xs: "0.9375rem",
+                                sm: "0.875rem",
+                            },
                             fontWeight: 500,
                             borderColor: theme.palette.error.main,
                             color: theme.palette.error.main,
                             "&:hover": {
                                 borderColor: theme.palette.error.dark,
-                                backgroundColor: alpha(
-                                    theme.palette.error.main,
-                                    0.08,
-                                ),
+                                backgroundColor: alpha(theme.palette.error.main, 0.08),
                             },
                         }}
                     >

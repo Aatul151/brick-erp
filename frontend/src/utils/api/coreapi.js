@@ -81,12 +81,7 @@ export const api = {
 
 /** Unwrap `{ data: T }` API envelopes (saas-core style). */
 function unwrapData(body) {
-    if (
-        body &&
-        typeof body === "object" &&
-        "data" in body &&
-        body.data !== undefined
-    ) {
+    if (body && typeof body === "object" && "data" in body && body.data !== undefined) {
         return body.data;
     }
     return body;
@@ -101,9 +96,8 @@ export const formsApi = {
         const body = await api.get("/api/form-definitions");
         return unwrapData(body);
     },
-    /** Tenant forms plus every `master_form` definition (global templates). */
-    getAllWithMaster: async () => {
-        const body = await api.get("/api/form-definitions/with-master");
+    getMenu: async () => {
+        const body = await api.get("/api/form-definitions/menu");
         return unwrapData(body);
     },
     getById: async (id) => {
@@ -111,9 +105,7 @@ export const formsApi = {
         return unwrapData(body);
     },
     getByName: async (name) => {
-        const body = await api.get(
-            `/api/form-definitions/name/${encodeURIComponent(name)}`,
-        );
+        const body = await api.get(`/api/form-definitions/name/${encodeURIComponent(name)}`);
         return unwrapData(body);
     },
     create: async (form) => {
@@ -130,30 +122,18 @@ export const formsApi = {
 };
 
 export const formEntriesApi = {
-    getAll: async ({
-        formName,
-        page = 1,
-        limit = 10,
-        fields,
-        filters,
-        scope,
-    }) => {
+    getAll: async ({ formName, page = 1, limit = 10, fields, filters, scope }) => {
         const params = new URLSearchParams({
             formName: String(formName),
             page: String(page),
             limit: String(limit),
         });
         if (fields?.length) params.set("fields", fields.join(","));
-        if (filters && Object.keys(filters).length > 0)
-            params.set("filters", JSON.stringify(filters));
+        if (filters && Object.keys(filters).length > 0) params.set("filters", JSON.stringify(filters));
         if (scope) params.set("scope", String(scope));
         const body = await api.get(`/api/form-entries?${params}`);
         // Expected: { data: rows[], pagination } (do not use unwrap — would drop pagination)
-        const rows = Array.isArray(body?.data)
-            ? body.data
-            : Array.isArray(body)
-              ? body
-              : [];
+        const rows = Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
         const pagination = body?.pagination;
         if (pagination) {
             return { data: rows, pagination };
@@ -178,10 +158,7 @@ export const formEntriesApi = {
         const params = new URLSearchParams();
         if (scope) params.set("scope", String(scope));
         const suffix = params.toString() ? `?${params}` : "";
-        const body = await api.put(
-            `/api/form-entries/${entryId}${suffix}`,
-            payload,
-        );
+        const body = await api.put(`/api/form-entries/${entryId}${suffix}`, payload);
         return unwrapData(body);
     },
     delete: async (entryId, formName, scope) => {
@@ -198,10 +175,7 @@ export const fileUploadApi = {
         const formData = new FormData();
         formData.append("formName", formName);
         formData.append("fieldName", fieldName);
-        const rid =
-            recordId != null && String(recordId).trim() !== ""
-                ? String(recordId).trim()
-                : "draft";
+        const rid = recordId != null && String(recordId).trim() !== "" ? String(recordId).trim() : "draft";
         formData.append("recordId", rid);
         files.forEach((file) => formData.append("files", file));
         const response = await fetch(`${API_URL}/api/form-media/file-upload`, {
@@ -224,8 +198,7 @@ export const authApi = {
     logout: () => api.post("/api/auth/logout", {}),
     getProfile: () => api.get("/api/auth/profile"),
     updateProfile: (data) => api.put("/api/auth/profile", data),
-    requestPasswordReset: (email) =>
-        api.post("/api/auth/password-reset/request", { email }),
+    requestPasswordReset: (email) => api.post("/api/auth/password-reset/request", { email }),
     resetPassword: (data) => api.post("/api/auth/password-reset/confirm", data),
 };
 
@@ -234,10 +207,8 @@ export const tenantApi = {
     getOne: (id) => api.get(`/api/tenants/${id}`),
     create: (data) => api.post("/api/tenants", data),
     update: (id, data) => api.put(`/api/tenants/${id}`, data),
-    updateThemeSetting: (id, themeSetting) =>
-        api.put(`/api/tenants/${id}/theme`, { themeSetting }),
-    updateMyTenantThemeMode: (mode) =>
-        api.put("/api/tenants/my-theme/mode", { mode }),
+    updateThemeSetting: (id, themeSetting) => api.put(`/api/tenants/${id}/theme`, { themeSetting }),
+    updateMyTenantThemeMode: (mode) => api.put("/api/tenants/my-theme/mode", { mode }),
     suspend: (id) => api.post(`/api/tenants/${id}/suspend`, {}),
     activate: (id) => api.post(`/api/tenants/${id}/activate`, {}),
     delete: (id) => api.delete(`/api/tenants/${id}`),
@@ -269,8 +240,7 @@ export const permissionApi = {
 };
 
 export const moduleApi = {
-    getAll: (params) =>
-        api.get(`/api/modules?${new URLSearchParams(params || {})}`),
+    getAll: (params) => api.get(`/api/modules?${new URLSearchParams(params || {})}`),
     getOne: (id) => api.get(`/api/modules/${id}`),
     create: (data) => api.post("/api/modules", data),
     update: (id, data) => api.put(`/api/modules/${id}`, data),
@@ -278,7 +248,6 @@ export const moduleApi = {
 };
 
 export const auditApi = {
-    getAll: (params) =>
-        api.get(`/api/audit-logs?${new URLSearchParams(params)}`),
+    getAll: (params) => api.get(`/api/audit-logs?${new URLSearchParams(params)}`),
     getStats: () => api.get("/api/audit-logs/stats"),
 };

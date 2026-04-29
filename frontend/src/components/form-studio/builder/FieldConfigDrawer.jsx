@@ -1,16 +1,4 @@
-import {
-    Box,
-    Typography,
-    TextField,
-    FormControlLabel,
-    Switch,
-    Button,
-    Divider,
-    Chip,
-    Stack,
-    Radio,
-    RadioGroup,
-} from "@mui/material";
+import { Box, Typography, TextField, FormControlLabel, Switch, Button, Divider, Chip, Stack, Radio, RadioGroup } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useState, useEffect } from "react";
 import { AppDrawer } from "../../common/AppDrawer";
@@ -18,15 +6,7 @@ import { SearchableSelect } from "./SearchableSelect";
 import { formsApi } from "../../../utils/api/coreapi";
 import { apiReferenceService } from "../../../utils/form-studio/apiReferenceService";
 
-export function FieldConfigDrawer({
-    open,
-    onClose,
-    field,
-    fieldIndex: _fieldIndex,
-    onSave,
-    onDelete: _onDelete,
-    onValidateName,
-}) {
+export function FieldConfigDrawer({ open, onClose, field, fieldIndex: _fieldIndex, onSave, onDelete: _onDelete, onValidateName }) {
     const [formData, setFormData] = useState({});
     const [newOptionLabel, setNewOptionLabel] = useState("");
     const [newOptionValue, setNewOptionValue] = useState("");
@@ -35,17 +15,14 @@ export function FieldConfigDrawer({
     const [selectedFormSchema, setSelectedFormSchema] = useState(null);
     const [loadingForms, setLoadingForms] = useState(false);
     const [loadingFormSchema, setLoadingFormSchema] = useState(false);
-    const [availableEndpoints] = useState(
-        apiReferenceService.getAvailableEndpoints(),
-    );
+    const [availableEndpoints] = useState(apiReferenceService.getAvailableEndpoints());
 
     useEffect(() => {
         if (field) {
             setFormData({ ...field });
             if (field.type === "formReference") {
                 loadAvailableForms();
-                if (field.referenceFormName)
-                    loadFormSchema(field.referenceFormName);
+                if (field.referenceFormName) loadFormSchema(field.referenceFormName);
             }
         } else {
             setAvailableForms([]);
@@ -56,7 +33,7 @@ export function FieldConfigDrawer({
     const loadAvailableForms = async () => {
         setLoadingForms(true);
         try {
-            const forms = await formsApi.getAllWithMaster();
+            const forms = await formsApi.getAll();
             setAvailableForms(forms);
         } catch (e) {
             console.error(e);
@@ -86,9 +63,7 @@ export function FieldConfigDrawer({
 
     const handleApiEndpointChange = (endpoint) => {
         handleChange("apiEndpoint", endpoint);
-        const referenceModel = availableEndpoints.find(
-            (e) => e.value === endpoint,
-        )?.referenceModel;
+        const referenceModel = availableEndpoints.find((e) => e.value === endpoint)?.referenceModel;
         handleChange("referenceModel", referenceModel);
         handleChange("apiLabelField", "");
         handleChange("apiValueField", "_id");
@@ -105,9 +80,7 @@ export function FieldConfigDrawer({
                 value: newOptionValue.trim(),
             };
             const current = formData.options || [];
-            const normalized = current.map((opt) =>
-                typeof opt === "string" ? { label: opt, value: opt } : opt,
-            );
+            const normalized = current.map((opt) => (typeof opt === "string" ? { label: opt, value: opt } : opt));
             handleChange("options", [...normalized, newOption]);
             setNewOptionLabel("");
             setNewOptionValue("");
@@ -125,23 +98,15 @@ export function FieldConfigDrawer({
 
     const normalizeOptions = (options) => {
         if (!options) return [];
-        return options.map((opt) =>
-            typeof opt === "string" ? { label: opt, value: opt } : opt,
-        );
+        return options.map((opt) => (typeof opt === "string" ? { label: opt, value: opt } : opt));
     };
 
     const handleSave = () => {
         if (nameError) return;
-        if (
-            formData.type === "formReference" &&
-            (!formData.referenceFormName || !formData.referenceFieldName)
-        ) {
+        if (formData.type === "formReference" && (!formData.referenceFormName || !formData.referenceFieldName)) {
             return;
         }
-        if (
-            formData.type === "apiReference" &&
-            (!formData.apiEndpoint || !formData.apiLabelField)
-        ) {
+        if (formData.type === "apiReference" && (!formData.apiEndpoint || !formData.apiLabelField)) {
             return;
         }
         if (field && formData.type && formData.label && formData.name) {
@@ -150,23 +115,14 @@ export function FieldConfigDrawer({
         }
     };
 
-    const needsOptions =
-        formData.type === "select" || formData.type === "radio";
+    const needsOptions = formData.type === "select" || formData.type === "radio";
     const isFormReference = formData.type === "formReference";
     const isApiReference = formData.type === "apiReference";
-    const supportsMultiple =
-        formData.type === "select" ||
-        formData.type === "formReference" ||
-        formData.type === "apiReference" ||
-        formData.type === "file";
+    const supportsMultiple = formData.type === "select" || formData.type === "formReference" || formData.type === "apiReference" || formData.type === "file";
 
     const getAvailableFields = () => {
         if (!selectedFormSchema) return [];
-        return (
-            selectedFormSchema.sections?.flatMap((s) => s.fields) ||
-            selectedFormSchema.fields ||
-            []
-        );
+        return selectedFormSchema.sections?.flatMap((s) => s.fields) || selectedFormSchema.fields || [];
     };
 
     const formOptions = availableForms.map((f) => ({
@@ -183,24 +139,10 @@ export function FieldConfigDrawer({
     }));
 
     return (
-        <AppDrawer
-            open={open}
-            onClose={onClose}
-            title="Field Configuration"
-            anchor="right"
-            width={400}
-        >
+        <AppDrawer open={open} onClose={onClose} title="Field Configuration" anchor="right" width={400}>
             {field ? (
                 <>
-                    <TextField
-                        label="Field Label"
-                        fullWidth
-                        size="small"
-                        value={formData.label || ""}
-                        onChange={(e) => handleChange("label", e.target.value)}
-                        margin="normal"
-                        required
-                    />
+                    <TextField label="Field Label" fullWidth size="small" value={formData.label || ""} onChange={(e) => handleChange("label", e.target.value)} margin="normal" required />
                     <TextField
                         label="Field Name"
                         fullWidth
@@ -210,11 +152,7 @@ export function FieldConfigDrawer({
                             const value = e.target.value;
                             handleChange("name", value);
                             if (onValidateName && value) {
-                                setNameError(
-                                    onValidateName(value)
-                                        ? ""
-                                        : "Field name must be unique across all sections",
-                                );
+                                setNameError(onValidateName(value) ? "" : "Field name must be unique across all sections");
                             } else {
                                 setNameError("");
                             }
@@ -222,60 +160,18 @@ export function FieldConfigDrawer({
                         margin="normal"
                         required
                         error={!!nameError}
-                        helperText={
-                            nameError ||
-                            "Used as the field identifier (e.g. 'user_name')"
-                        }
+                        helperText={nameError || "Used as the field identifier (e.g. 'user_name')"}
                     />
-                    <TextField
-                        label="Placeholder"
-                        fullWidth
-                        size="small"
-                        value={formData.placeholder || ""}
-                        onChange={(e) =>
-                            handleChange("placeholder", e.target.value)
-                        }
-                        margin="normal"
-                    />
+                    <TextField label="Placeholder" fullWidth size="small" value={formData.placeholder || ""} onChange={(e) => handleChange("placeholder", e.target.value)} margin="normal" />
                     <FormControlLabel
-                        control={
-                            <Switch
-                                checked={formData.required || false}
-                                onChange={(e) =>
-                                    handleChange("required", e.target.checked)
-                                }
-                            />
-                        }
+                        control={<Switch checked={formData.required || false} onChange={(e) => handleChange("required", e.target.checked)} />}
                         label="Required Field"
                         sx={{ mt: 2, mb: 2 }}
                     />
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                checked={formData.allowFilter || false}
-                                onChange={(e) =>
-                                    handleChange(
-                                        "allowFilter",
-                                        e.target.checked,
-                                    )
-                                }
-                            />
-                        }
-                        label="Allow Filter"
-                    />
+                    <FormControlLabel control={<Switch checked={formData.allowFilter || false} onChange={(e) => handleChange("allowFilter", e.target.checked)} />} label="Allow Filter" />
                     {supportsMultiple && (
                         <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={formData.allowMultiple || false}
-                                    onChange={(e) =>
-                                        handleChange(
-                                            "allowMultiple",
-                                            e.target.checked,
-                                        )
-                                    }
-                                />
-                            }
+                            control={<Switch checked={formData.allowMultiple || false} onChange={(e) => handleChange("allowMultiple", e.target.checked)} />}
                             label="Allow Multiple Selection"
                             sx={{ mt: 1 }}
                         />
@@ -302,16 +198,9 @@ export function FieldConfigDrawer({
                                 <SearchableSelect
                                     label="Select Label Field"
                                     value={formData.referenceFieldName || ""}
-                                    onChange={(value) =>
-                                        handleChange(
-                                            "referenceFieldName",
-                                            value,
-                                        )
-                                    }
+                                    onChange={(value) => handleChange("referenceFieldName", value)}
                                     options={fieldOptions}
-                                    disabled={
-                                        loadingFormSchema || !selectedFormSchema
-                                    }
+                                    disabled={loadingFormSchema || !selectedFormSchema}
                                     loading={loadingFormSchema}
                                     loadingText="Loading form fields..."
                                     emptyText="No fields available"
@@ -343,12 +232,7 @@ export function FieldConfigDrawer({
                                         fullWidth
                                         size="small"
                                         value={formData.apiLabelField || ""}
-                                        onChange={(e) =>
-                                            handleChange(
-                                                "apiLabelField",
-                                                e.target.value,
-                                            )
-                                        }
+                                        onChange={(e) => handleChange("apiLabelField", e.target.value)}
                                         margin="normal"
                                         placeholder="e.g., name, title"
                                         helperText="Field name from API response to display as label"
@@ -358,12 +242,7 @@ export function FieldConfigDrawer({
                                         fullWidth
                                         size="small"
                                         value={formData.apiValueField || "_id"}
-                                        onChange={(e) =>
-                                            handleChange(
-                                                "apiValueField",
-                                                e.target.value,
-                                            )
-                                        }
+                                        onChange={(e) => handleChange("apiValueField", e.target.value)}
                                         margin="normal"
                                         placeholder="_id"
                                         helperText="Field name from API response to use as value (default: _id)"
@@ -379,60 +258,25 @@ export function FieldConfigDrawer({
                                 Options
                             </Typography>
                             <Stack spacing={1.5} sx={{ mb: 2 }}>
-                                <TextField
-                                    size="small"
-                                    placeholder="Label"
-                                    value={newOptionLabel}
-                                    onChange={(e) =>
-                                        setNewOptionLabel(e.target.value)
-                                    }
-                                    fullWidth
-                                />
+                                <TextField size="small" placeholder="Label" value={newOptionLabel} onChange={(e) => setNewOptionLabel(e.target.value)} fullWidth />
                                 <TextField
                                     size="small"
                                     placeholder="Value"
                                     value={newOptionValue}
-                                    onChange={(e) =>
-                                        setNewOptionValue(e.target.value)
-                                    }
+                                    onChange={(e) => setNewOptionValue(e.target.value)}
                                     onKeyPress={(e) => {
-                                        if (e.key === "Enter")
-                                            handleAddOption();
+                                        if (e.key === "Enter") handleAddOption();
                                     }}
                                     fullWidth
                                 />
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={handleAddOption}
-                                    startIcon={<AddIcon />}
-                                    disabled={
-                                        !newOptionLabel.trim() ||
-                                        !newOptionValue.trim()
-                                    }
-                                >
+                                <Button variant="outlined" size="small" onClick={handleAddOption} startIcon={<AddIcon />} disabled={!newOptionLabel.trim() || !newOptionValue.trim()}>
                                     Add Option
                                 </Button>
                             </Stack>
-                            <Stack
-                                direction="row"
-                                spacing={1}
-                                flexWrap="wrap"
-                                gap={1}
-                            >
-                                {normalizeOptions(formData.options).map(
-                                    (option, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={`${option.label}: ${option.value}`}
-                                            onDelete={() =>
-                                                handleRemoveOption(index)
-                                            }
-                                            color="primary"
-                                            variant="outlined"
-                                        />
-                                    ),
-                                )}
+                            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                                {normalizeOptions(formData.options).map((option, index) => (
+                                    <Chip key={index} label={`${option.label}: ${option.value}`} onDelete={() => handleRemoveOption(index)} color="primary" variant="outlined" />
+                                ))}
                             </Stack>
                         </Box>
                     )}
@@ -448,9 +292,7 @@ export function FieldConfigDrawer({
                                 onChange={(e) =>
                                     handleChange("validation", {
                                         ...formData.validation,
-                                        min: e.target.value
-                                            ? Number(e.target.value)
-                                            : undefined,
+                                        min: e.target.value ? Number(e.target.value) : undefined,
                                     })
                                 }
                                 margin="normal"
@@ -464,9 +306,7 @@ export function FieldConfigDrawer({
                                 onChange={(e) =>
                                     handleChange("validation", {
                                         ...formData.validation,
-                                        max: e.target.value
-                                            ? Number(e.target.value)
-                                            : undefined,
+                                        max: e.target.value ? Number(e.target.value) : undefined,
                                     })
                                 }
                                 margin="normal"
@@ -479,34 +319,10 @@ export function FieldConfigDrawer({
                             <Typography variant="subtitle2" gutterBottom>
                                 Date Picker Configuration
                             </Typography>
-                            <RadioGroup
-                                value={
-                                    formData.datePickerMode ??
-                                    (formData.displayTime ? "datetime" : "date")
-                                }
-                                onChange={(e) =>
-                                    handleChange(
-                                        "datePickerMode",
-                                        e.target.value,
-                                    )
-                                }
-                                sx={{ mt: 1 }}
-                            >
-                                <FormControlLabel
-                                    value="date"
-                                    control={<Radio size="small" />}
-                                    label="Only date"
-                                />
-                                <FormControlLabel
-                                    value="datetime"
-                                    control={<Radio size="small" />}
-                                    label="Date with time"
-                                />
-                                <FormControlLabel
-                                    value="time"
-                                    control={<Radio size="small" />}
-                                    label="Only time"
-                                />
+                            <RadioGroup value={formData.datePickerMode ?? (formData.displayTime ? "datetime" : "date")} onChange={(e) => handleChange("datePickerMode", e.target.value)} sx={{ mt: 1 }}>
+                                <FormControlLabel value="date" control={<Radio size="small" />} label="Only date" />
+                                <FormControlLabel value="datetime" control={<Radio size="small" />} label="Date with time" />
+                                <FormControlLabel value="time" control={<Radio size="small" />} label="Only time" />
                             </RadioGroup>
                         </Box>
                     )}
@@ -517,19 +333,7 @@ export function FieldConfigDrawer({
                                 File Upload Configuration
                             </Typography>
                             <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={
-                                            formData.allowMultiple || false
-                                        }
-                                        onChange={(e) =>
-                                            handleChange(
-                                                "allowMultiple",
-                                                e.target.checked,
-                                            )
-                                        }
-                                    />
-                                }
+                                control={<Switch checked={formData.allowMultiple || false} onChange={(e) => handleChange("allowMultiple", e.target.checked)} />}
                                 label="Allow Multiple Files"
                                 sx={{ mb: 2 }}
                             />
@@ -538,23 +342,12 @@ export function FieldConfigDrawer({
                                 type="number"
                                 fullWidth
                                 size="small"
-                                value={
-                                    formData.validation?.maxFileSize
-                                        ? (
-                                              formData.validation.maxFileSize /
-                                              (1024 * 1024)
-                                          ).toFixed(2)
-                                        : ""
-                                }
+                                value={formData.validation?.maxFileSize ? (formData.validation.maxFileSize / (1024 * 1024)).toFixed(2) : ""}
                                 onChange={(e) => {
-                                    const mbValue = e.target.value
-                                        ? parseFloat(e.target.value)
-                                        : undefined;
+                                    const mbValue = e.target.value ? parseFloat(e.target.value) : undefined;
                                     handleChange("validation", {
                                         ...formData.validation,
-                                        maxFileSize: mbValue
-                                            ? Math.round(mbValue * 1024 * 1024)
-                                            : undefined,
+                                        maxFileSize: mbValue ? Math.round(mbValue * 1024 * 1024) : undefined,
                                     });
                                 }}
                                 margin="normal"
@@ -565,11 +358,7 @@ export function FieldConfigDrawer({
                                 label="Allowed File Types"
                                 fullWidth
                                 size="small"
-                                value={
-                                    formData.validation?.allowedFileTypes?.join(
-                                        ", ",
-                                    ) || ""
-                                }
+                                value={formData.validation?.allowedFileTypes?.join(", ") || ""}
                                 onChange={(e) => {
                                     const types = e.target.value
                                         .split(",")
@@ -578,10 +367,7 @@ export function FieldConfigDrawer({
                                         .map((t) => t.replace(/^\./, ""));
                                     handleChange("validation", {
                                         ...formData.validation,
-                                        allowedFileTypes:
-                                            types.length > 0
-                                                ? types
-                                                : undefined,
+                                        allowedFileTypes: types.length > 0 ? types : undefined,
                                     });
                                 }}
                                 margin="normal"
@@ -601,12 +387,8 @@ export function FieldConfigDrawer({
                             disabled={
                                 !formData.label ||
                                 !formData.name ||
-                                (formData.type === "formReference" &&
-                                    (!formData.referenceFormName ||
-                                        !formData.referenceFieldName)) ||
-                                (formData.type === "apiReference" &&
-                                    (!formData.apiEndpoint ||
-                                        !formData.apiLabelField))
+                                (formData.type === "formReference" && (!formData.referenceFormName || !formData.referenceFieldName)) ||
+                                (formData.type === "apiReference" && (!formData.apiEndpoint || !formData.apiLabelField))
                             }
                         >
                             Save
@@ -614,9 +396,7 @@ export function FieldConfigDrawer({
                     </Stack>
                 </>
             ) : (
-                <Typography color="text.secondary">
-                    No field selected
-                </Typography>
+                <Typography color="text.secondary">No field selected</Typography>
             )}
         </AppDrawer>
     );

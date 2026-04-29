@@ -11,11 +11,7 @@ import { useAuth } from "../../../contexts/AuthContext";
  * File field display for grids / renderer — mirrors saas-core FileDisplay + FilePreviewDialog.
  * Uses AuthContext `getAccessToken()` for every preview/download (Bearer). Optional `getAccessToken` prop overrides for tests or embeds.
  */
-export function FileDisplay({
-    fieldValue,
-    onDownloadError,
-    getAccessToken: getAccessTokenProp,
-}) {
+export function FileDisplay({ fieldValue, onDownloadError, getAccessToken: getAccessTokenProp }) {
     const { getAccessToken: getAccessTokenFromAuth } = useAuth();
     const getAccessToken = getAccessTokenProp ?? getAccessTokenFromAuth;
 
@@ -33,24 +29,12 @@ export function FileDisplay({
         setPreviewFile(null);
     };
 
-    const previewDialog = (
-        <FilePreviewDialog
-            open={previewOpen}
-            file={previewFile}
-            onClose={handleClosePreview}
-            onDownloadError={onDownloadError}
-            getAccessToken={getAccessToken}
-        />
-    );
+    const previewDialog = <FilePreviewDialog open={previewOpen} file={previewFile} onClose={handleClosePreview} onDownloadError={onDownloadError} getAccessToken={getAccessToken} />;
 
     if (!fieldValue || (Array.isArray(fieldValue) && fieldValue.length === 0)) {
         return (
             <>
-                <Typography
-                    variant="body2"
-                    color="text.disabled"
-                    sx={{ fontStyle: "italic" }}
-                >
+                <Typography variant="body2" color="text.disabled" sx={{ fontStyle: "italic" }}>
                     No files
                 </Typography>
                 {previewDialog}
@@ -60,9 +44,7 @@ export function FileDisplay({
 
     let files = [];
     if (Array.isArray(fieldValue)) {
-        files = fieldValue.filter(
-            (f) => f && typeof f === "object" && f.fileUrl,
-        );
+        files = fieldValue.filter((f) => f && typeof f === "object" && f.fileUrl);
     } else if (typeof fieldValue === "object" && fieldValue.fileUrl) {
         files = [fieldValue];
     }
@@ -70,11 +52,7 @@ export function FileDisplay({
     if (files.length === 0) {
         return (
             <>
-                <Typography
-                    variant="body2"
-                    color="text.disabled"
-                    sx={{ fontStyle: "italic" }}
-                >
+                <Typography variant="body2" color="text.disabled" sx={{ fontStyle: "italic" }}>
                     No files
                 </Typography>
                 {previewDialog}
@@ -84,29 +62,19 @@ export function FileDisplay({
 
     if (files.length === 1) {
         const fileData = files[0];
-        const displayName =
-            fileData.originalName || fileData.fileName || "Download file";
+        const displayName = fileData.originalName || fileData.fileName || "Download file";
 
         return (
             <>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <Tooltip
-                        title={`Click to download: ${displayName}`}
-                        placement="bottom"
-                        arrow
-                    >
+                    <Tooltip title={`Click to download: ${displayName}`} placement="bottom" arrow>
                         <Link
                             component="button"
                             type="button"
                             variant="body2"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                downloadFile(
-                                    fileData.fileUrl,
-                                    displayName,
-                                    onDownloadError,
-                                    getAccessToken(),
-                                );
+                                downloadFile(fileData.fileUrl, displayName, onDownloadError, getAccessToken());
                             }}
                             sx={{
                                 textAlign: "left",
@@ -195,10 +163,7 @@ export function FileDisplay({
                         }}
                     >
                         {files.map((fileData, index) => {
-                            const displayName =
-                                fileData.originalName ||
-                                fileData.fileName ||
-                                `File ${index + 1}`;
+                            const displayName = fileData.originalName || fileData.fileName || `File ${index + 1}`;
                             return (
                                 <Box
                                     key={index}
@@ -214,23 +179,14 @@ export function FileDisplay({
                                     }}
                                 >
                                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                        <Tooltip
-                                            title={displayName}
-                                            placement="bottom"
-                                            arrow
-                                        >
+                                        <Tooltip title={displayName} placement="bottom" arrow>
                                             <Link
                                                 component="button"
                                                 type="button"
                                                 variant="body2"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    downloadFile(
-                                                        fileData.fileUrl,
-                                                        displayName,
-                                                        onDownloadError,
-                                                        getAccessToken(),
-                                                    );
+                                                    downloadFile(fileData.fileUrl, displayName, onDownloadError, getAccessToken());
                                                 }}
                                                 sx={{
                                                     color: "primary.main",
@@ -254,21 +210,14 @@ export function FileDisplay({
                                             </Link>
                                         </Tooltip>
                                     </Box>
-                                    <Tooltip
-                                        title="Preview file"
-                                        placement="bottom"
-                                        arrow
-                                    >
+                                    <Tooltip title="Preview file" placement="bottom" arrow>
                                         <IconButton
                                             size="small"
-                                            onClick={(e) =>
-                                                handlePreview(fileData, e)
-                                            }
+                                            onClick={(e) => handlePreview(fileData, e)}
                                             sx={{
                                                 flexShrink: 0,
                                                 "&:hover": {
-                                                    backgroundColor:
-                                                        "action.hover",
+                                                    backgroundColor: "action.hover",
                                                 },
                                             }}
                                         >

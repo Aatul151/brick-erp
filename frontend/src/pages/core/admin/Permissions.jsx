@@ -1,17 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Box,
-    Typography,
-    Checkbox,
-    alpha,
-    useTheme,
-    Skeleton,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, Box, Typography, Checkbox, alpha, useTheme, Skeleton } from "@mui/material";
 import SecurityIcon from "@mui/icons-material/Security";
 import { roleApi, permissionApi, moduleApi } from "../../../utils/api/coreapi";
 import { RESOURCE, ACTION } from "../../../utils/resources";
@@ -23,8 +12,7 @@ import Button from "../../../components/ui/Button";
 
 const ACTIONS = ["menu", "read", "create", "update", "delete"];
 
-const formatModuleName = (name) =>
-    name?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "";
+const formatModuleName = (name) => name?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "";
 
 const formatActionLabel = (action) => {
     const map = {
@@ -42,9 +30,7 @@ export default function Permissions() {
     const theme = useTheme();
     const { hasPermission } = useAuth();
     const [selectedRoleId, setSelectedRoleId] = useState("");
-    const [selectedPermissionIds, setSelectedPermissionIds] = useState(
-        new Set(),
-    );
+    const [selectedPermissionIds, setSelectedPermissionIds] = useState(new Set());
     const [pendingCreate, setPendingCreate] = useState(new Set());
     const [headerCreatingAction, setHeaderCreatingAction] = useState(null);
 
@@ -89,9 +75,7 @@ export default function Permissions() {
 
     const permissionMap = useMemo(() => {
         const map = new Map();
-        allPermissions.forEach((p) =>
-            map.set(`${p.resourceName}_${p.action}`, p),
-        );
+        allPermissions.forEach((p) => map.set(`${p.resourceName}_${p.action}`, p));
         return map;
     }, [allPermissions]);
 
@@ -103,9 +87,7 @@ export default function Permissions() {
 
     const modules = useMemo(() => {
         const fromApi = (modulesData || []).map((m) => m.slug);
-        const fromPerms = [
-            ...new Set(allPermissions.map((p) => p.resourceName)),
-        ];
+        const fromPerms = [...new Set(allPermissions.map((p) => p.resourceName))];
         return [...new Set([...fromApi, ...fromPerms])].sort();
     }, [modulesData, allPermissions]);
 
@@ -151,12 +133,8 @@ export default function Permissions() {
     const handleHeaderCheck = async (action, checked) => {
         if (checked) {
             setHeaderCreatingAction(action);
-            const toCreate = rows
-                .filter((r) => r[action] == null)
-                .map((r) => ({ moduleKey: r.moduleKey, action }));
-            const existingIds = rows
-                .filter((r) => r[action] != null)
-                .map((r) => r[action]);
+            const toCreate = rows.filter((r) => r[action] == null).map((r) => ({ moduleKey: r.moduleKey, action }));
+            const existingIds = rows.filter((r) => r[action] != null).map((r) => r[action]);
             const newIds = [...existingIds];
             try {
                 for (const { moduleKey } of toCreate) {
@@ -168,10 +146,7 @@ export default function Permissions() {
                     newIds.push(perm.id);
                     queryClient.setQueryData(["permissions"], (old) => {
                         if (!old) return old;
-                        const perms = [
-                            ...(old.permissions || []),
-                            { ...perm, roleCount: 0 },
-                        ];
+                        const perms = [...(old.permissions || []), { ...perm, roleCount: 0 }];
                         const grouped = perms.reduce((acc, p) => {
                             if (!acc[p.resourceName]) acc[p.resourceName] = [];
                             acc[p.resourceName].push(p);
@@ -191,9 +166,7 @@ export default function Permissions() {
                 setHeaderCreatingAction(null);
             }
         } else {
-            const permIds = rows
-                .filter((r) => r[action] != null)
-                .map((r) => r[action]);
+            const permIds = rows.filter((r) => r[action] != null).map((r) => r[action]);
             setSelectedPermissionIds((prev) => {
                 const next = new Set(prev);
                 permIds.forEach((id) => next.delete(id));
@@ -215,10 +188,7 @@ export default function Permissions() {
             setSelectedPermissionIds((prev) => new Set([...prev, perm.id]));
             queryClient.setQueryData(["permissions"], (old) => {
                 if (!old) return old;
-                const perms = [
-                    ...(old.permissions || []),
-                    { ...perm, roleCount: 0 },
-                ];
+                const perms = [...(old.permissions || []), { ...perm, roleCount: 0 }];
                 const grouped = perms.reduce((acc, p) => {
                     if (!acc[p.resourceName]) acc[p.resourceName] = [];
                     acc[p.resourceName].push(p);
@@ -273,14 +243,10 @@ export default function Permissions() {
                 const selectedCount = rows.filter((r) => {
                     const permId = r[action];
                     const key = `${r.moduleKey}_${action}`;
-                    return permId != null
-                        ? selectedPermissionIds.has(permId)
-                        : pendingCreate.has(key);
+                    return permId != null ? selectedPermissionIds.has(permId) : pendingCreate.has(key);
                 }).length;
-                const allChecked =
-                    totalModules > 0 && selectedCount === totalModules;
-                const someChecked =
-                    selectedCount > 0 && selectedCount < totalModules;
+                const allChecked = totalModules > 0 && selectedCount === totalModules;
+                const someChecked = selectedCount > 0 && selectedCount < totalModules;
                 const canUpdate = hasPermission(RESOURCE.ROLES, ACTION.UPDATE);
 
                 return {
@@ -305,28 +271,16 @@ export default function Permissions() {
                                 gap: 0.5,
                             }}
                         >
-                            <Typography
-                                component="span"
-                                variant="caption"
-                                fontWeight={600}
-                                sx={{ lineHeight: 1 }}
-                            >
+                            <Typography component="span" variant="caption" fontWeight={600} sx={{ lineHeight: 1 }}>
                                 {formatActionLabel(action)}
                             </Typography>
                             <Checkbox
                                 checked={allChecked}
                                 indeterminate={someChecked}
-                                disabled={
-                                    headerCreatingAction === action ||
-                                    !canUpdate
-                                }
+                                disabled={headerCreatingAction === action || !canUpdate}
                                 onChange={(e) => {
                                     e.stopPropagation();
-                                    if (canUpdate)
-                                        handleHeaderCheck(
-                                            action,
-                                            e.target.checked,
-                                        );
+                                    if (canUpdate) handleHeaderCheck(action, e.target.checked);
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                                 size="small"
@@ -342,17 +296,9 @@ export default function Permissions() {
                         const permExists = permId != null;
                         const key = `${moduleKey}_${action}`;
                         const isCreating = pendingCreate.has(key);
-                        const isChecked = permExists
-                            ? selectedPermissionIds.has(permId)
-                            : isCreating;
-                        const canUpdate = hasPermission(
-                            RESOURCE.ROLES,
-                            ACTION.UPDATE,
-                        );
-                        const canCreatePerm = hasPermission(
-                            RESOURCE.PERMISSIONS,
-                            ACTION.CREATE,
-                        );
+                        const isChecked = permExists ? selectedPermissionIds.has(permId) : isCreating;
+                        const canUpdate = hasPermission(RESOURCE.ROLES, ACTION.UPDATE);
+                        const canCreatePerm = hasPermission(RESOURCE.PERMISSIONS, ACTION.CREATE);
 
                         return (
                             <Box
@@ -370,11 +316,7 @@ export default function Permissions() {
                                         disabled={!canUpdate}
                                         onChange={(e) => {
                                             e.stopPropagation();
-                                            if (canUpdate)
-                                                handleCheckboxChange(
-                                                    permId,
-                                                    e.target.checked,
-                                                );
+                                            if (canUpdate) handleCheckboxChange(permId, e.target.checked);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
                                         size="small"
@@ -384,28 +326,16 @@ export default function Permissions() {
                                 ) : (
                                     <Checkbox
                                         checked={isCreating}
-                                        disabled={
-                                            isCreating ||
-                                            !canUpdate ||
-                                            !canCreatePerm
-                                        }
+                                        disabled={isCreating || !canUpdate || !canCreatePerm}
                                         onChange={(e) => {
                                             e.stopPropagation();
-                                            if (canUpdate && canCreatePerm)
-                                                handleCheckboxChangeForNew(
-                                                    moduleKey,
-                                                    action,
-                                                );
+                                            if (canUpdate && canCreatePerm) handleCheckboxChangeForNew(moduleKey, action);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
                                         size="small"
                                         color="primary"
                                         title={
-                                            !canCreatePerm
-                                                ? "No permission to create"
-                                                : !canUpdate
-                                                  ? "No permission to assign"
-                                                  : "Permission does not exist. Check to create and assign to this role."
+                                            !canCreatePerm ? "No permission to create" : !canUpdate ? "No permission to assign" : "Permission does not exist. Check to create and assign to this role."
                                         }
                                         sx={{ p: 0, m: 0 }}
                                     />
@@ -416,22 +346,12 @@ export default function Permissions() {
                 };
             }),
         ],
-        [
-            rows,
-            selectedPermissionIds,
-            pendingCreate,
-            headerCreatingAction,
-            hasPermission,
-        ],
+        [rows, selectedPermissionIds, pendingCreate, headerCreatingAction, hasPermission],
     );
 
     return (
         <div className="px-4 sm:px-0 flex flex-col gap-4 min-h-0 flex-1">
-            <PageHeader
-                title="Role Permissions"
-                subtitle="Assign permissions to roles by module"
-                icon={<SecurityIcon fontSize="small" color="primary" />}
-            />
+            <PageHeader title="Role Permissions" subtitle="Assign permissions to roles by module" icon={<SecurityIcon fontSize="small" color="primary" />} />
             <PageContent>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <Box
@@ -445,16 +365,8 @@ export default function Permissions() {
                     >
                         <Box sx={{ minWidth: 200, maxWidth: 320 }}>
                             <FormControl fullWidth size="small">
-                                <InputLabel id="role-select-label">
-                                    Select Role
-                                </InputLabel>
-                                <Select
-                                    labelId="role-select-label"
-                                    label="Select Role"
-                                    value={selectedRoleId}
-                                    onChange={handleRoleChange}
-                                    sx={{ bgcolor: "background.paper" }}
-                                >
+                                <InputLabel id="role-select-label">Select Role</InputLabel>
+                                <Select labelId="role-select-label" label="Select Role" value={selectedRoleId} onChange={handleRoleChange} sx={{ bgcolor: "background.paper" }}>
                                     <MenuItem value="">
                                         <em>Select a role...</em>
                                     </MenuItem>
@@ -466,18 +378,11 @@ export default function Permissions() {
                                 </Select>
                             </FormControl>
                         </Box>
-                        {selectedRoleId &&
-                            hasChanges &&
-                            hasPermission(RESOURCE.ROLES, ACTION.UPDATE) && (
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={updateRoleMutation.isPending}
-                                >
-                                    {updateRoleMutation.isPending
-                                        ? "Saving..."
-                                        : "Save Permissions"}
-                                </Button>
-                            )}
+                        {selectedRoleId && hasChanges && hasPermission(RESOURCE.ROLES, ACTION.UPDATE) && (
+                            <Button onClick={handleSave} disabled={updateRoleMutation.isPending}>
+                                {updateRoleMutation.isPending ? "Saving..." : "Save Permissions"}
+                            </Button>
+                        )}
                     </Box>
 
                     {!selectedRoleId ? (
@@ -487,16 +392,10 @@ export default function Permissions() {
                                 textAlign: "center",
                                 borderRadius: 2,
                                 border: `2px dashed ${theme.palette.divider}`,
-                                bgcolor: alpha(
-                                    theme.palette.primary.main,
-                                    0.02,
-                                ),
+                                bgcolor: alpha(theme.palette.primary.main, 0.02),
                             }}
                         >
-                            <Typography color="text.secondary">
-                                Select a role above to view and manage its
-                                permissions
-                            </Typography>
+                            <Typography color="text.secondary">Select a role above to view and manage its permissions</Typography>
                         </Box>
                     ) : isLoading || roleLoading ? (
                         <Skeleton variant="rounded" height={400} />
@@ -515,15 +414,13 @@ export default function Permissions() {
                                         {
                                             justifyContent: "center",
                                         },
-                                    "& .MuiDataGrid-columnHeader.permissions-action-header":
-                                        {
+                                    "& .MuiDataGrid-columnHeader.permissions-action-header": {
+                                        justifyContent: "center",
+                                        "& .MuiDataGrid-columnHeaderTitleContainer": {
                                             justifyContent: "center",
-                                            "& .MuiDataGrid-columnHeaderTitleContainer":
-                                                {
-                                                    justifyContent: "center",
-                                                    width: "100%",
-                                                },
+                                            width: "100%",
                                         },
+                                    },
                                 }}
                             />
                         </>

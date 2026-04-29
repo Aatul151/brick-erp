@@ -9,11 +9,7 @@ import { findFormDefinitionByName } from "../utils/formStudioQueries.js";
 function parseUuid(value) {
     if (value == null || value === "") return null;
     const id = String(value).trim();
-    if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            id,
-        )
-    ) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
         return null;
     }
     return id;
@@ -23,34 +19,34 @@ export const listFormEntries = async (req, res) => {
     try {
         const formName = req.query.formName;
         if (!formName)
-            return res
-                .status(400)
-                .json({ error: "formName query is required" });
+            return res.status(400).json({
+                error: "formName query is required",
+            });
 
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-        const limit = Math.min(
-            500,
-            Math.max(1, parseInt(req.query.limit, 10) || 10),
-        );
+        const limit = Math.min(500, Math.max(1, parseInt(req.query.limit, 10) || 10));
         let filters = {};
         if (req.query.filters) {
             try {
-                filters =
-                    typeof req.query.filters === "string"
-                        ? JSON.parse(req.query.filters)
-                        : req.query.filters;
+                filters = typeof req.query.filters === "string" ? JSON.parse(req.query.filters) : req.query.filters;
             } catch {
-                return res.status(400).json({ error: "Invalid filters JSON" });
+                return res.status(400).json({
+                    error: "Invalid filters JSON",
+                });
             }
         }
 
         const def = await findFormDefinitionByName(req, formName);
         if (!def)
-            return res.status(404).json({ error: "Form definition not found" });
+            return res.status(404).json({
+                error: "Form definition not found",
+            });
 
         const tf = resolveWriteTenantId(req);
         if (tf != null && def.tenantId !== tf) {
-            return res.status(403).json({ error: "Forbidden" });
+            return res.status(403).json({
+                error: "Forbidden",
+            });
         }
 
         const baseConditions = [eq(formEntries.formDefinitionId, def.id)];
@@ -60,9 +56,7 @@ export const listFormEntries = async (req, res) => {
             for (const [k, v] of Object.entries(filters)) {
                 if (v === undefined || v === null || v === "") continue;
                 if (!/^[a-zA-Z0-9_]+$/.test(k)) continue;
-                baseConditions.push(
-                    sql`${formEntries.payload} ->> ${sql.raw(`'${k}'`)} = ${String(v)}`,
-                );
+                baseConditions.push(sql`${formEntries.payload} ->> ${sql.raw(`'${k}'`)} = ${String(v)}`);
             }
         }
 
@@ -70,7 +64,9 @@ export const listFormEntries = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const [{ count }] = await db
-            .select({ count: sql`count(*)::int` })
+            .select({
+                count: sql`count(*)::int`,
+            })
             .from(formEntries)
             .where(allConditions);
 
@@ -133,7 +129,9 @@ export const listFormEntries = async (req, res) => {
         });
     } catch (error) {
         console.error("listFormEntries", error);
-        res.status(500).json({ error: "Failed to list form entries" });
+        res.status(500).json({
+            error: "Failed to list form entries",
+        });
     }
 };
 
@@ -141,15 +139,21 @@ export const createFormEntry = async (req, res) => {
     try {
         const { formName, payload = {} } = req.body;
         if (!formName)
-            return res.status(400).json({ error: "formName is required" });
+            return res.status(400).json({
+                error: "formName is required",
+            });
 
         const def = await findFormDefinitionByName(req, formName);
         if (!def)
-            return res.status(404).json({ error: "Form definition not found" });
+            return res.status(404).json({
+                error: "Form definition not found",
+            });
 
         const tf = resolveWriteTenantId(req);
         if (tf != null && def.tenantId !== tf) {
-            return res.status(403).json({ error: "Forbidden" });
+            return res.status(403).json({
+                error: "Forbidden",
+            });
         }
 
         const [created] = await db
@@ -162,11 +166,7 @@ export const createFormEntry = async (req, res) => {
             })
             .returning();
 
-        const [u] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, req.user.id))
-            .limit(1);
+        const [u] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
 
         res.status(201).json({
             success: true,
@@ -174,30 +174,38 @@ export const createFormEntry = async (req, res) => {
         });
     } catch (error) {
         console.error("createFormEntry", error);
-        res.status(500).json({ error: "Failed to create form entry" });
+        res.status(500).json({
+            error: "Failed to create form entry",
+        });
     }
 };
 
 export const updateFormEntry = async (req, res) => {
     try {
         const entryId = parseUuid(req.params.id);
-        if (!entryId) return res.status(400).json({ error: "Invalid id" });
+        if (!entryId)
+            return res.status(400).json({
+                error: "Invalid id",
+            });
 
         const { formName, payload } = req.body;
         if (!formName)
-            return res.status(400).json({ error: "formName is required" });
+            return res.status(400).json({
+                error: "formName is required",
+            });
         if (payload === undefined)
-            return res.status(400).json({ error: "payload is required" });
+            return res.status(400).json({
+                error: "payload is required",
+            });
 
         const def = await findFormDefinitionByName(req, formName);
         if (!def)
-            return res.status(404).json({ error: "Form definition not found" });
+            return res.status(404).json({
+                error: "Form definition not found",
+            });
 
         const tf = resolveWriteTenantId(req);
-        const conditions = [
-            eq(formEntries.id, entryId),
-            eq(formEntries.formDefinitionId, def.id),
-        ];
+        const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
         if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
 
         const [existing] = await db
@@ -207,7 +215,9 @@ export const updateFormEntry = async (req, res) => {
             .limit(1);
 
         if (!existing)
-            return res.status(404).json({ error: "Entry not found" });
+            return res.status(404).json({
+                error: "Entry not found",
+            });
 
         const [updated] = await db
             .update(formEntries)
@@ -218,16 +228,17 @@ export const updateFormEntry = async (req, res) => {
             .where(eq(formEntries.id, entryId))
             .returning();
 
-        const [u] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, req.user.id))
-            .limit(1);
+        const [u] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
 
-        res.json({ success: true, data: mapFormEntry(updated, u) });
+        res.json({
+            success: true,
+            data: mapFormEntry(updated, u),
+        });
     } catch (error) {
         console.error("updateFormEntry", error);
-        res.status(500).json({ error: "Failed to update form entry" });
+        res.status(500).json({
+            error: "Failed to update form entry",
+        });
     }
 };
 
@@ -235,34 +246,47 @@ export const deleteFormEntry = async (req, res) => {
     try {
         const entryId = parseUuid(req.params.id);
         const formName = req.query.formName;
-        if (!entryId) return res.status(400).json({ error: "Invalid id" });
+        if (!entryId)
+            return res.status(400).json({
+                error: "Invalid id",
+            });
         if (!formName)
-            return res
-                .status(400)
-                .json({ error: "formName query is required" });
+            return res.status(400).json({
+                error: "formName query is required",
+            });
 
         const def = await findFormDefinitionByName(req, formName);
         if (!def)
-            return res.status(404).json({ error: "Form definition not found" });
+            return res.status(404).json({
+                error: "Form definition not found",
+            });
 
         const tf = resolveWriteTenantId(req);
-        const conditions = [
-            eq(formEntries.id, entryId),
-            eq(formEntries.formDefinitionId, def.id),
-        ];
+        const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
         if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
 
         const del = await db
             .delete(formEntries)
             .where(and(...conditions))
-            .returning({ id: formEntries.id });
+            .returning({
+                id: formEntries.id,
+            });
 
         if (!del.length)
-            return res.status(404).json({ error: "Entry not found" });
+            return res.status(404).json({
+                error: "Entry not found",
+            });
 
-        res.json({ success: true, data: { id: entryId } });
+        res.json({
+            success: true,
+            data: {
+                id: entryId,
+            },
+        });
     } catch (error) {
         console.error("deleteFormEntry", error);
-        res.status(500).json({ error: "Failed to delete form entry" });
+        res.status(500).json({
+            error: "Failed to delete form entry",
+        });
     }
 };

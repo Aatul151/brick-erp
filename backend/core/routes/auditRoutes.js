@@ -4,17 +4,7 @@ import { authenticate, requireRole } from "../../middleware/auth.js";
 
 const router = express.Router();
 
-router.get(
-    "/",
-    authenticate,
-    requireRole("Site Admin", "Client Admin"),
-    auditController.getAuditLogs,
-);
-router.get(
-    "/stats",
-    authenticate,
-    requireRole("Site Admin", "Client Admin"),
-    auditController.getAuditLogStats,
-);
+router.get("/", authenticate, requireRole("Site Admin", "Client Admin"), auditController.getAuditLogs);
+router.get("/stats", authenticate, requireRole("Site Admin", "Client Admin"), auditController.getAuditLogStats);
 
 export default router;

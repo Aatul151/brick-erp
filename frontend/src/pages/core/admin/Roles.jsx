@@ -60,9 +60,7 @@ export default function Roles() {
             field: "scope",
             headerName: "Scope",
             width: 100,
-            renderCell: (params) => (
-                <StatusLabel value={params.row.scope} variant="scope" />
-            ),
+            renderCell: (params) => <StatusLabel value={params.row.scope} variant="scope" />,
         },
         { field: "userCount", headerName: "Users", width: 80 },
         {
@@ -96,13 +94,10 @@ export default function Roles() {
                             variant: "danger",
                             disabled: parseInt(row.userCount) > 0,
                             onClick: async () => {
-                                const ok = await confirm(
-                                    "Delete this role? This action cannot be undone.",
-                                    {
-                                        confirmText: "Delete",
-                                        confirmVariant: "danger",
-                                    },
-                                );
+                                const ok = await confirm("Delete this role? This action cannot be undone.", {
+                                    confirmText: "Delete",
+                                    confirmVariant: "danger",
+                                });
                                 if (ok) deleteMutation.mutate(row.id);
                             },
                         },
@@ -117,9 +112,7 @@ export default function Roles() {
             <PageHeader
                 title="Roles"
                 subtitle="Create and manage roles"
-                icon={
-                    <AdminPanelSettingsIcon fontSize="small" color="primary" />
-                }
+                icon={<AdminPanelSettingsIcon fontSize="small" color="primary" />}
                 actions={[
                     {
                         label: "Create Role",
@@ -132,29 +125,16 @@ export default function Roles() {
                 ]}
             />
             <PageContent>
-                <AppDataTable
-                    rows={roles || []}
-                    columns={columns}
-                    getRowId={(row) => row.id}
-                    loading={isLoading}
-                    height={500}
-                />
+                <AppDataTable rows={roles || []} columns={columns} getRowId={(row) => row.id} loading={isLoading} height={500} />
 
-                <CreateRoleModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={(data) => createMutation.mutate(data)}
-                    isLoading={createMutation.isPending}
-                />
+                <CreateRoleModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={(data) => createMutation.mutate(data)} isLoading={createMutation.isPending} />
 
                 {selectedRole && (
                     <EditRoleModal
                         isOpen={!!selectedRole}
                         onClose={() => setSelectedRole(null)}
                         role={selectedRole}
-                        onSubmit={(data) =>
-                            updateMutation.mutate({ id: selectedRole.id, data })
-                        }
+                        onSubmit={(data) => updateMutation.mutate({ id: selectedRole.id, data })}
                         isLoading={updateMutation.isPending}
                     />
                 )}
@@ -183,27 +163,10 @@ function CreateRoleModal({ isOpen, onClose, onSubmit, isLoading }) {
     };
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Create New Role"
-            size="md"
-        >
+        <Modal isOpen={isOpen} onClose={onClose} title="Create New Role" size="md">
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
-                <Input
-                    label="Role Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                />
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+                <Input label="Role Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 <Input
                     label="Description"
                     name="description"
@@ -219,9 +182,7 @@ function CreateRoleModal({ isOpen, onClose, onSubmit, isLoading }) {
                     label="Scope"
                     name="scope"
                     value={formData.scope}
-                    onChange={(e) =>
-                        setFormData({ ...formData, scope: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
                     options={[
                         { value: "global", label: "Global (System-wide)" },
                         {
@@ -255,9 +216,7 @@ function EditRoleModal({ isOpen, onClose, role, onSubmit, isLoading }) {
         e.preventDefault();
         setError("");
         try {
-            const permissionIds = (role.permissions || []).map(
-                (p) => p.permissionId,
-            );
+            const permissionIds = (role.permissions || []).map((p) => p.permissionId);
             await onSubmit({ ...formData, permissionIds });
         } catch (err) {
             setError(err.message);
@@ -267,20 +226,8 @@ function EditRoleModal({ isOpen, onClose, role, onSubmit, isLoading }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Edit Role" size="md">
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
-                <Input
-                    label="Role Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                />
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+                <Input label="Role Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 <Input
                     label="Description"
                     name="description"

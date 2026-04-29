@@ -25,9 +25,7 @@ export default function Layout({ children }) {
         setSidebarCollapsed((prev) => !prev);
     };
 
-    const sidebarWidth = sidebarCollapsed
-        ? DRAWER_WIDTH_COLLAPSED
-        : DRAWER_WIDTH_EXPANDED;
+    const sidebarWidth = sidebarCollapsed ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH_EXPANDED;
 
     return (
         <Box
@@ -37,11 +35,7 @@ export default function Layout({ children }) {
                 backgroundColor: "background.default",
             }}
         >
-            <Sidebar
-                open={sidebarOpen}
-                onClose={handleSidebarClose}
-                collapsed={sidebarCollapsed}
-            />
+            <Sidebar open={sidebarOpen} onClose={handleSidebarClose} collapsed={sidebarCollapsed} />
             <Box
                 component="main"
                 sx={{
@@ -57,22 +51,14 @@ export default function Layout({ children }) {
                     }),
                 }}
             >
-                <Topbar
-                    onMenuClick={handleSidebarToggle}
-                    sidebarWidth={sidebarWidth}
-                    sidebarCollapsed={sidebarCollapsed}
-                    onToggleSidebar={handleSidebarCollapse}
-                />
+                <Topbar onMenuClick={handleSidebarToggle} sidebarWidth={sidebarWidth} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={handleSidebarCollapse} />
                 <Box
                     sx={{
                         flexGrow: 1,
                         p: isMobile ? 2 : 3,
                         pt: { xs: 2, md: 2.5 },
                         mt: { xs: "64px", md: "72px" },
-                        backgroundColor: alpha(
-                            theme.palette.primary.main,
-                            0.02,
-                        ),
+                        backgroundColor: alpha(theme.palette.primary.main, 0.02),
                         minHeight: "calc(100vh - 64px)",
                     }}
                 >

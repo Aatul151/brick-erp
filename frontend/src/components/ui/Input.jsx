@@ -1,24 +1,9 @@
-export default function Input({
-    label,
-    type = "text",
-    name,
-    value,
-    onChange,
-    placeholder,
-    required = false,
-    error,
-    disabled = false,
-    className = "",
-}) {
+export default function Input({ label, type = "text", name, value, onChange, placeholder, required = false, error, disabled = false, className = "" }) {
     return (
         <div className={className}>
             {label && (
-                <label
-                    htmlFor={name}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    {label}{" "}
-                    {required && <span className="text-red-500">*</span>}
+                <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+                    {label} {required && <span className="text-red-500">*</span>}
                 </label>
             )}
             <input

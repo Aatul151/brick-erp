@@ -1,42 +1,43 @@
-import sgMail from '@sendgrid/mail';
+import sgMail from "@sendgrid/mail";
 
-const isConfigured = process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL;
+const isConfigured =
+    process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL;
 
 if (isConfigured) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
 const sendEmail = async (to, subject, html) => {
-  if (!isConfigured) {
-    console.log('SendGrid not configured. Email would be sent to:', to);
-    console.log('Subject:', subject);
-    console.log('Content:', html);
-    return { success: true, message: 'Email service not configured' };
-  }
+    if (!isConfigured) {
+        console.log("SendGrid not configured. Email would be sent to:", to);
+        console.log("Subject:", subject);
+        console.log("Content:", html);
+        return { success: true, message: "Email service not configured" };
+    }
 
-  try {
-    const msg = {
-      to,
-      from: {
-        email: process.env.SENDGRID_FROM_EMAIL,
-        name: process.env.SENDGRID_FROM_NAME || 'SaaS Platform'
-      },
-      subject,
-      html
-    };
+    try {
+        const msg = {
+            to,
+            from: {
+                email: process.env.SENDGRID_FROM_EMAIL,
+                name: process.env.SENDGRID_FROM_NAME || "SaaS Platform",
+            },
+            subject,
+            html,
+        };
 
-    await sgMail.send(msg);
-    return { success: true, message: 'Email sent successfully' };
-  } catch (error) {
-    console.error('Email sending failed:', error.message);
-    return { success: false, message: error.message };
-  }
+        await sgMail.send(msg);
+        return { success: true, message: "Email sent successfully" };
+    } catch (error) {
+        console.error("Email sending failed:", error.message);
+        return { success: false, message: error.message };
+    }
 };
 
 export const sendPasswordResetEmail = async (to, resetToken, userName) => {
-  const resetUrl = `${process.env.API_URL}/reset-password?token=${resetToken}`;
-  
-  const html = `
+    const resetUrl = `${process.env.API_URL}/reset-password?token=${resetToken}`;
+
+    const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -73,13 +74,13 @@ export const sendPasswordResetEmail = async (to, resetToken, userName) => {
     </html>
   `;
 
-  return await sendEmail(to, 'Password Reset Request', html);
+    return await sendEmail(to, "Password Reset Request", html);
 };
 
 export const sendWelcomeEmail = async (to, userName, tempPassword) => {
-  const loginUrl = `${process.env.API_URL}`;
-  
-  const html = `
+    const loginUrl = `${process.env.API_URL}`;
+
+    const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -118,11 +119,11 @@ export const sendWelcomeEmail = async (to, userName, tempPassword) => {
     </html>
   `;
 
-  return await sendEmail(to, 'Welcome to SaaS Platform', html);
+    return await sendEmail(to, "Welcome to SaaS Platform", html);
 };
 
 export const sendTenantSuspensionEmail = async (to, tenantName, adminName) => {
-  const html = `
+    const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -153,13 +154,18 @@ export const sendTenantSuspensionEmail = async (to, tenantName, adminName) => {
     </html>
   `;
 
-  return await sendEmail(to, 'Account Suspended', html);
+    return await sendEmail(to, "Account Suspended", html);
 };
 
-export const sendUserInvitationEmail = async (to, inviterName, tenantName, tempPassword) => {
-  const loginUrl = `${process.env.API_URL}`;
-  
-  const html = `
+export const sendUserInvitationEmail = async (
+    to,
+    inviterName,
+    tenantName,
+    tempPassword,
+) => {
+    const loginUrl = `${process.env.API_URL}`;
+
+    const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -199,13 +205,17 @@ export const sendUserInvitationEmail = async (to, inviterName, tenantName, tempP
     </html>
   `;
 
-  return await sendEmail(to, `Invitation to join ${tenantName}`, html);
+    return await sendEmail(to, `Invitation to join ${tenantName}`, html);
 };
 
-export const sendAccountReactivationEmail = async (to, userName, tenantName) => {
-  const loginUrl = `${process.env.API_URL}`;
-  
-  const html = `
+export const sendAccountReactivationEmail = async (
+    to,
+    userName,
+    tenantName,
+) => {
+    const loginUrl = `${process.env.API_URL}`;
+
+    const html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -239,5 +249,5 @@ export const sendAccountReactivationEmail = async (to, userName, tenantName) => 
     </html>
   `;
 
-  return await sendEmail(to, 'Account Reactivated', html);
+    return await sendEmail(to, "Account Reactivated", html);
 };

@@ -1,805 +1,712 @@
 {
-  "id": "8ee84578-cbd7-4013-8886-ee3aa61d9d33",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "postgresql",
-  "tables": {
-    "audit_logs": {
-      "name": "audit_logs",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+    "id": "8ee84578-cbd7-4013-8886-ee3aa61d9d33",
+    "prevId": "00000000-0000-0000-0000-000000000000",
+    "version": "5",
+    "dialect": "postgresql",
+    "tables": {
+        "audit_logs": {
+            "name": "audit_logs",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "user_id": {
+                    "name": "user_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "tenant_id": {
+                    "name": "tenant_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "action": {
+                    "name": "action",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "resource_type": {
+                    "name": "resource_type",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "resource_id": {
+                    "name": "resource_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "details": {
+                    "name": "details",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "ip_address": {
+                    "name": "ip_address",
+                    "type": "varchar(45)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "timestamp": {
+                    "name": "timestamp",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "audit_user_idx": {
+                    "name": "audit_user_idx",
+                    "columns": ["user_id"],
+                    "isUnique": false
+                },
+                "audit_tenant_idx": {
+                    "name": "audit_tenant_idx",
+                    "columns": ["tenant_id"],
+                    "isUnique": false
+                },
+                "audit_timestamp_idx": {
+                    "name": "audit_timestamp_idx",
+                    "columns": ["timestamp"],
+                    "isUnique": false
+                },
+                "audit_action_idx": {
+                    "name": "audit_action_idx",
+                    "columns": ["action"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "audit_logs_user_id_users_id_fk": {
+                    "name": "audit_logs_user_id_users_id_fk",
+                    "tableFrom": "audit_logs",
+                    "tableTo": "users",
+                    "columnsFrom": ["user_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "set null",
+                    "onUpdate": "no action"
+                },
+                "audit_logs_tenant_id_tenants_id_fk": {
+                    "name": "audit_logs_tenant_id_tenants_id_fk",
+                    "tableFrom": "audit_logs",
+                    "tableTo": "tenants",
+                    "columnsFrom": ["tenant_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "set null",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {}
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
+        "password_reset_tokens": {
+            "name": "password_reset_tokens",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "user_id": {
+                    "name": "user_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "token": {
+                    "name": "token",
+                    "type": "varchar(255)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "expires_at": {
+                    "name": "expires_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "used_at": {
+                    "name": "used_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "password_reset_token_idx": {
+                    "name": "password_reset_token_idx",
+                    "columns": ["token"],
+                    "isUnique": true
+                },
+                "password_reset_user_idx": {
+                    "name": "password_reset_user_idx",
+                    "columns": ["user_id"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "password_reset_tokens_user_id_users_id_fk": {
+                    "name": "password_reset_tokens_user_id_users_id_fk",
+                    "tableFrom": "password_reset_tokens",
+                    "tableTo": "users",
+                    "columnsFrom": ["user_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "password_reset_tokens_token_unique": {
+                    "name": "password_reset_tokens_token_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["token"]
+                }
+            }
         },
-        "tenant_id": {
-          "name": "tenant_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
+        "permissions": {
+            "name": "permissions",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "resource_name": {
+                    "name": "resource_name",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "action": {
+                    "name": "action",
+                    "type": "permission_action",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "description": {
+                    "name": "description",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "permission_resource_action_idx": {
+                    "name": "permission_resource_action_idx",
+                    "columns": ["resource_name", "action"],
+                    "isUnique": true
+                }
+            },
+            "foreignKeys": {},
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {}
         },
-        "action": {
-          "name": "action",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
+        "refresh_tokens": {
+            "name": "refresh_tokens",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "user_id": {
+                    "name": "user_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "token": {
+                    "name": "token",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "expires_at": {
+                    "name": "expires_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "revoked_at": {
+                    "name": "revoked_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "refresh_token_idx": {
+                    "name": "refresh_token_idx",
+                    "columns": ["token"],
+                    "isUnique": true
+                },
+                "refresh_token_user_idx": {
+                    "name": "refresh_token_user_idx",
+                    "columns": ["user_id"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "refresh_tokens_user_id_users_id_fk": {
+                    "name": "refresh_tokens_user_id_users_id_fk",
+                    "tableFrom": "refresh_tokens",
+                    "tableTo": "users",
+                    "columnsFrom": ["user_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "refresh_tokens_token_unique": {
+                    "name": "refresh_tokens_token_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["token"]
+                }
+            }
         },
-        "resource_type": {
-          "name": "resource_type",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
+        "role_permissions": {
+            "name": "role_permissions",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "role_id": {
+                    "name": "role_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "permission_id": {
+                    "name": "permission_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "role_permission_idx": {
+                    "name": "role_permission_idx",
+                    "columns": ["role_id", "permission_id"],
+                    "isUnique": true
+                },
+                "rp_role_idx": {
+                    "name": "rp_role_idx",
+                    "columns": ["role_id"],
+                    "isUnique": false
+                },
+                "rp_permission_idx": {
+                    "name": "rp_permission_idx",
+                    "columns": ["permission_id"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "role_permissions_role_id_roles_id_fk": {
+                    "name": "role_permissions_role_id_roles_id_fk",
+                    "tableFrom": "role_permissions",
+                    "tableTo": "roles",
+                    "columnsFrom": ["role_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                },
+                "role_permissions_permission_id_permissions_id_fk": {
+                    "name": "role_permissions_permission_id_permissions_id_fk",
+                    "tableFrom": "role_permissions",
+                    "tableTo": "permissions",
+                    "columnsFrom": ["permission_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {}
         },
-        "resource_id": {
-          "name": "resource_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
+        "roles": {
+            "name": "roles",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "name": {
+                    "name": "name",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "description": {
+                    "name": "description",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "scope": {
+                    "name": "scope",
+                    "type": "role_scope",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "'tenant'"
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                },
+                "updated_at": {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "role_name_idx": {
+                    "name": "role_name_idx",
+                    "columns": ["name"],
+                    "isUnique": true
+                },
+                "role_scope_idx": {
+                    "name": "role_scope_idx",
+                    "columns": ["scope"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {},
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "roles_name_unique": {
+                    "name": "roles_name_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["name"]
+                }
+            }
         },
-        "details": {
-          "name": "details",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+        "tenants": {
+            "name": "tenants",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "name": {
+                    "name": "name",
+                    "type": "varchar(255)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "subdomain": {
+                    "name": "subdomain",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "status": {
+                    "name": "status",
+                    "type": "tenant_status",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "'active'"
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                },
+                "updated_at": {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "tenant_status_idx": {
+                    "name": "tenant_status_idx",
+                    "columns": ["status"],
+                    "isUnique": false
+                },
+                "tenant_subdomain_idx": {
+                    "name": "tenant_subdomain_idx",
+                    "columns": ["subdomain"],
+                    "isUnique": true
+                }
+            },
+            "foreignKeys": {},
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "tenants_subdomain_unique": {
+                    "name": "tenants_subdomain_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["subdomain"]
+                }
+            }
         },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "varchar(45)",
-          "primaryKey": false,
-          "notNull": false
+        "user_roles": {
+            "name": "user_roles",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "user_id": {
+                    "name": "user_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "role_id": {
+                    "name": "role_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "user_role_idx": {
+                    "name": "user_role_idx",
+                    "columns": ["user_id", "role_id"],
+                    "isUnique": true
+                },
+                "ur_user_idx": {
+                    "name": "ur_user_idx",
+                    "columns": ["user_id"],
+                    "isUnique": false
+                },
+                "ur_role_idx": {
+                    "name": "ur_role_idx",
+                    "columns": ["role_id"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "user_roles_user_id_users_id_fk": {
+                    "name": "user_roles_user_id_users_id_fk",
+                    "tableFrom": "user_roles",
+                    "tableTo": "users",
+                    "columnsFrom": ["user_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                },
+                "user_roles_role_id_roles_id_fk": {
+                    "name": "user_roles_role_id_roles_id_fk",
+                    "tableFrom": "user_roles",
+                    "tableTo": "roles",
+                    "columnsFrom": ["role_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {}
         },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+        "users": {
+            "name": "users",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "serial",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "tenant_id": {
+                    "name": "tenant_id",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "email": {
+                    "name": "email",
+                    "type": "varchar(255)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "password_hash": {
+                    "name": "password_hash",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "full_name": {
+                    "name": "full_name",
+                    "type": "varchar(255)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "status": {
+                    "name": "status",
+                    "type": "user_status",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "'active'"
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                },
+                "updated_at": {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "user_email_idx": {
+                    "name": "user_email_idx",
+                    "columns": ["email"],
+                    "isUnique": true
+                },
+                "user_tenant_idx": {
+                    "name": "user_tenant_idx",
+                    "columns": ["tenant_id"],
+                    "isUnique": false
+                },
+                "user_status_idx": {
+                    "name": "user_status_idx",
+                    "columns": ["status"],
+                    "isUnique": false
+                }
+            },
+            "foreignKeys": {
+                "users_tenant_id_tenants_id_fk": {
+                    "name": "users_tenant_id_tenants_id_fk",
+                    "tableFrom": "users",
+                    "tableTo": "tenants",
+                    "columnsFrom": ["tenant_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "users_email_unique": {
+                    "name": "users_email_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["email"]
+                }
+            }
         }
-      },
-      "indexes": {
-        "audit_user_idx": {
-          "name": "audit_user_idx",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "audit_tenant_idx": {
-          "name": "audit_tenant_idx",
-          "columns": [
-            "tenant_id"
-          ],
-          "isUnique": false
-        },
-        "audit_timestamp_idx": {
-          "name": "audit_timestamp_idx",
-          "columns": [
-            "timestamp"
-          ],
-          "isUnique": false
-        },
-        "audit_action_idx": {
-          "name": "audit_action_idx",
-          "columns": [
-            "action"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "audit_logs_user_id_users_id_fk": {
-          "name": "audit_logs_user_id_users_id_fk",
-          "tableFrom": "audit_logs",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "audit_logs_tenant_id_tenants_id_fk": {
-          "name": "audit_logs_tenant_id_tenants_id_fk",
-          "tableFrom": "audit_logs",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
     },
-    "password_reset_tokens": {
-      "name": "password_reset_tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
+    "enums": {
+        "permission_action": {
+            "name": "permission_action",
+            "values": {
+                "create": "create",
+                "read": "read",
+                "update": "update",
+                "delete": "delete"
+            }
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
+        "role_scope": {
+            "name": "role_scope",
+            "values": {
+                "global": "global",
+                "tenant": "tenant"
+            }
         },
-        "token": {
-          "name": "token",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
+        "tenant_status": {
+            "name": "tenant_status",
+            "values": {
+                "active": "active",
+                "suspended": "suspended"
+            }
         },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "used_at": {
-          "name": "used_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+        "user_status": {
+            "name": "user_status",
+            "values": {
+                "active": "active",
+                "inactive": "inactive",
+                "suspended": "suspended"
+            }
         }
-      },
-      "indexes": {
-        "password_reset_token_idx": {
-          "name": "password_reset_token_idx",
-          "columns": [
-            "token"
-          ],
-          "isUnique": true
-        },
-        "password_reset_user_idx": {
-          "name": "password_reset_user_idx",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "password_reset_tokens_user_id_users_id_fk": {
-          "name": "password_reset_tokens_user_id_users_id_fk",
-          "tableFrom": "password_reset_tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "password_reset_tokens_token_unique": {
-          "name": "password_reset_tokens_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
-        }
-      }
     },
-    "permissions": {
-      "name": "permissions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "resource_name": {
-          "name": "resource_name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "action": {
-          "name": "action",
-          "type": "permission_action",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "permission_resource_action_idx": {
-          "name": "permission_resource_action_idx",
-          "columns": [
-            "resource_name",
-            "action"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "refresh_tokens": {
-      "name": "refresh_tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token": {
-          "name": "token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "refresh_token_idx": {
-          "name": "refresh_token_idx",
-          "columns": [
-            "token"
-          ],
-          "isUnique": true
-        },
-        "refresh_token_user_idx": {
-          "name": "refresh_token_user_idx",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "refresh_tokens_user_id_users_id_fk": {
-          "name": "refresh_tokens_user_id_users_id_fk",
-          "tableFrom": "refresh_tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "refresh_tokens_token_unique": {
-          "name": "refresh_tokens_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
-        }
-      }
-    },
-    "role_permissions": {
-      "name": "role_permissions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "role_id": {
-          "name": "role_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permission_id": {
-          "name": "permission_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "role_permission_idx": {
-          "name": "role_permission_idx",
-          "columns": [
-            "role_id",
-            "permission_id"
-          ],
-          "isUnique": true
-        },
-        "rp_role_idx": {
-          "name": "rp_role_idx",
-          "columns": [
-            "role_id"
-          ],
-          "isUnique": false
-        },
-        "rp_permission_idx": {
-          "name": "rp_permission_idx",
-          "columns": [
-            "permission_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "role_permissions_role_id_roles_id_fk": {
-          "name": "role_permissions_role_id_roles_id_fk",
-          "tableFrom": "role_permissions",
-          "tableTo": "roles",
-          "columnsFrom": [
-            "role_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "role_permissions_permission_id_permissions_id_fk": {
-          "name": "role_permissions_permission_id_permissions_id_fk",
-          "tableFrom": "role_permissions",
-          "tableTo": "permissions",
-          "columnsFrom": [
-            "permission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "roles": {
-      "name": "roles",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "scope": {
-          "name": "scope",
-          "type": "role_scope",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'tenant'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "role_name_idx": {
-          "name": "role_name_idx",
-          "columns": [
-            "name"
-          ],
-          "isUnique": true
-        },
-        "role_scope_idx": {
-          "name": "role_scope_idx",
-          "columns": [
-            "scope"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "roles_name_unique": {
-          "name": "roles_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      }
-    },
-    "tenants": {
-      "name": "tenants",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "subdomain": {
-          "name": "subdomain",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "tenant_status",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "tenant_status_idx": {
-          "name": "tenant_status_idx",
-          "columns": [
-            "status"
-          ],
-          "isUnique": false
-        },
-        "tenant_subdomain_idx": {
-          "name": "tenant_subdomain_idx",
-          "columns": [
-            "subdomain"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tenants_subdomain_unique": {
-          "name": "tenants_subdomain_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "subdomain"
-          ]
-        }
-      }
-    },
-    "user_roles": {
-      "name": "user_roles",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role_id": {
-          "name": "role_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "user_role_idx": {
-          "name": "user_role_idx",
-          "columns": [
-            "user_id",
-            "role_id"
-          ],
-          "isUnique": true
-        },
-        "ur_user_idx": {
-          "name": "ur_user_idx",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "ur_role_idx": {
-          "name": "ur_role_idx",
-          "columns": [
-            "role_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "user_roles_user_id_users_id_fk": {
-          "name": "user_roles_user_id_users_id_fk",
-          "tableFrom": "user_roles",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_roles_role_id_roles_id_fk": {
-          "name": "user_roles_role_id_roles_id_fk",
-          "tableFrom": "user_roles",
-          "tableTo": "roles",
-          "columnsFrom": [
-            "role_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "users": {
-      "name": "users",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "tenant_id": {
-          "name": "tenant_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "full_name": {
-          "name": "full_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "user_status",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "user_email_idx": {
-          "name": "user_email_idx",
-          "columns": [
-            "email"
-          ],
-          "isUnique": true
-        },
-        "user_tenant_idx": {
-          "name": "user_tenant_idx",
-          "columns": [
-            "tenant_id"
-          ],
-          "isUnique": false
-        },
-        "user_status_idx": {
-          "name": "user_status_idx",
-          "columns": [
-            "status"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "users_tenant_id_tenants_id_fk": {
-          "name": "users_tenant_id_tenants_id_fk",
-          "tableFrom": "users",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      }
-    }
-  },
-  "enums": {
-    "permission_action": {
-      "name": "permission_action",
-      "values": {
-        "create": "create",
-        "read": "read",
-        "update": "update",
-        "delete": "delete"
-      }
-    },
-    "role_scope": {
-      "name": "role_scope",
-      "values": {
-        "global": "global",
-        "tenant": "tenant"
-      }
-    },
-    "tenant_status": {
-      "name": "tenant_status",
-      "values": {
-        "active": "active",
-        "suspended": "suspended"
-      }
-    },
-    "user_status": {
-      "name": "user_status",
-      "values": {
-        "active": "active",
-        "inactive": "inactive",
-        "suspended": "suspended"
-      }
-    }
-  },
-  "schemas": {},
-  "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "_meta": {
+        "columns": {},
+        "schemas": {},
+        "tables": {}
+    }
 }

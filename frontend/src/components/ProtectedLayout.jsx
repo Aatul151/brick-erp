@@ -1,5 +1,5 @@
-import ProtectedRoute from './ProtectedRoute';
-import Layout from './layout/Layout';
+import ProtectedRoute from "./ProtectedRoute";
+import Layout from "./layout/Layout";
 
 /**
  * Single wrapper for ProtectedRoute + Layout.
@@ -7,17 +7,17 @@ import Layout from './layout/Layout';
  * Optionally wraps children with permission-specific ProtectedRoute.
  */
 export default function ProtectedLayout({ children, permission, roles = [] }) {
-  return (
-    <ProtectedRoute>
-      <Layout>
-        {permission ? (
-          <ProtectedRoute permission={permission} roles={roles}>
-            {children}
-          </ProtectedRoute>
-        ) : (
-          children
-        )}
-      </Layout>
-    </ProtectedRoute>
-  );
+    return (
+        <ProtectedRoute>
+            <Layout>
+                {permission ? (
+                    <ProtectedRoute permission={permission} roles={roles}>
+                        {children}
+                    </ProtectedRoute>
+                ) : (
+                    children
+                )}
+            </Layout>
+        </ProtectedRoute>
+    );
 }

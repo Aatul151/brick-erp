@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useNavigate, useParams } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,13 +37,11 @@ export default function FormEntriesPage() {
   const { user } = useAuth();
   const hasNoTenant = !user?.tenantId;
 
-  const [path, setLocation] = useLocation();
+  const navigate = useNavigate();
+  const { formName } = useParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const parts = path.split('/').filter(Boolean);
-  const rawFormName =
-    parts.length >= 3 && parts[0] === 'form-studio' && parts[1] === 'entries' ? parts[2] : null;
-  const decodedFormName = rawFormName ? decodeURIComponent(rawFormName) : null;
+  const decodedFormName = formName ? decodeURIComponent(formName) : null;
 
   const queryClient = useQueryClient();
   const [formDialogOpen, setFormDialogOpen] = useState(false);
@@ -257,7 +255,7 @@ export default function FormEntriesPage() {
         <PageHeader
           title="Form entries"
           actions={
-            <Button variant="outlined" size="small" onClick={() => setLocation('/form-studio')}>
+            <Button variant="outlined" size="small" onClick={() => navigate('/form-studio')}>
               Back to Form Studio
             </Button>
           }
@@ -289,7 +287,7 @@ export default function FormEntriesPage() {
         <Alert severity="error" sx={{ mb: 2 }}>
           {formDefError?.message || 'Form not found'}
         </Alert>
-        <Button variant="outlined" onClick={() => setLocation('/form-studio')}>
+        <Button variant="outlined" onClick={() => navigate('/form-studio')}>
           Back to Form Studio
         </Button>
       </Box>

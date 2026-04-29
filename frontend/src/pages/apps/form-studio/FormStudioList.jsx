@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { formsApi } from '../../../utils/api/coreapi';
 import { RESOURCE, ACTION } from '../../../utils/resources';
@@ -25,7 +25,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 
 export default function FormStudioList() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { user, isSiteAdmin } = useAuth();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
@@ -36,8 +36,10 @@ export default function FormStudioList() {
 
   const queryClient = useQueryClient();
 
+  const formsQueryKey = ['forms', user?.tenantId ?? 'no-tenant', user?.id ?? user?._id ?? 'anon'];
+
   const { data: allForms = [], isLoading } = useQuery({
-    queryKey: ['forms'],
+    queryKey: formsQueryKey,
     queryFn: () => formsApi.getAll(),
     enabled: !!user?.tenantId,
     retry: false
@@ -80,7 +82,7 @@ export default function FormStudioList() {
       setSnack({ open: true, message: 'Form name not found', severity: 'error' });
       return;
     }
-    setLocation(`/form-studio/build/${encodeURIComponent(form.name)}`);
+    navigate(`/form-studio/build/${encodeURIComponent(form.name)}`);
   };
 
   const handleDelete = (form) => {
@@ -99,11 +101,11 @@ export default function FormStudioList() {
     }
   };
 
-  const handleAddForm = () => setLocation('/form-studio/build');
+  const handleAddForm = () => navigate('/form-studio/build');
 
   const handleOpenEntries = (form) => {
     if (!form.name) return;
-    setLocation(`/form-studio/entries/${encodeURIComponent(form.name)}`);
+    navigate(`/form-studio/entries/${encodeURIComponent(form.name)}`);
   };
 
   const columns = [

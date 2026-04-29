@@ -17,14 +17,14 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useState } from 'react';
 import { Breadcrumb } from '../common/Breadcrumb';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Topbar({ onMenuClick, sidebarWidth, sidebarCollapsed, onToggleSidebar }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -38,7 +38,7 @@ export function Topbar({ onMenuClick, sidebarWidth, sidebarCollapsed, onToggleSi
 
   const handleLogout = async () => {
     await logout();
-    setLocation('/login');
+    navigate('/login');
     handleMenuClose();
   };
 
@@ -177,7 +177,7 @@ export function Topbar({ onMenuClick, sidebarWidth, sidebarCollapsed, onToggleSi
           >
             <MenuItem
               onClick={() => {
-                setLocation('/profile');
+                navigate('/profile');
                 handleMenuClose();
               }}
             >

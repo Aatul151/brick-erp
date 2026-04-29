@@ -25,7 +25,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.72.1",
-    "wouter": "^3.0.0",
+    "react-router-dom": "^7.14.2",
     "yup": "^1.7.1",
     "zod": "^3.22.4",
     "zustand": "^4.5.7"

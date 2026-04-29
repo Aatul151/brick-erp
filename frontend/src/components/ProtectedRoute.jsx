@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography, Paper, alpha } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import ExtensionOffIcon from '@mui/icons-material/ExtensionOff';
@@ -11,7 +11,7 @@ import Button from './ui/Button';
 
 export default function ProtectedRoute({ children, roles = [], permission }) {
   const { user, loading, hasPermission } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
 
   const { data: modules, isLoading: modulesLoading } = useQuery({
     queryKey: ['modules', 'all'],
@@ -21,9 +21,9 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      setLocation('/login');
+      navigate('/login');
     }
-  }, [user, loading, setLocation]);
+  }, [user, loading, navigate]);
 
   if (loading || (permission?.resource && modulesLoading)) {
     return (
@@ -110,7 +110,7 @@ export default function ProtectedRoute({ children, roles = [], permission }) {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
               {description}
             </Typography>
-            <Button variant="secondary" onClick={() => setLocation('/dashboard')}>
+            <Button variant="secondary" onClick={() => navigate('/dashboard')}>
               Go to Dashboard
             </Button>
           </Paper>

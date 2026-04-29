@@ -36,7 +36,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import { useLocation } from 'wouter';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { moduleApi } from '../../utils/api/coreapi';
 
@@ -77,7 +77,8 @@ const MENU_GROUPS = [
 export function Sidebar({ open, onClose, collapsed }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [location, setLocation] = useLocation();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user, logout, hasPermission } = useAuth();
 
   const { data: modulesData } = useQuery({
@@ -131,7 +132,7 @@ export function Sidebar({ open, onClose, collapsed }) {
   const hasAdminAccess = allMenuItems.some(canAccess);
   const [groupOpen, setGroupOpen] = useState(() =>
     MENU_GROUPS.reduce((acc, g) => {
-      const hasRouteInGroup = g.slugs.some((slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, '-')}`) === location);
+      const hasRouteInGroup = g.slugs.some((slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, '-')}`) === pathname);
       acc[g.title] = hasRouteInGroup;
       return acc;
     }, {})
@@ -151,7 +152,7 @@ export function Sidebar({ open, onClose, collapsed }) {
       });
       return next;
     });
-  }, [location, modulesData]);
+  }, [pathname, modulesData]);
 
   const handleGroupClick = (groupTitle, e) => {
     if (collapsed) {
@@ -168,17 +169,17 @@ export function Sidebar({ open, onClose, collapsed }) {
   };
 
   const handleNav = (href) => {
-    setLocation(href);
+    navigate(href);
     if (isMobile) onClose();
   };
 
   const handleLogout = async () => {
     await logout();
-    setLocation('/login');
+    navigate('/login');
     if (isMobile) onClose();
   };
 
-  const isSelected = (path) => location === path;
+  const isSelected = (path) => pathname === path;
 
   const selectedStyles = {
     backgroundColor: alpha(theme.palette.primary.main, 0.08),
@@ -350,7 +351,7 @@ export function Sidebar({ open, onClose, collapsed }) {
               const accessibleItems = group.items.filter(canAccess);
               if (accessibleItems.length === 0) return null;
               const isGroupOpen = groupOpen[group.title];
-              const isGroupSelected = accessibleItems.some((item) => location === item.href);
+              const isGroupSelected = accessibleItems.some((item) => pathname === item.href);
               return (
                 <Box key={group.title}>
                   <ListItem disablePadding>

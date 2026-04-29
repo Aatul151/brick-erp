@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 
 export default function Login() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -23,7 +23,7 @@ export default function Login() {
 
     try {
       await login(formData);
-      setLocation('/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {

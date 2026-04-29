@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Route, Switch, Redirect } from 'wouter';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline, CircularProgress, Box, Typography } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -81,31 +81,33 @@ function AppRoutes() {
   }
 
   return (
-    <Switch>
-      <Route path="/login">
-        {isAuthenticated ? <Redirect to="/dashboard" /> : <Login />}
-      </Route>
+    <Routes>
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
 
       {/* Protected routes - ProtectedLayout wraps all (auth + Layout), permission applied per route */}
       {PROTECTED_ROUTES.map(({ path, component: Component, permission, roles }) => (
-        <Route key={path} path={path}>
-          <ProtectedLayout permission={permission} roles={roles}>
-            <Component />
-          </ProtectedLayout>
-        </Route>
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedLayout permission={permission} roles={roles}>
+              <Component />
+            </ProtectedLayout>
+          }
+        />
       ))}
 
       {/* Exact / - redirect to dashboard or login */}
-      <Route path="/">
-        {isAuthenticated ? <Redirect to="/dashboard" /> : <Login />}
-      </Route>
+      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
 
       {/* Default: redirect unknown paths to dashboard */}
-      <Route path="/:rest*">
-        <Redirect to="/dashboard" />
-      </Route>
-
-      <Route>
+      <Route
+        path="*"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/404"
+        element={
         <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h4" fontWeight="bold" sx={{ mb: 2 }}>404</Typography>
@@ -115,8 +117,9 @@ function AppRoutes() {
             </Typography>
           </Box>
         </Box>
-      </Route>
-    </Switch>
+        }
+      />
+    </Routes>
   );
 }
 

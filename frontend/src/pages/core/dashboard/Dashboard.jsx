@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, alpha } from '@mui/material';
 import { useAuth } from '../../../contexts/AuthContext';
 import { tenantApi } from '../../../utils/api/coreapi';
@@ -54,8 +54,8 @@ export default function Dashboard() {
 }
 
 function StatCard({ title, value, icon, to }) {
-  const [, setLocation] = useLocation();
-  const handleClick = () => to && setLocation(to);
+  const navigate = useNavigate();
+  const handleClick = () => to && navigate(to);
 
   return (
     <Box

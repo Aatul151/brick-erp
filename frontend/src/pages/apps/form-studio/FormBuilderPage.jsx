@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'wouter';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -38,13 +38,11 @@ import { PageContent } from '../../../components/common/PageContent';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function FormBuilderPage() {
-  const { user, isSiteAdmin } = useAuth();
+  const { isSiteAdmin } = useAuth();
   const siteAdmin = isSiteAdmin();
-  const hasNoTenant = !user?.tenantId && !siteAdmin;
 
-  const [path, setLocation] = useLocation();
-  const parts = path.split('/').filter(Boolean);
-  const formName = parts.length >= 3 && parts[0] === 'form-studio' && parts[1] === 'build' ? parts[2] : undefined;
+  const navigate = useNavigate();
+  const { formName } = useParams();
 
   const {
     sections,
@@ -122,11 +120,10 @@ export default function FormBuilderPage() {
     }
   }, [currentForm]);
 
+
+
   useEffect(() => {
-    if (hasNoTenant) {
-      clearForm();
-      return;
-    }
+    console.log("formName",formName)
     if (formName) {
       let decoded = formName;
       try {
@@ -141,7 +138,7 @@ export default function FormBuilderPage() {
       clearForm();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load when route name changes
-  }, [formName, hasNoTenant]);
+  }, [formName]);
 
   useEffect(() => {
     return () => clearForm();
@@ -258,7 +255,6 @@ export default function FormBuilderPage() {
   };
 
   const handleSave = async () => {
-    if (hasNoTenant) return;
     if (!canManageFormDefinition) {
       setSaveError('Only Site Admin can manage system forms');
       return;
@@ -293,7 +289,7 @@ export default function FormBuilderPage() {
       queryClient.invalidateQueries({ queryKey: ['forms'] });
       setTimeout(() => {
         setSaveSuccess(false);
-        setLocation('/form-studio');
+        navigate('/form-studio');
       }, 800);
     } catch (error) {
       setSaveError(error?.message || 'Failed to save form');
@@ -303,7 +299,7 @@ export default function FormBuilderPage() {
   const handleCancel = () => {
     clearForm();
     setCurrentForm(null);
-    setLocation('/form-studio');
+    navigate('/form-studio');
   };
 
   return (
@@ -316,35 +312,22 @@ export default function FormBuilderPage() {
             <Button variant="outlined" size="small" startIcon={<ClearIcon />} onClick={handleCancel}>
               Cancel
             </Button>
-            {!hasNoTenant && (
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<SaveIcon />}
-                onClick={handleSave}
-                disabled={!canManageFormDefinition}
-              >
-                Save
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              disabled={!canManageFormDefinition}
+            >
+              Save
+            </Button>
           </>
         }
         sx={{ mb: 0.5, borderRadius: '10px', padding: 1.5 }}
       />
 
-      {hasNoTenant && (
-        <Alert severity="info" sx={{ mx: 1.5, mb: 1 }}>
-          Form Studio is available for tenant users and Site Admin.
-        </Alert>
-      )}
-
       <PageContent sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', p: 1.5 }}>
-        {hasNoTenant ? (
-          <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
-            <Typography>Switch to a tenant account or Site Admin user to use the Form Builder.</Typography>
-          </Box>
-        ) : (
-          <>
+        <>
         {!canManageFormDefinition && (
           <Alert severity="warning" sx={{ mb: 1.5 }}>
             Only Site Admin can manage system forms.
@@ -623,47 +606,44 @@ export default function FormBuilderPage() {
             )}
           </Box>
         </Box>
-          </>
-        )}
+        </>
       </PageContent>
 
-      {!hasNoTenant && (
-        <>
-          <FieldConfigDrawer
-            open={configDrawerOpen}
-            onClose={() => {
-              setConfigDrawerOpen(false);
-              selectField(null);
-            }}
-            field={selectedField}
-            fieldIndex={selectedFieldPath?.fieldIndex ?? null}
-            onSave={handleFieldConfigSave}
-            onValidateName={(name) => {
-              if (selectedFieldPath) {
-                return isFieldNameUnique(name, selectedFieldPath.sectionId, selectedFieldPath.fieldIndex);
-              }
-              return isFieldNameUnique(name);
-            }}
-          />
+      <>
+        <FieldConfigDrawer
+          open={configDrawerOpen}
+          onClose={() => {
+            setConfigDrawerOpen(false);
+            selectField(null);
+          }}
+          field={selectedField}
+          fieldIndex={selectedFieldPath?.fieldIndex ?? null}
+          onSave={handleFieldConfigSave}
+          onValidateName={(name) => {
+            if (selectedFieldPath) {
+              return isFieldNameUnique(name, selectedFieldPath.sectionId, selectedFieldPath.fieldIndex);
+            }
+            return isFieldNameUnique(name);
+          }}
+        />
 
-          <SectionConfigDrawer
-            open={sectionConfigDrawerOpen}
-            onClose={() => {
+        <SectionConfigDrawer
+          open={sectionConfigDrawerOpen}
+          onClose={() => {
+            setSectionConfigDrawerOpen(false);
+            setEditingSectionId(null);
+          }}
+          section={editingSectionId ? sections.find((s) => s.id === editingSectionId) || null : null}
+          onSave={(updates) => {
+            if (editingSectionId) {
+              if (!canManageFormDefinition) return;
+              useFormBuilderStore.getState().updateSection(editingSectionId, updates);
               setSectionConfigDrawerOpen(false);
               setEditingSectionId(null);
-            }}
-            section={editingSectionId ? sections.find((s) => s.id === editingSectionId) || null : null}
-            onSave={(updates) => {
-              if (editingSectionId) {
-                if (!canManageFormDefinition) return;
-                useFormBuilderStore.getState().updateSection(editingSectionId, updates);
-                setSectionConfigDrawerOpen(false);
-                setEditingSectionId(null);
-              }
-            }}
-          />
-        </>
-      )}
+            }
+          }}
+        />
+      </>
     </Box>
   );
 }

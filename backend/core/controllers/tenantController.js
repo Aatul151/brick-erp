@@ -56,8 +56,8 @@ export const getTenants = async (req, res) => {
       themeSetting: tenants.themeSetting,
       createdAt: tenants.createdAt,
       updatedAt: tenants.updatedAt,
-      userCount: sql`(SELECT COUNT(*) FROM ${users} WHERE ${users.tenantId} = ${tenants.id})`
-    }).from(tenants);
+      userCount: sql`(SELECT COUNT(*) FROM users WHERE users.tenant_id = tenants.id)`.as("userCount"),
+    }).from(tenants)
 
     const conditions = [];
 
@@ -111,8 +111,8 @@ export const getTenant = async (req, res) => {
       themeSetting: tenants.themeSetting,
       createdAt: tenants.createdAt,
       updatedAt: tenants.updatedAt,
-      userCount: sql`(SELECT COUNT(*) FROM ${users} WHERE ${users.tenantId} = ${tenants.id})`,
-      activeUserCount: sql`(SELECT COUNT(*) FROM ${users} WHERE ${users.tenantId} = ${tenants.id} AND ${users.status} = 'active')`
+      userCount: sql`(SELECT COUNT(*) FROM users WHERE users.tenant_id = tenants.id)`,
+      activeUserCount: sql`(SELECT COUNT(*) FROM users WHERE users.tenant_id = tenants.id AND users.status = 'active')`
     }).from(tenants).where(eq(tenants.id, tenantId)).limit(1);
 
     if (!tenant) {
@@ -371,7 +371,7 @@ export const updateMyTenantThemeMode = async (req, res) => {
 export const getTenantStats = async (req, res) => {
   try {
     const isSiteAdmin = req.user.roles.some(r => r.roleName === 'Site Admin');
-    
+
     if (isSiteAdmin) {
       const [stats] = await db.select({
         totalTenants: sql`COUNT(*)`,

@@ -1,16 +1,17 @@
 import { Breadcrumbs, Link, Typography, Box } from '@mui/material';
-import { useLocation } from 'wouter';
+import { useLocation, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import { getBreadcrumbFromRoute } from '../../utils/navigation/breadcrumbConfig';
 import { useBreadcrumb } from '../../contexts/BreadcrumbContext';
 
 export function Breadcrumb({ size = 'default', sx: sxProp } = {}) {
-  const [location, setLocation] = useLocation();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { customCrumbs } = useBreadcrumb();
 
-  if (location === '/dashboard') return null;
+  if (pathname === '/dashboard') return null;
 
-  const crumbs = customCrumbs ?? getBreadcrumbFromRoute(location);
+  const crumbs = customCrumbs ?? getBreadcrumbFromRoute(pathname);
 
   if (crumbs.length === 0) return null;
 
@@ -70,7 +71,7 @@ export function Breadcrumb({ size = 'default', sx: sxProp } = {}) {
               variant="body2"
               underline="hover"
               color="text.secondary"
-              onClick={() => setLocation(crumb.path)}
+              onClick={() => navigate(crumb.path)}
               sx={{
                 display: 'flex',
                 alignItems: 'center',

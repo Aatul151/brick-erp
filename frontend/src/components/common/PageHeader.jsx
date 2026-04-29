@@ -3,7 +3,7 @@ import { Box, Typography, IconButton, Divider, alpha, Tooltip, ButtonGroup, Butt
 import DescriptionIcon from '@mui/icons-material/Description';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useLocation } from 'wouter';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
@@ -45,7 +45,7 @@ export function PageHeader({
   showDivider = false,
   sx,
 }) {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const [menuAnchor, setMenuAnchor] = useState(null);
 
@@ -193,7 +193,7 @@ export function PageHeader({
           {backTo && (
             <IconButton
               size="small"
-              onClick={() => setLocation(backTo)}
+              onClick={() => navigate(backTo)}
               aria-label={backLabel}
               sx={{
                 color: 'primary.main',

@@ -202,7 +202,7 @@ export default function FormEntriesPage() {
                 field: "scope",
                 headerName: "Source",
                 width: 110,
-                valueGetter: (_v, row) => (row.scope === "master" ? "Master" : "Tenant"),
+                valueGetter: (_v, row) => (row.isMasterRecord ? "Master" : "Tenant"),
             },
             {
                 field: "createdAt",
@@ -220,9 +220,10 @@ export default function FormEntriesPage() {
                 width: 140,
                 getActions: (params) => {
                     const row = params.row;
-                    const isMasterRow = row.scope === "master";
-                    const canManageRow = siteAdmin ? true : !isMasterRow;
-                    return [
+                    const isMasterRecord = row.isMasterRecord === true;
+                    const canManageRow = siteAdmin ? true : !isMasterRecord;
+
+                    const AllAllowActions = [
                         <GridActionsCellItem
                             key="view"
                             icon={<VisibilityIcon />}
@@ -233,29 +234,34 @@ export default function FormEntriesPage() {
                                 setFormDialogOpen(true);
                             }}
                         />,
-                        <GridActionsCellItem
-                            key="edit"
-                            icon={<EditIcon />}
-                            label="Edit"
-                            disabled={!canManageRow}
-                            onClick={() => {
-                                setSelectedEntry(row);
-                                setFormMode("edit");
-                                setEntryScope(row.scope || "tenant");
-                                setFormDialogOpen(true);
-                            }}
-                        />,
-                        <GridActionsCellItem
-                            key="delete"
-                            icon={<DeleteIcon />}
-                            label="Delete"
-                            disabled={!canManageRow}
-                            onClick={() => {
-                                setSelectedEntry(row);
-                                setDeleteDialogOpen(true);
-                            }}
-                        />,
                     ];
+                    if (canManageRow) {
+                        AllAllowActions.push(
+                            <GridActionsCellItem
+                                key="edit"
+                                icon={<EditIcon />}
+                                label="Edit"
+                                onClick={() => {
+                                    setSelectedEntry(row);
+                                    setFormMode("edit");
+                                    setEntryScope(row.scope || "tenant");
+                                    setFormDialogOpen(true);
+                                }}
+                            />,
+                        );
+                        AllAllowActions.push(
+                            <GridActionsCellItem
+                                key="delete"
+                                icon={<DeleteIcon />}
+                                label="Delete"
+                                onClick={() => {
+                                    setSelectedEntry(row);
+                                    setDeleteDialogOpen(true);
+                                }}
+                            />,
+                        );
+                    }
+                    return AllAllowActions;
                 },
             },
         );

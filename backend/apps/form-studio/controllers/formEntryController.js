@@ -73,6 +73,7 @@ export const listFormEntries = async (req, res) => {
             creatorEmail: sql`${formEntryCreator.email}`.as("creator_email"),
             updaterName: sql`${formEntryUpdater.fullName}`.as("updater_name"),
             updaterEmail: sql`${formEntryUpdater.email}`.as("updater_email"),
+            isMasterRecord: sql`false`.as("is_master_record"),
         };
 
         const qTenantEntries = db
@@ -113,6 +114,7 @@ export const listFormEntries = async (req, res) => {
                 creatorEmail: sql`${masterEntryCreator.email}`.as("creator_email"),
                 updaterName: sql`${masterEntryUpdater.fullName}`.as("updater_name"),
                 updaterEmail: sql`${masterEntryUpdater.email}`.as("updater_email"),
+                isMasterRecord: sql`true`.as("is_master_record"),
             };
 
             const qMasterEntries = db
@@ -140,6 +142,7 @@ export const listFormEntries = async (req, res) => {
                     creatorEmail: combined.creatorEmail,
                     updaterName: combined.updaterName,
                     updaterEmail: combined.updaterEmail,
+                    isMasterRecord: combined.isMasterRecord,
                 })
                 .from(combined)
                 .orderBy(desc(combined.createdAt))

@@ -30,5 +30,6 @@ export function mapFormEntry(row) {
         updatedBy: updatedBy,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
+        isMasterRecord: row.isMasterRecord ?? false,
     };
 }

@@ -97,6 +97,12 @@ export default function FormEntriesPage() {
                 exact: false,
             });
         },
+        onError: (error) => {
+            setSubmitAlert({
+                severity: "error",
+                message: error?.message || "Failed to create entry.",
+            });
+        },
     });
 
     const updateMutation = useMutation({
@@ -105,6 +111,12 @@ export default function FormEntriesPage() {
             queryClient.invalidateQueries({
                 queryKey: ["formEntries", decodedFormName],
                 exact: false,
+            });
+        },
+        onError: (error) => {
+            setSubmitAlert({
+                severity: "error",
+                message: error?.message || "Failed to update entry.",
             });
         },
     });
@@ -118,6 +130,18 @@ export default function FormEntriesPage() {
             });
             setDeleteDialogOpen(false);
             setSelectedEntry(null);
+            setSubmitAlert({
+                severity: "success",
+                message: "Entry deleted successfully.",
+            });
+        },
+        onError: (error) => {
+            setDeleteDialogOpen(false);
+            setSelectedEntry(null);
+            setSubmitAlert({
+                severity: "error",
+                message: error?.message || "Failed to delete entry.",
+            });
         },
     });
 
@@ -282,6 +306,15 @@ export default function FormEntriesPage() {
         }
     }, [isSingleRecordForm, formSchema, singleRecord, entriesLoading]);
 
+    useEffect(() => {
+        //auto clear submit alert after 4 seconds
+        if (!submitAlert?.message) return;
+        const timer = setTimeout(() => {
+            setSubmitAlert(null);
+        }, 4000);
+        return () => clearTimeout(timer);
+    }, [submitAlert]);
+
     if (hasNoTenant) {
         return (
             <Box
@@ -433,7 +466,7 @@ export default function FormEntriesPage() {
             <PageHeader title={formSchema.title} actions={actionButtons} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
 
             <PageContent>
-                {isSingleRecordForm && submitAlert?.message && (
+                {submitAlert?.message && (
                     <Alert severity={submitAlert.severity || "success"} sx={{ mb: 1 }} onClose={() => setSubmitAlert(null)}>
                         {submitAlert.message}
                     </Alert>

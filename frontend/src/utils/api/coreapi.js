@@ -164,7 +164,8 @@ export const formEntriesApi = {
     delete: async (entryId, formName, scope) => {
         const params = new URLSearchParams({ formName });
         if (scope) params.set("scope", String(scope));
-        await api.delete(`/api/form-entries/${entryId}?${params}`);
+        const body = await api.delete(`/api/form-entries/${entryId}?${params}`);
+        return body;
     },
 };
 

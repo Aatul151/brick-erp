@@ -2,14 +2,8 @@ import { db } from "../../../models/db.js";
 import { formDefinitions } from "../models/formStudioSchema.js";
 import { eq, and, desc, or, getTableColumns } from "drizzle-orm";
 import { mapFormDefinition } from "../utils/formMappers.js";
-import { resolveWriteTenantId, isSiteAdmin } from "../utils/tenantScope.js";
-import { findFormDefinitionByName } from "../utils/formStudioQueries.js";
-
-const FORM_TYPE = {
-    SYSTEM: "system",
-    CUSTOM: "custom",
-    MASTER_FORM: "master_form",
-};
+import { isSiteAdmin } from "../utils/tenantScope.js";
+import { findFormDefinitionByName, FORM_TYPE } from "../utils/formStudioQueries.js";
 
 function normalizeFormType(value) {
     if (value == null || value === "") return FORM_TYPE.CUSTOM;
@@ -31,24 +25,6 @@ function ensureCanManageSystemForm(req, targetFormType) {
         err.statusCode = 403;
         throw err;
     }
-}
-
-function parseTenantUuid(value) {
-    if (value == null || value === "") return null;
-    const tenantId = String(value).trim();
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantId)) {
-        return null;
-    }
-    return tenantId;
-}
-
-function parseUuid(value) {
-    if (value == null || value === "") return null;
-    const id = String(value).trim();
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-        return null;
-    }
-    return id;
 }
 
 export const listFormDefinitionsWithMaster = async (req, res) => {
@@ -75,12 +51,7 @@ export const listFormDefinitionsWithMaster = async (req, res) => {
 
 export const listFormDefinitions = async (req, res) => {
     try {
-        const tf = resolveWriteTenantId(req);
-
-        const conditions = [];
-        if (tf != null) conditions.push(eq(formDefinitions.tenantId, tf));
-
-        const whereClause = conditions.length ? and(...conditions) : undefined;
+        const whereClause = or(eq(formDefinitions.tenantId, req.user.tenantId), eq(formDefinitions.formType, FORM_TYPE.MASTER_FORM));
 
         const rows = await db
             .select({
@@ -115,16 +86,8 @@ export const listFormDefinitions = async (req, res) => {
 
 export const getFormDefinitionById = async (req, res) => {
     try {
-        const id = parseUuid(req.params.id);
-        if (!id)
-            return res.status(400).json({
-                error: "Invalid id",
-            });
-
-        const tf = resolveWriteTenantId(req);
-
-        const conditions = [eq(formDefinitions.id, id)];
-        if (tf != null) conditions.push(eq(formDefinitions.tenantId, tf));
+        const conditions = [eq(formDefinitions.id, req.params.id)];
+        conditions.push(eq(formDefinitions.tenantId, req.user.tenantId));
 
         const [row] = await db
             .select({
@@ -164,16 +127,8 @@ export const getFormDefinitionById = async (req, res) => {
 export const getFormDefinitionByName = async (req, res) => {
     try {
         const name = req.params.name;
-        if (!name)
-            return res.status(400).json({
-                error: "Name is required",
-            });
-
         const row = await findFormDefinitionByName(req, name);
-        if (!row)
-            return res.status(404).json({
-                error: "Form not found",
-            });
+        if (!row) return res.status(404).json({ error: "Form not found" });
 
         res.json({
             success: true,
@@ -189,7 +144,7 @@ export const getFormDefinitionByName = async (req, res) => {
 
 export const createFormDefinition = async (req, res) => {
     try {
-        const tenantId = resolveWriteTenantId(req);
+        const tenantId = req.user.tenantId;
         const { title, name, collectionName, sections = [], settings = {}, formType } = req.body;
 
         if (!title || !name) {
@@ -260,15 +215,9 @@ export const createFormDefinition = async (req, res) => {
 
 export const updateFormDefinition = async (req, res) => {
     try {
-        const id = parseUuid(req.params.id);
-        if (!id)
-            return res.status(400).json({
-                error: "Invalid id",
-            });
-
-        const tf = resolveWriteTenantId(req);
+        const id = req.params.id;
         const conditions = [eq(formDefinitions.id, id)];
-        if (tf != null) conditions.push(eq(formDefinitions.tenantId, tf));
+        conditions.push(eq(formDefinitions.tenantId, req.user.tenantId));
 
         const [existing] = await db
             .select()
@@ -307,8 +256,7 @@ export const updateFormDefinition = async (req, res) => {
         if (sections !== undefined) patch.sections = sections;
         if (settings !== undefined) patch.settings = settings;
         if (isSiteAdmin(req) && req.body.tenantId !== undefined && req.body.tenantId !== null) {
-            const nt = parseTenantUuid(req.body.tenantId);
-            if (nt) patch.tenantId = nt;
+            patch.tenantId = req.body.tenantId;
         }
 
         await db.update(formDefinitions).set(patch).where(eq(formDefinitions.id, id));
@@ -355,15 +303,9 @@ export const updateFormDefinition = async (req, res) => {
 
 export const deleteFormDefinition = async (req, res) => {
     try {
-        const id = parseUuid(req.params.id);
-        if (!id)
-            return res.status(400).json({
-                error: "Invalid id",
-            });
-
-        const tf = resolveWriteTenantId(req);
+        const id = req.params.id;
         const conditions = [eq(formDefinitions.id, id)];
-        if (tf != null) conditions.push(eq(formDefinitions.tenantId, tf));
+        conditions.push(eq(formDefinitions.tenantId, req.user.tenantId));
 
         const [existing] = await db
             .select({

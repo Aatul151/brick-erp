@@ -89,7 +89,7 @@ function SortableFieldItem({ field, sectionId, fieldIndex, isSelected, onSelect,
             )}
             {field.type === "apiReference" && field.apiEndpoint && field.apiLabelField && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                    API: {field.apiEndpoint} → {field.apiLabelField} ({field.apiValueField || "_id"})
+                    API: {field.apiEndpoint} → {field.apiLabelField} ({field.apiValueField || "id"})
                 </Typography>
             )}
         </Box>

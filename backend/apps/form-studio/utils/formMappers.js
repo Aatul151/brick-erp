@@ -1,16 +1,14 @@
-/**
- * Map DB row to API shape for the UI.
- */
+import { FORM_TYPE } from "./formStudioQueries.js";
+
 export function mapFormDefinition(row) {
     if (!row) return null;
 
     return {
         id: row.id,
-        _id: String(row.id),
         tenantId: row.tenantId,
         title: row.title,
         name: row.name,
-        formType: row.formType ?? "custom",
+        formType: row.formType ?? FORM_TYPE.CUSTOM,
         collectionName: row.collectionName,
         sections: row.sections ?? [],
         settings: row.settings ?? {},
@@ -21,29 +19,15 @@ export function mapFormDefinition(row) {
     };
 }
 
-export function mapFormEntry(row, submittedUser = null) {
+export function mapFormEntry(row) {
     if (!row) return null;
-    const submittedBy =
-        submittedUser && row.submittedBy
-            ? {
-                  _id: String(submittedUser.id),
-                  id: submittedUser.id,
-                  name: submittedUser.fullName,
-                  email: submittedUser.email,
-              }
-            : row.submittedBy
-              ? {
-                    _id: String(row.submittedBy),
-                    name: "",
-                    email: "",
-                }
-              : undefined;
-
+    const createdBy = row.createdBy ? { id: row.createdBy, name: row.creatorName ?? "", email: row.creatorEmail ?? "" } : null;
+    const updatedBy = row.updatedBy ? { id: row.updatedBy, name: row.updaterName ?? "", email: row.updaterEmail ?? "" } : null;
     return {
         id: row.id,
-        _id: String(row.id),
         payload: row.payload ?? {},
-        submittedBy,
+        createdBy: createdBy,
+        updatedBy: updatedBy,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
     };

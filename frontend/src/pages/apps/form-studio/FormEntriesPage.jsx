@@ -127,9 +127,9 @@ export default function FormEntriesPage() {
             payload: data,
             scope: entryScope,
         };
-        if (formMode === "edit" && selectedEntry?._id) {
+        if (formMode === "edit" && selectedEntry?.id) {
             await updateMutation.mutateAsync({
-                id: selectedEntry._id,
+                id: selectedEntry.id,
                 payload,
                 scope: entryScope,
             });
@@ -323,7 +323,7 @@ export default function FormEntriesPage() {
         return (
             <Box sx={{ p: 2 }}>
                 <Alert severity="error" sx={{ mb: 2 }}>
-                    {formDefError?.message || "Form not found"}
+                    {formDefError?.message || "This form is not allow to access to you"}
                 </Alert>
                 <Button variant="outlined" onClick={() => navigate("/form-studio")}>
                     Back to Form Studio
@@ -422,7 +422,7 @@ export default function FormEntriesPage() {
                         rows={entries}
                         columns={columns}
                         loading={entriesLoading}
-                        getRowId={(row) => row._id || ""}
+                        getRowId={(row) => row.id || ""}
                         serverPagination
                         rowCount={pagination?.total || 0}
                         paginationModel={paginationModel}
@@ -434,7 +434,7 @@ export default function FormEntriesPage() {
                     variant={isSingleRecordForm ? "plain" : "drawer"}
                     open={isSingleRecordForm ? true : formDialogOpen}
                     formSysName={decodedFormName || undefined}
-                    recordId={formMode === "edit" || formMode === "view" ? (selectedEntry?._id ?? "draft") : "draft"}
+                    recordId={formMode === "edit" || formMode === "view" ? (selectedEntry?.id ?? "draft") : "draft"}
                     onSubmit={handleFormSubmit}
                     initialValues={(formMode === "edit" || formMode === "view") && selectedEntry?.payload ? { ...selectedEntry.payload } : undefined}
                     title={
@@ -499,9 +499,9 @@ export default function FormEntriesPage() {
                         color="error"
                         variant="contained"
                         onClick={() =>
-                            selectedEntry?._id &&
+                            selectedEntry?.id &&
                             deleteMutation.mutate({
-                                entryId: selectedEntry._id,
+                                entryId: selectedEntry.id,
                                 scope: selectedEntry.scope || "tenant",
                             })
                         }

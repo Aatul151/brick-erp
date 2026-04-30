@@ -157,7 +157,7 @@ export const useFormBuilderStore = create((set, get) => ({
                 settings: currentForm?.settings || {},
             };
 
-            const formId = currentForm?._id || currentForm?.id;
+            const formId = currentForm?.id;
             let saved;
             if (formId) {
                 saved = await formsApi.update(formId, formData);
@@ -177,7 +177,7 @@ export const useFormBuilderStore = create((set, get) => ({
         try {
             const form = await formsApi.getById(id);
             const sections = migrateFormToSections(form);
-            const formWithId = { ...form, id: form._id || form.id };
+            const formWithId = { ...form, id:  form.id };
             set({
                 currentForm: formWithId,
                 sections,
@@ -195,7 +195,7 @@ export const useFormBuilderStore = create((set, get) => ({
         try {
             const form = await formsApi.getByName(name);
             const sections = migrateFormToSections(form);
-            const formWithId = { ...form, id: form._id || form.id };
+            const formWithId = { ...form, id: form.id };
             set({
                 currentForm: formWithId,
                 sections,

@@ -30,7 +30,7 @@ export default function FormStudioList() {
 
     const queryClient = useQueryClient();
 
-    const formsQueryKey = ["forms", user?.tenantId ?? "no-tenant", user?.id ?? user?._id ?? "anon"];
+    const formsQueryKey = ["forms", user?.tenantId ?? "no-tenant", user?.id ?? "anon"];
 
     const { data: allForms = [], isLoading } = useQuery({
         queryKey: formsQueryKey,
@@ -41,6 +41,9 @@ export default function FormStudioList() {
 
     const myForms = useMemo(() => {
         if (!user?.tenantId && !siteAdmin) return [];
+        if (!siteAdmin) {
+            return allForms.filter((form) => form.formType !== "master_form");
+        }
         return allForms;
     }, [allForms, user?.tenantId, siteAdmin]);
 
@@ -106,7 +109,7 @@ export default function FormStudioList() {
 
     const confirmDelete = () => {
         if (selectedForm) {
-            const formId = selectedForm._id || selectedForm.id;
+            const formId = selectedForm.id;
             if (formId) deleteMutation.mutate(formId);
         }
     };
@@ -207,15 +210,7 @@ export default function FormStudioList() {
                     </Box>
                 ) : (
                     <Box>
-                        <AppDataTable
-                            rows={myForms}
-                            columns={columns}
-                            loading={isLoading}
-                            getRowId={(row) => row._id || row.id || ""}
-                            height={400}
-                            enableGlobalSearch
-                            globalSearchPlaceholder="Search forms..."
-                        />
+                        <AppDataTable rows={myForms} columns={columns} loading={isLoading} getRowId={(row) => row.id || ""} height={400} enableGlobalSearch globalSearchPlaceholder="Search forms..." />
                     </Box>
                 )}
             </PageContent>

@@ -150,7 +150,7 @@ export function Sidebar({ open, onClose, collapsed }) {
         staleTime: 5 * 60 * 1000,
     });
     const { data: formsData = [] } = useQuery({
-        queryKey: ["forms", "sidebar", user?.tenantId ?? "no-tenant", user?.id ?? user?._id ?? "anon"],
+        queryKey: ["forms", "sidebar", user?.tenantId ?? "no-tenant", user?.id ?? "anon"],
         queryFn: () => formsApi.getMenu(),
         enabled: !!user?.tenantId,
         staleTime: 5 * 60 * 1000,
@@ -502,7 +502,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                 const href = `/form-studio/entries/${encodeURIComponent(form.name)}`;
                                 const selected = isSelected(href);
                                 return (
-                                    <ListItem key={form.id || form._id || form.name} disablePadding>
+                                    <ListItem key={form.id || form.name} disablePadding>
                                         <Tooltip title={collapsed ? form.title || form.name : ""} placement="right" arrow>
                                             <ListItemButton
                                                 selected={selected}

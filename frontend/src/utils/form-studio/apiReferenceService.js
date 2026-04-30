@@ -4,7 +4,7 @@ import { api, roleApi, userApi } from "../api/coreapi";
  * Options for apiReference fields (aligned with saas-core admin).
  */
 export const apiReferenceService = {
-    async fetchOptions(endpoint, labelField, valueField = "_id") {
+    async fetchOptions(endpoint, labelField, valueField = "id") {
         const ep = endpoint?.replace(/^\//, "") || "";
 
         try {
@@ -30,8 +30,8 @@ export const apiReferenceService = {
             const body = await api.get(`/api${path}?${new URLSearchParams({ page: "1", limit: "1000" })}`);
             const data = body?.data ?? (Array.isArray(body) ? body : []);
             return data.map((item) => ({
-                label: String(item[labelField] ?? item.name ?? item.title ?? item._id ?? "Unknown"),
-                value: String(item[valueField] ?? item._id ?? ""),
+                label: String(item[labelField] ?? item.name ?? item.title ?? item.id ?? "Unknown"),
+                value: String(item[valueField] ?? item.id ?? ""),
             }));
         } catch (e) {
             console.error(`apiReferenceService.fetchOptions(${endpoint}):`, e);

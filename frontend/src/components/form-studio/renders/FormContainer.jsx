@@ -135,7 +135,7 @@ export function FormContainer({
         ...formSchema,
         title: formSchema.title ?? "",
         name: formSchema.name ?? "",
-        module: formSchema.module == null ? undefined : typeof formSchema.module === "string" ? formSchema.module : (formSchema.module?._id ?? formSchema.module?.name ?? undefined),
+        module: formSchema.module == null ? undefined : typeof formSchema.module === "string" ? formSchema.module : (formSchema.module?.id ?? formSchema.module?.name ?? undefined),
     };
 
     const formRendererProps = {

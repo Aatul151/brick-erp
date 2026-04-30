@@ -279,6 +279,19 @@ export default function FormBuilderPage() {
         navigate("/form-studio");
     };
 
+    if (!canManageFormDefinition || (!currentForm && formName)) {
+        return (
+            <Box sx={{ p: 2 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    This form is not allow to access to you
+                </Alert>
+                <Button variant="outlined" onClick={() => navigate("/form-studio")}>
+                    Back to Form Studio
+                </Button>
+            </Box>
+        );
+    }
+
     return (
         <Box
             sx={{
@@ -314,11 +327,6 @@ export default function FormBuilderPage() {
                 }}
             >
                 <>
-                    {!canManageFormDefinition && (
-                        <Alert severity="warning" sx={{ mb: 1.5 }}>
-                            Only Site Admin can manage system/master forms.
-                        </Alert>
-                    )}
                     {saveError && (
                         <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSaveError(null)}>
                             {saveError}

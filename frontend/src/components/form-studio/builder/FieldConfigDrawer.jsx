@@ -66,7 +66,7 @@ export function FieldConfigDrawer({ open, onClose, field, fieldIndex: _fieldInde
         const referenceModel = availableEndpoints.find((e) => e.value === endpoint)?.referenceModel;
         handleChange("referenceModel", referenceModel);
         handleChange("apiLabelField", "");
-        handleChange("apiValueField", "_id");
+        handleChange("apiValueField", "id");
     };
 
     const handleChange = (key, value) => {
@@ -241,11 +241,11 @@ export function FieldConfigDrawer({ open, onClose, field, fieldIndex: _fieldInde
                                         label="Value Field"
                                         fullWidth
                                         size="small"
-                                        value={formData.apiValueField || "_id"}
+                                        value={formData.apiValueField || "id"}
                                         onChange={(e) => handleChange("apiValueField", e.target.value)}
                                         margin="normal"
-                                        placeholder="_id"
-                                        helperText="Field name from API response to use as value (default: _id)"
+                                        placeholder="id"
+                                        helperText="Field name from API response to use as value (default: id)"
                                     />
                                 </>
                             )}

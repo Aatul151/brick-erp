@@ -14,7 +14,7 @@ export function createFormRendererServices(options = {}) {
         formReference: {
             fetchOptions: async (formName, fieldName) => {
                 try {
-                    const fieldsToSelect = ["_id", `payload.${fieldName}`];
+                    const fieldsToSelect = ["id", `payload.${fieldName}`];
                     const response = await formEntriesApi.getAll({
                         formName,
                         page: 1,
@@ -23,10 +23,10 @@ export function createFormRendererServices(options = {}) {
                     });
                     const entries = response.data || [];
                     return entries.map((entry) => {
-                        const labelValue = entry.payload?.[fieldName] ?? entry[fieldName] ?? `Entry ${entry._id?.substring(0, 8) ?? "Unknown"}`;
+                        const labelValue = entry.payload?.[fieldName] ?? entry[fieldName] ?? `Entry ${entry.id?.substring(0, 8) ?? "Unknown"}`;
                         return {
                             label: String(labelValue),
-                            value: entry._id ?? "",
+                            value: entry.id ?? "",
                         };
                     });
                 } catch (e) {
@@ -36,7 +36,7 @@ export function createFormRendererServices(options = {}) {
             },
         },
         apiReference: {
-            fetchOptions: (endpoint, labelField, valueField = "_id") => apiReferenceService.fetchOptions(endpoint, labelField, valueField),
+            fetchOptions: (endpoint, labelField, valueField = "id") => apiReferenceService.fetchOptions(endpoint, labelField, valueField),
         },
         fileUpload: {
             uploadFiles: (formName, fieldName, files) => fileUploadApi.uploadFiles(formName, fieldName, files, recordId),

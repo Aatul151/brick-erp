@@ -1,19 +1,16 @@
 import { db } from "../../../models/db.js";
-import { formEntries } from "../models/formStudioSchema.js";
+import { formEntries, masterFormEntries } from "../models/formStudioSchema.js";
 import { users } from "../../../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { alias, unionAll } from "drizzle-orm/pg-core";
 import { mapFormEntry } from "../utils/formMappers.js";
-import { resolveWriteTenantId } from "../utils/tenantScope.js";
-import { findFormDefinitionByName } from "../utils/formStudioQueries.js";
+import { resolveWriteTenantId, isSiteAdmin } from "../utils/tenantScope.js";
+import { findFormDefinitionByName, FORM_TYPE } from "../utils/formStudioQueries.js";
 
-function parseUuid(value) {
-    if (value == null || value === "") return null;
-    const id = String(value).trim();
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-        return null;
-    }
-    return id;
-}
+const formEntryCreator = alias(users, "form_entry_creator");
+const formEntryUpdater = alias(users, "form_entry_updater");
+const masterEntryCreator = alias(users, "master_entry_creator");
+const masterEntryUpdater = alias(users, "master_entry_updater");
 
 export const listFormEntries = async (req, res) => {
     try {
@@ -37,87 +34,128 @@ export const listFormEntries = async (req, res) => {
         }
 
         const def = await findFormDefinitionByName(req, formName);
-        if (!def)
-            return res.status(404).json({
-                error: "Form definition not found",
-            });
+        if (!def) return res.status(404).json({ error: "Form definition not found" });
 
         const tf = resolveWriteTenantId(req);
-        if (tf != null && def.tenantId !== tf) {
+        if (tf != null && def.tenantId !== tf && def.formType !== FORM_TYPE.MASTER_FORM) {
             return res.status(403).json({
                 error: "Forbidden",
             });
         }
 
-        const baseConditions = [eq(formEntries.formDefinitionId, def.id)];
-        if (tf != null) baseConditions.push(eq(formEntries.tenantId, tf));
-
+        const payloadFilterPairs = [];
         if (filters && typeof filters === "object") {
             for (const [k, v] of Object.entries(filters)) {
                 if (v === undefined || v === null || v === "") continue;
                 if (!/^[a-zA-Z0-9_]+$/.test(k)) continue;
-                baseConditions.push(sql`${formEntries.payload} ->> ${sql.raw(`'${k}'`)} = ${String(v)}`);
+                payloadFilterPairs.push({ key: k, value: String(v) });
             }
+        }
+
+        const baseConditions = [eq(formEntries.formDefinitionId, def.id)];
+        if (tf != null) baseConditions.push(eq(formEntries.tenantId, tf));
+        for (const { key, value } of payloadFilterPairs) {
+            baseConditions.push(sql`${formEntries.payload} ->> ${sql.raw(`'${key}'`)} = ${value}`);
         }
 
         const allConditions = and(...baseConditions);
         const offset = (page - 1) * limit;
 
-        const [{ count }] = await db
-            .select({
-                count: sql`count(*)::int`,
-            })
+        const tenantSelectShape = {
+            id: formEntries.id,
+            tenantId: formEntries.tenantId,
+            formDefinitionId: formEntries.formDefinitionId,
+            payload: formEntries.payload,
+            createdBy: formEntries.createdBy,
+            updatedBy: formEntries.updatedBy,
+            createdAt: formEntries.createdAt,
+            updatedAt: formEntries.updatedAt,
+            creatorName: sql`${formEntryCreator.fullName}`.as("creator_name"),
+            creatorEmail: sql`${formEntryCreator.email}`.as("creator_email"),
+            updaterName: sql`${formEntryUpdater.fullName}`.as("updater_name"),
+            updaterEmail: sql`${formEntryUpdater.email}`.as("updater_email"),
+        };
+
+        const qTenantEntries = db
+            .select(tenantSelectShape)
             .from(formEntries)
+            .leftJoin(formEntryCreator, eq(formEntries.createdBy, formEntryCreator.id))
+            .leftJoin(formEntryUpdater, eq(formEntries.updatedBy, formEntryUpdater.id))
             .where(allConditions);
 
-        const rows = await db
-            .select({
-                id: formEntries.id,
-                tenantId: formEntries.tenantId,
-                formDefinitionId: formEntries.formDefinitionId,
-                payload: formEntries.payload,
-                submittedBy: formEntries.submittedBy,
-                createdAt: formEntries.createdAt,
-                updatedAt: formEntries.updatedAt,
-                submitterName: users.fullName,
-                submitterEmail: users.email,
-            })
-            .from(formEntries)
-            .leftJoin(users, eq(formEntries.submittedBy, users.id))
-            .where(allConditions)
-            .orderBy(desc(formEntries.createdAt))
-            .limit(limit)
-            .offset(offset);
+        let rows;
+        let total;
 
-        const mapped = rows.map((r) => {
-            const submittedUser =
-                r.submittedBy && r.submitterEmail
-                    ? {
-                          id: r.submittedBy,
-                          fullName: r.submitterName,
-                          email: r.submitterEmail,
-                      }
-                    : null;
-            return mapFormEntry(
-                {
-                    id: r.id,
-                    tenantId: r.tenantId,
-                    formDefinitionId: r.formDefinitionId,
-                    payload: r.payload,
-                    submittedBy: r.submittedBy,
-                    createdAt: r.createdAt,
-                    updatedAt: r.updatedAt,
-                },
-                submittedUser,
-            );
-        });
+        if (def.formType !== FORM_TYPE.MASTER_FORM) {
+            const [{ count }] = await db
+                .select({ count: sql`count(*)::int` })
+                .from(formEntries)
+                .where(allConditions);
 
-        const total = parseInt(count, 10) || 0;
+            rows = await qTenantEntries.orderBy(desc(formEntries.createdAt)).limit(limit).offset(offset);
+            total = parseInt(count, 10) || 0;
+        } else {
+            const masterConditions = [eq(masterFormEntries.formName, def.name)];
+            for (const { key, value } of payloadFilterPairs) {
+                masterConditions.push(sql`${masterFormEntries.payload} ->> ${sql.raw(`'${key}'`)} = ${value}`);
+            }
+            const masterAllConditions = and(...masterConditions);
+
+            const masterSelectShape = {
+                id: masterFormEntries.id,
+                tenantId: sql`NULL::uuid`,
+                formDefinitionId: sql`NULL::uuid`,
+                payload: masterFormEntries.payload,
+                createdBy: masterFormEntries.createdBy,
+                updatedBy: masterFormEntries.updatedBy,
+                createdAt: masterFormEntries.createdAt,
+                updatedAt: masterFormEntries.updatedAt,
+                creatorName: sql`${masterEntryCreator.fullName}`.as("creator_name"),
+                creatorEmail: sql`${masterEntryCreator.email}`.as("creator_email"),
+                updaterName: sql`${masterEntryUpdater.fullName}`.as("updater_name"),
+                updaterEmail: sql`${masterEntryUpdater.email}`.as("updater_email"),
+            };
+
+            const qMasterEntries = db
+                .select(masterSelectShape)
+                .from(masterFormEntries)
+                .leftJoin(masterEntryCreator, eq(masterFormEntries.createdBy, masterEntryCreator.id))
+                .leftJoin(masterEntryUpdater, eq(masterFormEntries.updatedBy, masterEntryUpdater.id))
+                .where(masterAllConditions);
+
+            const combined = unionAll(qTenantEntries, qMasterEntries).as("combined_form_entries");
+
+            const [{ count }] = await db.select({ count: sql`count(*)::int` }).from(combined);
+
+            rows = await db
+                .select({
+                    id: combined.id,
+                    tenantId: combined.tenantId,
+                    formDefinitionId: combined.formDefinitionId,
+                    payload: combined.payload,
+                    createdBy: combined.createdBy,
+                    updatedBy: combined.updatedBy,
+                    createdAt: combined.createdAt,
+                    updatedAt: combined.updatedAt,
+                    creatorName: combined.creatorName,
+                    creatorEmail: combined.creatorEmail,
+                    updaterName: combined.updaterName,
+                    updaterEmail: combined.updaterEmail,
+                })
+                .from(combined)
+                .orderBy(desc(combined.createdAt))
+                .limit(limit)
+                .offset(offset);
+
+            total = parseInt(count, 10) || 0;
+        }
+
+        const mappedRows = rows.map((r) => mapFormEntry(r));
         const totalPages = Math.ceil(total / limit) || 1;
 
         res.json({
             success: true,
-            data: mapped,
+            data: mappedRows,
             pagination: {
                 currentPage: page,
                 limit,
@@ -138,39 +176,47 @@ export const listFormEntries = async (req, res) => {
 export const createFormEntry = async (req, res) => {
     try {
         const { formName, payload = {} } = req.body;
-        if (!formName)
-            return res.status(400).json({
-                error: "formName is required",
-            });
+        if (!formName) return res.status(400).json({ error: "formName is required" });
 
         const def = await findFormDefinitionByName(req, formName);
-        if (!def)
-            return res.status(404).json({
-                error: "Form definition not found",
-            });
+        if (!def) return res.status(404).json({ error: "Form definition not found" });
 
-        const tf = resolveWriteTenantId(req);
-        if (tf != null && def.tenantId !== tf) {
-            return res.status(403).json({
-                error: "Forbidden",
-            });
+        const isMasterForm = def.formType === FORM_TYPE.MASTER_FORM;
+
+        const adminMaster = isSiteAdmin(req) && isMasterForm;
+        if (!adminMaster) {
+            if (def.formType !== FORM_TYPE.MASTER_FORM && def.tenantId !== req.user.tenantId) {
+                return res.status(400).json({
+                    error: "Form not allowed to create entries",
+                });
+            }
         }
 
-        const [created] = await db
-            .insert(formEntries)
-            .values({
-                tenantId: def.tenantId,
-                formDefinitionId: def.id,
-                payload,
-                submittedBy: req.user.id,
-            })
-            .returning();
+        let created;
+        if (adminMaster) {
+            [created] = await db
+                .insert(masterFormEntries)
+                .values({
+                    formName: def.name,
+                    payload,
+                    createdBy: req.user.id,
+                })
+                .returning();
+        } else {
+            [created] = await db
+                .insert(formEntries)
+                .values({
+                    tenantId: req.user.tenantId,
+                    formDefinitionId: def.id,
+                    payload,
+                    createdBy: req.user.id,
+                })
+                .returning();
+        }
 
-        const [u] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
-
-        res.status(201).json({
+        res.json({
             success: true,
-            data: mapFormEntry(created, u),
+            data: mapFormEntry(created),
         });
     } catch (error) {
         console.error("createFormEntry", error);
@@ -182,57 +228,67 @@ export const createFormEntry = async (req, res) => {
 
 export const updateFormEntry = async (req, res) => {
     try {
-        const entryId = parseUuid(req.params.id);
-        if (!entryId)
-            return res.status(400).json({
-                error: "Invalid id",
-            });
+        const entryId = req.params.id;
+        if (!entryId) return res.status(400).json({ error: "Invalid id" });
 
         const { formName, payload } = req.body;
-        if (!formName)
-            return res.status(400).json({
-                error: "formName is required",
-            });
-        if (payload === undefined)
-            return res.status(400).json({
-                error: "payload is required",
-            });
+        if (!formName) return res.status(400).json({ error: "formName is required" });
+        if (payload === undefined) return res.status(400).json({ error: "payload is required" });
 
         const def = await findFormDefinitionByName(req, formName);
-        if (!def)
-            return res.status(404).json({
-                error: "Form definition not found",
+        if (!def) return res.status(404).json({ error: "Form definition not found" });
+
+        const isMasterForm = def.formType === FORM_TYPE.MASTER_FORM;
+        if (isMasterForm && !isSiteAdmin(req)) {
+            return res.status(400).json({
+                error: "You can not update master form entries",
             });
+        }
 
-        const tf = resolveWriteTenantId(req);
-        const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
-        if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
+        let existing;
+        if (isMasterForm) {
+            [existing] = await db
+                .select()
+                .from(masterFormEntries)
+                .where(and(eq(masterFormEntries.id, entryId), eq(masterFormEntries.formName, def.name)))
+                .limit(1);
+        } else {
+            const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id), eq(formEntries.tenantId, req.user.tenantId)];
+            [existing] = await db
+                .select()
+                .from(formEntries)
+                .where(and(...conditions))
+                .limit(1);
+        }
 
-        const [existing] = await db
-            .select()
-            .from(formEntries)
-            .where(and(...conditions))
-            .limit(1);
+        if (!existing) return res.status(404).json({ error: "Entry not found" });
 
-        if (!existing)
-            return res.status(404).json({
-                error: "Entry not found",
-            });
-
-        const [updated] = await db
-            .update(formEntries)
-            .set({
-                payload,
-                updatedAt: new Date(),
-            })
-            .where(eq(formEntries.id, entryId))
-            .returning();
-
-        const [u] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
+        let updated;
+        if (isMasterForm) {
+            [updated] = await db
+                .update(masterFormEntries)
+                .set({
+                    payload,
+                    updatedBy: req.user.id,
+                    updatedAt: new Date(),
+                })
+                .where(and(eq(masterFormEntries.id, entryId), eq(masterFormEntries.formName, def.name)))
+                .returning();
+        } else {
+            [updated] = await db
+                .update(formEntries)
+                .set({
+                    payload,
+                    updatedBy: req.user.id,
+                    updatedAt: new Date(),
+                })
+                .where(eq(formEntries.id, entryId))
+                .returning();
+        }
 
         res.json({
             success: true,
-            data: mapFormEntry(updated, u),
+            data: mapFormEntry(updated),
         });
     } catch (error) {
         console.error("updateFormEntry", error);
@@ -244,33 +300,35 @@ export const updateFormEntry = async (req, res) => {
 
 export const deleteFormEntry = async (req, res) => {
     try {
-        const entryId = parseUuid(req.params.id);
+        const entryId = req.params.id;
         const formName = req.query.formName;
-        if (!entryId)
-            return res.status(400).json({
-                error: "Invalid id",
-            });
-        if (!formName)
-            return res.status(400).json({
-                error: "formName query is required",
-            });
+        if (!entryId) return res.status(400).json({ error: "Invalid id" });
+        if (!formName) return res.status(400).json({ error: "formName query is required" });
 
         const def = await findFormDefinitionByName(req, formName);
-        if (!def)
-            return res.status(404).json({
-                error: "Form definition not found",
-            });
+        if (!def) return res.status(404).json({ error: "Form definition not found" });
 
-        const tf = resolveWriteTenantId(req);
-        const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id)];
-        if (tf != null) conditions.push(eq(formEntries.tenantId, tf));
+        const isMasterForm = def.formType === FORM_TYPE.MASTER_FORM;
+        const adminMaster = isMasterForm && isSiteAdmin(req);
 
-        const del = await db
-            .delete(formEntries)
-            .where(and(...conditions))
-            .returning({
-                id: formEntries.id,
-            });
+        let del;
+        if (adminMaster) {
+            del = await db
+                .delete(masterFormEntries)
+                .where(and(eq(masterFormEntries.id, entryId), eq(masterFormEntries.formName, def.name)))
+                .returning({
+                    id: masterFormEntries.id,
+                });
+        } else {
+            const conditions = [eq(formEntries.id, entryId), eq(formEntries.formDefinitionId, def.id), eq(formEntries.tenantId, req.user.tenantId)];
+
+            del = await db
+                .delete(formEntries)
+                .where(and(...conditions))
+                .returning({
+                    id: formEntries.id,
+                });
+        }
 
         if (!del.length)
             return res.status(404).json({

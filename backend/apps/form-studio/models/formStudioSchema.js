@@ -70,7 +70,10 @@ export const formEntries = pgTable(
         payload: jsonb("payload")
             .notNull()
             .default(sql`'{}'::jsonb`),
-        submittedBy: integer("submitted_by").references(() => users.id, {
+        createdBy: integer("created_by").references(() => users.id, {
+            onDelete: "set null",
+        }),
+        updatedBy: integer("updated_by").references(() => users.id, {
             onDelete: "set null",
         }),
         createdAt: timestamp("created_at", {
@@ -100,7 +103,10 @@ export const masterFormEntries = pgTable(
         payload: jsonb("payload")
             .notNull()
             .default(sql`'{}'::jsonb`),
-        submittedBy: integer("submitted_by").references(() => users.id, {
+        createdBy: integer("created_by").references(() => users.id, {
+            onDelete: "set null",
+        }),
+        updatedBy: integer("updated_by").references(() => users.id, {
             onDelete: "set null",
         }),
         createdAt: timestamp("created_at", {
@@ -189,16 +195,28 @@ export const formEntriesRelations = relations(formEntries, ({ one }) => ({
         fields: [formEntries.tenantId],
         references: [tenants.id],
     }),
-    submittedByUser: one(users, {
-        fields: [formEntries.submittedBy],
+    createdByUser: one(users, {
+        fields: [formEntries.createdBy],
         references: [users.id],
+        relationName: "formEntryCreatedBy",
+    }),
+    updatedByUser: one(users, {
+        fields: [formEntries.updatedBy],
+        references: [users.id],
+        relationName: "formEntryUpdatedBy",
     }),
 }));
 
 export const masterFormEntriesRelations = relations(masterFormEntries, ({ one }) => ({
-    submittedByUser: one(users, {
-        fields: [masterFormEntries.submittedBy],
+    createdByUser: one(users, {
+        fields: [masterFormEntries.createdBy],
         references: [users.id],
+        relationName: "masterFormEntryCreatedBy",
+    }),
+    updatedByUser: one(users, {
+        fields: [masterFormEntries.updatedBy],
+        references: [users.id],
+        relationName: "masterFormEntryUpdatedBy",
     }),
 }));
 

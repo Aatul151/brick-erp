@@ -17,7 +17,6 @@ function ensureDir(p) {
 
 const FORMS_FALLBACK_DIR = "forms";
 const FIELDS_FALLBACK_DIR = "fields";
-const RECORD_FALLBACK_DIR = "draft";
 
 /** Length-10 [a-z0-9] token for public file URLs (not DB serial id). */
 const PUBLIC_ID_LENGTH = 15;
@@ -61,11 +60,6 @@ function safeDirSegment(input, fallback) {
     return s;
 }
 
-/**
- * Relative directory under UPLOAD_ROOT:
- * {tenantId}/{formName|forms}/{fieldName|fields}/{recordId|draft}
- * i.e. uploads → tenant → form (or `forms`) → field (or `fields`) → record → files
- */
 function uploadRelativeDir(req) {
     const tenantId = resolveTenantId(req);
     const formName = req.body?.formName;

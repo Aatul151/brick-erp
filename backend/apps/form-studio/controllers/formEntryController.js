@@ -4,7 +4,7 @@ import { users } from "../../../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { alias, unionAll } from "drizzle-orm/pg-core";
 import { mapFormEntry } from "../utils/formMappers.js";
-import { resolveWriteTenantId, isSiteAdmin } from "../utils/tenantScope.js";
+import { isSiteAdmin } from "../utils/tenantScope.js";
 import { findFormDefinitionByName, FORM_TYPE } from "../utils/formStudioQueries.js";
 
 const formEntryCreator = alias(users, "form_entry_creator");
@@ -36,10 +36,10 @@ export const listFormEntries = async (req, res) => {
         const def = await findFormDefinitionByName(req, formName);
         if (!def) return res.status(404).json({ error: "Form definition not found" });
 
-        const tf = resolveWriteTenantId(req);
-        if (tf != null && def.tenantId !== tf && def.formType !== FORM_TYPE.MASTER_FORM) {
+        const isMasterForm = def.formType === FORM_TYPE.MASTER_FORM;
+        if (def.tenantId !== req.user.tenantId && !isMasterForm) {
             return res.status(403).json({
-                error: "Forbidden",
+                error: "You are not allowed to access this form",
             });
         }
 
@@ -52,8 +52,7 @@ export const listFormEntries = async (req, res) => {
             }
         }
 
-        const baseConditions = [eq(formEntries.formDefinitionId, def.id)];
-        if (tf != null) baseConditions.push(eq(formEntries.tenantId, tf));
+        const baseConditions = [eq(formEntries.formDefinitionId, def.id), eq(formEntries.tenantId, req.user.tenantId)];
         for (const { key, value } of payloadFilterPairs) {
             baseConditions.push(sql`${formEntries.payload} ->> ${sql.raw(`'${key}'`)} = ${value}`);
         }
@@ -185,7 +184,7 @@ export const createFormEntry = async (req, res) => {
 
         const adminMaster = isSiteAdmin(req) && isMasterForm;
         if (!adminMaster) {
-            if (def.formType !== FORM_TYPE.MASTER_FORM && def.tenantId !== req.user.tenantId) {
+            if (!isMasterForm && def.tenantId !== req.user.tenantId) {
                 return res.status(400).json({
                     error: "Form not allowed to create entries",
                 });
@@ -239,14 +238,10 @@ export const updateFormEntry = async (req, res) => {
         if (!def) return res.status(404).json({ error: "Form definition not found" });
 
         const isMasterForm = def.formType === FORM_TYPE.MASTER_FORM;
-        if (isMasterForm && !isSiteAdmin(req)) {
-            return res.status(400).json({
-                error: "You can not update master form entries",
-            });
-        }
+        const adminMaster = isSiteAdmin(req) && isMasterForm;
 
         let existing;
-        if (isMasterForm) {
+        if (adminMaster) {
             [existing] = await db
                 .select()
                 .from(masterFormEntries)
@@ -261,10 +256,10 @@ export const updateFormEntry = async (req, res) => {
                 .limit(1);
         }
 
-        if (!existing) return res.status(404).json({ error: "Entry not found" });
+        if (!existing) return res.status(404).json({ error: "Entry not found or you are not allowed to update this entry" });
 
         let updated;
-        if (isMasterForm) {
+        if (adminMaster) {
             [updated] = await db
                 .update(masterFormEntries)
                 .set({
@@ -330,10 +325,7 @@ export const deleteFormEntry = async (req, res) => {
                 });
         }
 
-        if (!del.length)
-            return res.status(404).json({
-                error: "Entry not found",
-            });
+        if (!del.length) return res.status(404).json({ error: "Entry not found or you are not allowed to delete this entry" });
 
         res.json({
             success: true,

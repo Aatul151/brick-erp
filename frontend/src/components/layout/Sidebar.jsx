@@ -124,7 +124,7 @@ const MENU_GROUPS = [
     },
     {
         title: "System Configuration",
-        slugs: ["modules", "settings"],
+        slugs: ["modules"],//, "settings"
         icon: BuildIcon,
     },
     {
@@ -196,15 +196,43 @@ export function Sidebar({ open, onClose, collapsed }) {
     };
 
     const rootLevelApps = ROOT_LEVEL_APPS.map((s) => getItemData(s, true)).filter(Boolean);
-    const allMenuItems = [...rootLevelApps, ...menuGroups.flatMap((g) => g.items)];
-    const showMasterSection = !!user?.tenantId;
-    const masterForms = showMasterSection ? formsData.filter((f) => f?.formType === "master_form" && f?.name) : [];
-
-    const hasAdminAccess = allMenuItems.some(canAccess);
+    const showFormsMenus = !!user?.tenantId;
+    const masterForms = showFormsMenus ? formsData.filter((f) => f?.formType === "master_form" && f?.name) : [];
+    const tenantForms = showFormsMenus ? formsData.filter((f) => f?.formType !== "master_form" && f?.name) : [];
+    const formMenuGroups = [
+        {
+            title: "Master Forms",
+            icon: ViewModuleIcon,
+            items: masterForms.map((form) => ({
+                name: form.title || form.name,
+                href: `/form-studio/entries/${encodeURIComponent(form.name)}`,
+                IconComponent: ViewModuleIcon,
+            })),
+        },
+        {
+            title: "Forms",
+            icon: ViewModuleIcon,
+            items: tenantForms.map((form) => ({
+                name: form.title || form.name,
+                href: `/form-studio/entries/${encodeURIComponent(form.name)}`,
+                IconComponent: ViewModuleIcon,
+            })),
+        },
+    ].filter((g) => g.items.length > 0);
+    const adminMenuGroups = menuGroups
+        .map((group) => ({
+            ...group,
+            items: group.items.filter(canAccess),
+        }))
+        .filter((group) => group.items.length > 0);
+    const collapsibleGroups = [...formMenuGroups, ...adminMenuGroups];
     const [groupOpen, setGroupOpen] = useState(() =>
-        MENU_GROUPS.reduce((acc, g) => {
-            const hasRouteInGroup = g.slugs.some((slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, "-")}`) === pathname);
-            acc[g.title] = hasRouteInGroup;
+        [...MENU_GROUPS.map((g) => g.title), "Master Forms", "Forms"].reduce((acc, title) => {
+            const hasRouteInGroup = MENU_GROUPS.find((g) => g.title === title)?.slugs?.some(
+                (slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, "-")}`) === pathname,
+            );
+            const hasRouteInFormGroup = title === "Master Forms" || title === "Forms" ? pathname.startsWith("/form-studio/entries/") : false;
+            acc[title] = !!hasRouteInGroup || hasRouteInFormGroup;
             return acc;
         }, {}),
     );
@@ -216,16 +244,13 @@ export function Sidebar({ open, onClose, collapsed }) {
             const next = {
                 ...prev,
             };
-            MENU_GROUPS.forEach((g) => {
-                const hasRouteInGroup = g.slugs.some((slug) => {
-                    const item = getItemData(slug);
-                    return item && pathname === item.href;
-                });
+            collapsibleGroups.forEach((g) => {
+                const hasRouteInGroup = g.items.some((item) => pathname === item.href);
                 if (hasRouteInGroup) next[g.title] = true;
             });
             return next;
         });
-    }, [pathname, modulesData]);
+    }, [pathname, modulesData, formsData]);
 
     const handleGroupClick = (groupTitle, e) => {
         if (collapsed) {
@@ -471,115 +496,21 @@ export function Sidebar({ open, onClose, collapsed }) {
                         );
                     })}
 
-                    {showMasterSection && (
-                        <>
-                            <Divider
-                                sx={{
-                                    my: 1,
-                                }}
-                            />
-                            {!collapsed && (
-                                <ListItem
-                                    sx={{
-                                        px: 2.5,
-                                        py: 0.5,
-                                    }}
-                                >
-                                    <Typography
-                                        variant="caption"
-                                        sx={{
-                                            fontWeight: 600,
-                                            color: "text.secondary",
-                                            textTransform: "uppercase",
-                                            letterSpacing: 0.5,
-                                        }}
-                                    >
-                                        Master Section
-                                    </Typography>
-                                </ListItem>
-                            )}
-                            {masterForms.map((form) => {
-                                const href = `/form-studio/entries/${encodeURIComponent(form.name)}`;
-                                const selected = isSelected(href);
-                                return (
-                                    <ListItem key={form.id || form.name} disablePadding>
-                                        <Tooltip title={collapsed ? form.title || form.name : ""} placement="right" arrow>
-                                            <ListItemButton
-                                                selected={selected}
-                                                onClick={() => handleNav(href)}
-                                                sx={{
-                                                    ...itemStyles,
-                                                    pl: collapsed ? 1.5 : 5,
-                                                    pr: 2.5,
-                                                }}
-                                            >
-                                                <ListItemIcon
-                                                    sx={{
-                                                        minWidth: collapsed ? 0 : 32,
-                                                        justifyContent: "center",
-                                                        color: selected ? theme.palette.primary.main : "text.secondary",
-                                                        "& svg": {
-                                                            fontSize: {
-                                                                xs: "1.2rem",
-                                                                sm: "1.15rem",
-                                                            },
-                                                        },
-                                                    }}
-                                                >
-                                                    <ViewModuleIcon />
-                                                </ListItemIcon>
-                                                {!collapsed && (
-                                                    <ListItemText
-                                                        primary={form.title || form.name}
-                                                        primaryTypographyProps={{
-                                                            fontSize: {
-                                                                xs: "0.8125rem",
-                                                                sm: "0.75rem",
-                                                            },
-                                                            fontWeight: selected ? 500 : 400,
-                                                        }}
-                                                    />
-                                                )}
-                                            </ListItemButton>
-                                        </Tooltip>
-                                    </ListItem>
-                                );
-                            })}
-                            {!collapsed && masterForms.length === 0 && (
-                                <ListItem
-                                    sx={{
-                                        px: 2.5,
-                                        py: 0.5,
-                                    }}
-                                >
-                                    <Typography
-                                        variant="caption"
-                                        sx={{
-                                            color: "text.disabled",
-                                        }}
-                                    >
-                                        No master forms
-                                    </Typography>
-                                </ListItem>
-                            )}
-                        </>
-                    )}
-
                     {/* Menu groups */}
-                    {hasAdminAccess && (
+                    {collapsibleGroups.length > 0 && (
                         <>
-                            <Divider
-                                sx={{
-                                    my: 1,
-                                }}
-                            />
-                            {menuGroups.map((group) => {
-                                const accessibleItems = group.items.filter(canAccess);
-                                if (accessibleItems.length === 0) return null;
+                            {collapsibleGroups.map((group, index) => {
                                 const isGroupOpen = groupOpen[group.title];
-                                const isGroupSelected = accessibleItems.some((item) => pathname === item.href);
+                                const isGroupSelected = group.items.some((item) => pathname === item.href);
                                 return (
                                     <Box key={group.title}>
+                                        {index === formMenuGroups.length && adminMenuGroups.length > 0 && formMenuGroups.length > 0 && (
+                                            <Divider
+                                                sx={{
+                                                    my: 1,
+                                                }}
+                                            />
+                                        )}
                                         <ListItem disablePadding>
                                             <Tooltip title={collapsed ? group.title : ""} placement="right" arrow>
                                                 <ListItemButton selected={isGroupSelected} onClick={(e) => handleGroupClick(group.title, e)} sx={itemStyles}>
@@ -641,7 +572,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                             }}
                                         >
                                             <MenuList dense>
-                                                {accessibleItems.map((item) => {
+                                                {group.items.map((item) => {
                                                     const selected = isSelected(item.href);
                                                     const Icon = item.IconComponent;
                                                     return (
@@ -707,7 +638,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                         </Popover>
                                         <Collapse in={isGroupOpen && !collapsed} timeout="auto" unmountOnExit>
                                             <List component="div" disablePadding>
-                                                {accessibleItems.map((item) => {
+                                                {group.items.map((item) => {
                                                     const selected = isSelected(item.href);
                                                     const Icon = item.IconComponent;
                                                     return (

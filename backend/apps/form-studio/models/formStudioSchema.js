@@ -143,7 +143,7 @@ export const formUploadedFiles = pgTable(
             length: 200,
         }).notNull(),
         publicId: varchar("public_id", {
-            length: 12,
+            length: 20,
         })
             .notNull()
             .unique(),

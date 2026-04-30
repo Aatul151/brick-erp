@@ -36,6 +36,7 @@ export default function FormEntriesPage() {
     const [selectedEntry, setSelectedEntry] = useState(null);
     const [formMode, setFormMode] = useState("add");
     const [entryScope, setEntryScope] = useState("tenant");
+    const [submitAlert, setSubmitAlert] = useState(null);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 10,
@@ -122,19 +123,28 @@ export default function FormEntriesPage() {
 
     const handleFormSubmit = async (data) => {
         if (!decodedFormName) return;
+        setSubmitAlert(null);
         const payload = {
             formName: decodedFormName,
             payload: data,
             scope: entryScope,
         };
+        let response;
         if (formMode === "edit" && selectedEntry?.id) {
-            await updateMutation.mutateAsync({
+            response = await updateMutation.mutateAsync({
                 id: selectedEntry.id,
                 payload,
                 scope: entryScope,
             });
         } else {
-            await createMutation.mutateAsync(payload);
+            response = await createMutation.mutateAsync(payload);
+        }
+
+        if (isSingleRecordForm) {
+            setSubmitAlert({
+                severity: "success",
+                message: response?.message || "Entry submitted successfully.",
+            });
         }
     };
 
@@ -417,6 +427,11 @@ export default function FormEntriesPage() {
             <PageHeader title={formSchema.title} actions={actionButtons} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
 
             <PageContent>
+                {isSingleRecordForm && submitAlert?.message && (
+                    <Alert severity={submitAlert.severity || "success"} sx={{ mb: 1 }} onClose={() => setSubmitAlert(null)}>
+                        {submitAlert.message}
+                    </Alert>
+                )}
                 {!isSingleRecordForm && (
                     <AppDataTable
                         rows={entries}

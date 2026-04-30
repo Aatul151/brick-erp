@@ -152,14 +152,14 @@ export const formEntriesApi = {
     },
     create: async (payload) => {
         const body = await api.post("/api/form-entries", payload);
-        return unwrapData(body);
+        return body;
     },
     update: async (entryId, payload, scope) => {
         const params = new URLSearchParams();
         if (scope) params.set("scope", String(scope));
         const suffix = params.toString() ? `?${params}` : "";
         const body = await api.put(`/api/form-entries/${entryId}${suffix}`, payload);
-        return unwrapData(body);
+        return body;
     },
     delete: async (entryId, formName, scope) => {
         const params = new URLSearchParams({ formName });

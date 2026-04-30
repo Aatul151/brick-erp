@@ -433,23 +433,6 @@ export default function FormEntriesPage() {
                     </Button>
                 </Tooltip>
             )}
-            {!isSingleRecordForm && siteAdmin && (
-                <Tooltip title={isMobile ? "Add Master" : `Add Master ${formSchema.title}`}>
-                    <Button
-                        onClick={() => {
-                            setSelectedEntry(null);
-                            setFormMode("add");
-                            setEntryScope("master");
-                            setFormDialogOpen(true);
-                        }}
-                        disabled={isBusy}
-                        color="secondary"
-                        sx={{ fontWeight: 600 }}
-                    >
-                        <PublicIcon fontSize="small" />
-                    </Button>
-                </Tooltip>
-            )}
         </ButtonGroup>
     );
 

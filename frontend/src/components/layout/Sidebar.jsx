@@ -504,7 +504,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                 const isGroupSelected = group.items.some((item) => pathname === item.href);
                                 return (
                                     <Box key={group.title}>
-                                        {index === formMenuGroups.length && adminMenuGroups.length > 0 && formMenuGroups.length > 0 && (
+                                        {index === formMenuGroups.length && adminMenuGroups.length > 0 && (
                                             <Divider
                                                 sx={{
                                                     my: 1,

@@ -76,12 +76,7 @@ export const listFormEntries = async (req, res) => {
             isMasterRecord: sql`false`.as("is_master_record"),
         };
 
-        const qTenantEntries = db
-            .select(tenantSelectShape)
-            .from(formEntries)
-            .leftJoin(formEntryCreator, eq(formEntries.createdBy, formEntryCreator.id))
-            .leftJoin(formEntryUpdater, eq(formEntries.updatedBy, formEntryUpdater.id))
-            .where(allConditions);
+        const qTenantEntries = db.select(tenantSelectShape).from(formEntries).leftJoin(formEntryCreator, eq(formEntries.createdBy, formEntryCreator.id)).leftJoin(formEntryUpdater, eq(formEntries.updatedBy, formEntryUpdater.id)).where(allConditions);
 
         let rows;
         let total;
@@ -117,12 +112,7 @@ export const listFormEntries = async (req, res) => {
                 isMasterRecord: sql`true`.as("is_master_record"),
             };
 
-            const qMasterEntries = db
-                .select(masterSelectShape)
-                .from(masterFormEntries)
-                .leftJoin(masterEntryCreator, eq(masterFormEntries.createdBy, masterEntryCreator.id))
-                .leftJoin(masterEntryUpdater, eq(masterFormEntries.updatedBy, masterEntryUpdater.id))
-                .where(masterAllConditions);
+            const qMasterEntries = db.select(masterSelectShape).from(masterFormEntries).leftJoin(masterEntryCreator, eq(masterFormEntries.createdBy, masterEntryCreator.id)).leftJoin(masterEntryUpdater, eq(masterFormEntries.updatedBy, masterEntryUpdater.id)).where(masterAllConditions);
 
             const combined = unionAll(qTenantEntries, qMasterEntries).as("combined_form_entries");
 

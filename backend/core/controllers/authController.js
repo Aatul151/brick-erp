@@ -43,8 +43,7 @@ export const login = async (req, res) => {
         const { password } = req.body;
         const lookup = resolveLoginLookup(req.body);
 
-        const user =
-            lookup.kind === "email" ? await db.select().from(users).where(eq(users.email, lookup.value)).limit(1) : await db.select().from(users).where(eq(users.mobile, lookup.value)).limit(1);
+        const user = lookup.kind === "email" ? await db.select().from(users).where(eq(users.email, lookup.value)).limit(1) : await db.select().from(users).where(eq(users.mobile, lookup.value)).limit(1);
 
         if (!user.length) {
             await logAudit({

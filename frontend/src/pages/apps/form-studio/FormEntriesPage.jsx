@@ -13,6 +13,7 @@ import { formsApi, formEntriesApi } from "../../../utils/api/coreapi";
 import { transformFormSchema, formatDateTime } from "../../../utils/form-studio/formUtils";
 import { useAuth } from "../../../contexts/AuthContext";
 import { PageHeader } from "../../../components/common/PageHeader";
+import { AppDynamicIcon } from "../../../components/common/AppDynamicIcon";
 import { PageContent } from "../../../components/common/PageContent";
 import { AppDataTable } from "../../../components/common/AppDataTable";
 import { FormContainer } from "../../../components/form-studio/renders/FormContainer";
@@ -446,26 +447,15 @@ export default function FormEntriesPage() {
                 overflow: "hidden",
             }}
         >
-            <PageHeader title={formSchema.title} actions={actionButtons} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
-
+            <PageHeader title={formSchema.title} subtitle={`Manage entries for ${formSchema.title?.toLowerCase()}`} actions={actionButtons} icon={<AppDynamicIcon name={formSchema.settings.formIcon} />} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
+           
             <PageContent>
                 {submitAlert?.message && (
                     <Alert severity={submitAlert.severity || "success"} sx={{ mb: 1 }} onClose={() => setSubmitAlert(null)}>
                         {submitAlert.message}
                     </Alert>
                 )}
-                {!isSingleRecordForm && (
-                    <AppDataTable
-                        rows={entries}
-                        columns={columns}
-                        loading={entriesLoading}
-                        getRowId={(row) => row.id || ""}
-                        serverPagination
-                        rowCount={pagination?.total || 0}
-                        paginationModel={paginationModel}
-                        onPaginationModelChange={setPaginationModel}
-                    />
-                )}
+                {!isSingleRecordForm && <AppDataTable rows={entries} columns={columns} loading={entriesLoading} getRowId={(row) => row.id || ""} serverPagination rowCount={pagination?.total || 0} paginationModel={paginationModel} onPaginationModelChange={setPaginationModel} />}
 
                 <FormContainer
                     variant={isSingleRecordForm ? "plain" : "drawer"}
@@ -474,13 +464,7 @@ export default function FormEntriesPage() {
                     recordId={formMode === "edit" || formMode === "view" ? (selectedEntry?.id ?? "draft") : "draft"}
                     onSubmit={handleFormSubmit}
                     initialValues={(formMode === "edit" || formMode === "view") && selectedEntry?.payload ? { ...selectedEntry.payload } : undefined}
-                    title={
-                        formMode === "edit"
-                            ? `Edit ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}`
-                            : formMode === "view"
-                              ? `View ${formSchema.title}`
-                              : `Add ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}`
-                    }
+                    title={formMode === "edit" ? `Edit ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}` : formMode === "view" ? `View ${formSchema.title}` : `Add ${entryScope === "master" ? "Master" : "Tenant"} ${formSchema.title}`}
                     mode={formMode}
                     isLoading={createMutation.isPending || updateMutation.isPending}
                     onClose={

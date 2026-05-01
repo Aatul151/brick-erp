@@ -1,59 +1,18 @@
-import { useState, useEffect } from "react";
-import {
-    Drawer,
-    Divider,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Toolbar,
-    Box,
-    Typography,
-    Tooltip,
-    Button,
-    useTheme,
-    useMediaQuery,
-    alpha,
-    Collapse,
-    Popover,
-    MenuList,
-    MenuItem,
-} from "@mui/material";
+import React, { useState, useEffect, useMemo } from "react";
+import { Drawer, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, Tooltip, Button, useTheme, useMediaQuery, alpha, Collapse, Popover, MenuList, MenuItem } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import BusinessIcon from "@mui/icons-material/Business";
-import GroupWorkIcon from "@mui/icons-material/GroupWork";
-import BuildIcon from "@mui/icons-material/Build";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import SecurityIcon from "@mui/icons-material/Security";
-import HistoryIcon from "@mui/icons-material/History";
-import ExtensionIcon from "@mui/icons-material/Extension";
-import SettingsIcon from "@mui/icons-material/Settings";
-import ViewModuleIcon from "@mui/icons-material/ViewModule";
-import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { moduleApi, formsApi } from "../../utils/api/coreapi";
+import { AppDynamicIcon } from "../common/AppDynamicIcon";
 
 const DRAWER_WIDTH_EXPANDED = 256;
 const DRAWER_WIDTH_COLLAPSED = 80;
-
-const ICON_MAP = {
-    Business: BusinessIcon,
-    People: PeopleIcon,
-    AdminPanelSettings: AdminPanelSettingsIcon,
-    Security: SecurityIcon,
-    History: HistoryIcon,
-    Extension: ExtensionIcon,
-    Settings: SettingsIcon,
-    Home: HomeIcon,
-    ViewModule: ViewModuleIcon,
-};
 
 const FALLBACK_ITEMS = {
     form_studio: {
@@ -120,17 +79,17 @@ const MENU_GROUPS = [
     {
         title: "User Management",
         slugs: ["tenants", "users", "roles", "permissions"],
-        icon: GroupWorkIcon,
+        icon: "GroupWork",
     },
     {
         title: "System Configuration",
-        slugs: ["modules"],//, "settings"
-        icon: BuildIcon,
+        slugs: ["modules"], //, "settings"
+        icon: "Build",
     },
     {
         title: "Monitoring & Logs",
         slugs: ["audit_logs"],
-        icon: HistoryIcon,
+        icon: "History",
     },
 ];
 
@@ -167,7 +126,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                 name: fromApi.name,
                 href: slugToPath(fromApi.slug),
                 resource: fromApi.slug,
-                IconComponent: ICON_MAP[fromApi.icon] || AdminPanelSettingsIcon,
+                icon: fromApi.icon,
                 roles: [],
             };
         }
@@ -176,7 +135,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                 name: fallback.name,
                 href: fallback.path,
                 resource: fallback.slug,
-                IconComponent: ICON_MAP[fallback.icon] || AdminPanelSettingsIcon,
+                icon: fallback.icon,
                 roles: fallback.roles,
             };
         }
@@ -199,23 +158,24 @@ export function Sidebar({ open, onClose, collapsed }) {
     const showFormsMenus = !!user?.tenantId;
     const masterForms = showFormsMenus ? formsData.filter((f) => f?.formType === "master_form" && f?.name) : [];
     const tenantForms = showFormsMenus ? formsData.filter((f) => f?.formType !== "master_form" && f?.name) : [];
+    console.log(masterForms, tenantForms);
     const formMenuGroups = [
         {
             title: "Master Forms",
-            icon: ViewModuleIcon,
+            icon: "ViewModule",
             items: masterForms.map((form) => ({
                 name: form.title || form.name,
                 href: `/form-studio/entries/${encodeURIComponent(form.name)}`,
-                IconComponent: ViewModuleIcon,
+                icon: form?.settings?.formIcon,
             })),
         },
         {
             title: "Forms",
-            icon: ViewModuleIcon,
+            icon: "ViewModule",
             items: tenantForms.map((form) => ({
                 name: form.title || form.name,
                 href: `/form-studio/entries/${encodeURIComponent(form.name)}`,
-                IconComponent: ViewModuleIcon,
+                icon: form?.settings?.formIcon,
             })),
         },
     ].filter((g) => g.items.length > 0);
@@ -228,9 +188,7 @@ export function Sidebar({ open, onClose, collapsed }) {
     const collapsibleGroups = [...formMenuGroups, ...adminMenuGroups];
     const [groupOpen, setGroupOpen] = useState(() =>
         [...MENU_GROUPS.map((g) => g.title), "Master Forms", "Forms"].reduce((acc, title) => {
-            const hasRouteInGroup = MENU_GROUPS.find((g) => g.title === title)?.slugs?.some(
-                (slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, "-")}`) === pathname,
-            );
+            const hasRouteInGroup = MENU_GROUPS.find((g) => g.title === title)?.slugs?.some((slug) => (FALLBACK_ITEMS[slug]?.path || `/${slug.replace(/_/g, "-")}`) === pathname);
             const hasRouteInFormGroup = title === "Master Forms" || title === "Forms" ? pathname.startsWith("/form-studio/entries/") : false;
             acc[title] = !!hasRouteInGroup || hasRouteInFormGroup;
             return acc;
@@ -458,7 +416,6 @@ export function Sidebar({ open, onClose, collapsed }) {
 
                     {/* Root-level apps */}
                     {rootLevelApps.filter(canAccess).map((app) => {
-                        const Icon = app.IconComponent;
                         return (
                             <ListItem key={app.resource} disablePadding>
                                 <Tooltip title={collapsed ? app.name : ""} placement="right" arrow>
@@ -476,7 +433,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                 },
                                             }}
                                         >
-                                            {Icon && <Icon />}
+                                            {<AppDynamicIcon name={app.icon} />}
                                         </ListItemIcon>
                                         {!collapsed && (
                                             <ListItemText
@@ -527,10 +484,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                             },
                                                         }}
                                                     >
-                                                        {(() => {
-                                                            const GroupIcon = group.icon;
-                                                            return <GroupIcon />;
-                                                        })()}
+                                                        {<AppDynamicIcon name={group.icon} />}
                                                     </ListItemIcon>
                                                     {!collapsed && (
                                                         <>
@@ -574,7 +528,6 @@ export function Sidebar({ open, onClose, collapsed }) {
                                             <MenuList dense>
                                                 {group.items.map((item) => {
                                                     const selected = isSelected(item.href);
-                                                    const Icon = item.IconComponent;
                                                     return (
                                                         <MenuItem
                                                             key={item.name}
@@ -619,7 +572,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                                     },
                                                                 }}
                                                             >
-                                                                {Icon && <Icon />}
+                                                                {<AppDynamicIcon name={item.icon} />}
                                                             </ListItemIcon>
                                                             <ListItemText
                                                                 primary={item.name}
@@ -640,7 +593,6 @@ export function Sidebar({ open, onClose, collapsed }) {
                                             <List component="div" disablePadding>
                                                 {group.items.map((item) => {
                                                     const selected = isSelected(item.href);
-                                                    const Icon = item.IconComponent;
                                                     return (
                                                         <ListItem key={item.name} disablePadding>
                                                             <Tooltip title={collapsed ? item.name : ""} placement="right" arrow>
@@ -666,7 +618,7 @@ export function Sidebar({ open, onClose, collapsed }) {
                                                                             },
                                                                         }}
                                                                     >
-                                                                        {Icon && <Icon />}
+                                                                        {<AppDynamicIcon name={item.icon} />}
                                                                     </ListItemIcon>
                                                                     <ListItemText
                                                                         primary={item.name}

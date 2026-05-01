@@ -321,12 +321,10 @@ export default function Profile() {
                                 </form>
                             ) : (
                                 <Stack spacing={0} divider={<Divider />}>
-                                    <InfoRow label="User ID" value={user?.id} />
                                     <InfoRow label="Full Name" value={user?.fullName} />
                                     <InfoRow label="Email" value={user?.email} />
                                     <InfoRow label="Mobile" value={user?.mobile || "—"} />
                                     <InfoRow label="Roles" value={user?.roles?.map((r) => r.roleName).join(", ")} />
-                                    <InfoRow label="Tenant" value={user?.tenantId || "System"} />
                                     <InfoRow label="Status" value={<StatusLabel value={user?.status} variant="status" />} />
                                     <InfoRow label="Member Since" value={formatDate(user?.createdAt)} />
                                 </Stack>

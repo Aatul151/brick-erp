@@ -8,7 +8,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import PublicIcon from "@mui/icons-material/Public";
 import { formsApi, formEntriesApi } from "../../../utils/api/coreapi";
 import { transformFormSchema, formatDateTime } from "../../../utils/form-studio/formUtils";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -19,8 +18,7 @@ import { AppDataTable } from "../../../components/common/AppDataTable";
 import { FormContainer } from "../../../components/form-studio/renders/FormContainer";
 import { FileDisplay } from "../../../components/form-studio/renders/FileDisplay";
 import { CKEditorContentDisplay } from "../../../components/form-studio/renders/CKEditorContentDisplay";
-import { FieldView } from "@aatulwork/customform-renderer";
-import { CheckCircle } from "@mui/icons-material";
+import { CheckCircle, Close } from "@mui/icons-material";
 
 export default function FormEntriesPage() {
     const { user, isSiteAdmin } = useAuth();
@@ -231,7 +229,7 @@ export default function FormEntriesPage() {
                     headerName: field.label,
                     minWidth: 20,
                     valueGetter: (_v, row) => row.payload?.[field.name] ?? row[field.name],
-                    renderCell: (params) => (params.value ? <CheckCircle color="success" /> : <CloseIcon color="error" />),
+                    renderCell: (params) => (params.value ? <CheckCircle color="success" /> : <Close color="error" />),
                 });
                 return;
             }
@@ -250,6 +248,7 @@ export default function FormEntriesPage() {
                             datePickerMode: mode,
                         });
                     }
+                    if (Array.isArray(fieldValue)) return fieldValue.map((item) => item.label ?? item).join(", ");
                     if (typeof fieldValue === "object") return JSON.stringify(fieldValue);
                     return String(fieldValue);
                 },

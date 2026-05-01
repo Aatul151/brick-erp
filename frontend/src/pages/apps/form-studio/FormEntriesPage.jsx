@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, CircularProgress, Alert, ButtonGroup, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, CircularProgress, Alert, ButtonGroup, Tooltip, useMediaQuery, useTheme, Switch } from "@mui/material";
 import { GridActionsCellItem } from "@mui/x-data-grid";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,6 +19,8 @@ import { AppDataTable } from "../../../components/common/AppDataTable";
 import { FormContainer } from "../../../components/form-studio/renders/FormContainer";
 import { FileDisplay } from "../../../components/form-studio/renders/FileDisplay";
 import { CKEditorContentDisplay } from "../../../components/form-studio/renders/CKEditorContentDisplay";
+import { FieldView } from "@aatulwork/customform-renderer";
+import { CheckCircle } from "@mui/icons-material";
 
 export default function FormEntriesPage() {
     const { user, isSiteAdmin } = useAuth();
@@ -202,6 +204,38 @@ export default function FormEntriesPage() {
                 });
                 return;
             }
+            if (field.type === "color") {
+                cols.push({
+                    field: field.name,
+                    headerName: field.label,
+                    minWidth: 50,
+                    valueGetter: (_v, row) => row.payload?.[field.name] ?? row[field.name],
+                    renderCell: (params) => (
+                        <Box
+                            sx={{
+                                width: 30,
+                                height: 30,
+                                backgroundColor: params.value || "#000000",
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 1,
+                            }}
+                        />
+                    ),
+                });
+                return;
+            }
+            if (field.type === "toggle") {
+                cols.push({
+                    field: field.name,
+                    headerName: field.label,
+                    minWidth: 20,
+                    valueGetter: (_v, row) => row.payload?.[field.name] ?? row[field.name],
+                    renderCell: (params) => (params.value ? <CheckCircle color="success" /> : <CloseIcon color="error" />),
+                });
+                return;
+            }
+
             cols.push({
                 field: field.name,
                 headerName: field.label,
@@ -448,7 +482,7 @@ export default function FormEntriesPage() {
             }}
         >
             <PageHeader title={formSchema.title} subtitle={`Manage entries for ${formSchema.title?.toLowerCase()}`} actions={actionButtons} icon={<AppDynamicIcon name={formSchema.settings.formIcon} />} sx={{ mb: 0.5, borderRadius: "10px", padding: 1.5 }} />
-           
+
             <PageContent>
                 {submitAlert?.message && (
                     <Alert severity={submitAlert.severity || "success"} sx={{ mb: 1 }} onClose={() => setSubmitAlert(null)}>

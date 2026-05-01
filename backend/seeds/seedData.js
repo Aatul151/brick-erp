@@ -304,7 +304,7 @@ const DEFAULT_MODULES = [
     {
         name: "Form Studio",
         slug: "form_studio",
-        icon: "ViewModule",
+        icon: "DynamicForm",
         sortOrder: 8,
     },
 ];
@@ -324,7 +324,7 @@ export const seedDatabase = async () => {
                 await db.insert(modules).values({
                     name: "Form Studio",
                     slug: "form_studio",
-                    icon: "ViewModule",
+                    icon: "DynamicForm",
                     sortOrder: 8,
                 });
             }

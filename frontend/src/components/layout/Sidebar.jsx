@@ -19,7 +19,7 @@ const FALLBACK_ITEMS = {
         name: "Form Studio",
         path: "/form-studio",
         slug: "form_studio",
-        icon: "ViewModule",
+        icon: "DynamicForm",
         roles: ["Site Admin", "Client Admin", "Client User"],
     },
     tenants: {
@@ -158,11 +158,11 @@ export function Sidebar({ open, onClose, collapsed }) {
     const showFormsMenus = !!user?.tenantId;
     const masterForms = showFormsMenus ? formsData.filter((f) => f?.formType === "master_form" && f?.name) : [];
     const tenantForms = showFormsMenus ? formsData.filter((f) => f?.formType !== "master_form" && f?.name) : [];
-    console.log(masterForms, tenantForms);
+
     const formMenuGroups = [
         {
             title: "Master Forms",
-            icon: "ViewModule",
+            icon: "DynamicForm",
             items: masterForms.map((form) => ({
                 name: form.title || form.name,
                 href: `/form-studio/entries/${encodeURIComponent(form.name)}`,
@@ -171,7 +171,7 @@ export function Sidebar({ open, onClose, collapsed }) {
         },
         {
             title: "Forms",
-            icon: "ViewModule",
+            icon: "Description",
             items: tenantForms.map((form) => ({
                 name: form.title || form.name,
                 href: `/form-studio/entries/${encodeURIComponent(form.name)}`,

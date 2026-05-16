@@ -18,6 +18,7 @@ import { apiLimiter } from "./utils/rateLimiter.js";
 
 import coreRoutes from "./core/routes/index.js";
 import formStudioRoutes from "./apps/form-studio/routes/index.js";
+import recordsRoutes from "./apps/records/routes/index.js";
 
 const app = express();
 const PORT = process.env.BACKEND_PORT;
@@ -48,6 +49,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api", coreRoutes);
 app.use("/api", formStudioRoutes);
+app.use("/api", recordsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

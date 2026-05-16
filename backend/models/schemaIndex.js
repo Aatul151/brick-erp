@@ -4,3 +4,4 @@
  */
 export * from "./schema.js";
 export * from "../apps/form-studio/models/formStudioSchema.js";
+export * from "../apps/records/models/records.schema.js";

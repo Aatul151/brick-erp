@@ -1189,6 +1189,134 @@
       ]
     },
     {
+      "name": "Records",
+      "item": [
+        {
+          "name": "List records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/records/get?page=1&limit=20&recordType=production&entryDateFrom=2026-01-01&entryDateTo=2026-12-31",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get record by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/records/get/{{recordId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/records/create",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantId\": \"{{tenantId}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 100.5,\n  \"entryDate\": \"2026-05-16\",\n  \"entryTime\": \"14:30\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"morning\"\n  },\n  \"remark\": \"Sample record\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const j = pm.response.json();",
+                  "    if (j.data && j.data.id) pm.environment.set('recordId', j.data.id);",
+                  "    if (j.data && j.data.entryDate) pm.environment.set('recordEntryDate', j.data.entryDate);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/records/update/{{recordId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entryDate\": \"{{recordEntryDate}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 150.75,\n  \"entryTime\": \"15:00\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"afternoon\"\n  },\n  \"remark\": \"Updated record\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete record",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/records/delete/{{recordId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Form Studio — Media",
       "item": [
         {

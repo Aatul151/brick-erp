@@ -37,10 +37,10 @@ export const testConnection = async () => {
         const client = await pool.connect();
         await client.query("SELECT NOW()");
         client.release();
-        console.log("Database connection successful");
+        console.log("DB | Database connection successful");
         return true;
     } catch (error) {
-        console.error("Database connection failed:", error.message);
+        console.error("DB | Database connection failed:", error.message);
         return false;
     }
 };

@@ -1,26 +1,27 @@
 import { randomUUID } from "crypto";
 import { db } from "../../../models/db.js";
-import { records } from "../models/records.schema.js";
+import { records, labours } from "../models/records.schema.js";
 import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
 import { createRecordSchema, updateRecordSchema, listRecordsQuerySchema } from "../utils/recordEntrySchemas.js";
+import { parseEntryDate, tenantWhere, UUID_PARAM } from "../utils/utilities.js";
 
-const UUID_PARAM = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function mapRecord(objRow) {
+    const row = objRow.records ?? objRow ?? {};
+    const labour = objRow.labours ?? null;
 
-function parseEntryDate(value) {
-    if (!value || typeof value !== "string") return null;
-    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return null;
-    const d = new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00.000Z`);
-    return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function mapRecord(row) {
     const ed = row.entryDate;
-    const entryDateStr =
-        ed instanceof Date ? ed.toISOString().slice(0, 10) : typeof ed === "string" ? ed.slice(0, 10) : ed;
+    const entryDateStr = ed instanceof Date ? ed.toISOString().slice(0, 10) : typeof ed === "string" ? ed.slice(0, 10) : ed;
     return {
         id: row.id,
         tenantId: row.tenantId,
+        labourId: row.labourId,
+        labour: labour ? {
+            id: row.labourId,
+            labourCode: labour.labourCode ?? null,
+            labourType: labour.labourType ?? null,
+            fullName: labour.fullName ?? null,
+            mobileNumber: row.mobileNumber ?? null,
+        } : null,
         recordType: row.recordType,
         recordUnit: row.recordUnit,
         value: row.value != null ? Number(row.value) : null,
@@ -41,10 +42,6 @@ function mapRecord(row) {
     };
 }
 
-function tenantWhere(req) {
-    return eq(records.tenantId, req.user.tenantId);
-}
-
 export const listRecords = async (req, res) => {
     try {
         const parsed = listRecordsQuerySchema.safeParse(req.query);
@@ -55,12 +52,12 @@ export const listRecords = async (req, res) => {
             });
         }
         const { page, limit, recordType, entryDateFrom, entryDateTo } = parsed.data;
-        const conditions = [tenantWhere(req)];
+        const conditions = [tenantWhere(records.tenantId, req)];
         if (recordType) {
             conditions.push(eq(records.recordType, recordType));
         }
         const fromD = entryDateFrom ? parseEntryDate(entryDateFrom) : null;
-        const toD = entryDateTo ? parseEntryDate(entryDateTo) : null;
+        const toD = entryDateTo ? parseEntryDate(entryDateTo, true) : null;
         if (fromD) {
             conditions.push(gte(records.entryDate, fromD));
         }
@@ -80,6 +77,7 @@ export const listRecords = async (req, res) => {
         const rows = await db
             .select()
             .from(records)
+            .leftJoin(labours, eq(records.labourId, labours.id))
             .where(whereClause)
             .orderBy(desc(records.entryDate), desc(records.createdAt))
             .limit(limit)
@@ -120,7 +118,8 @@ export const getRecord = async (req, res) => {
         const [row] = await db
             .select()
             .from(records)
-            .where(and(eq(records.id, id), tenantWhere(req)))
+            .leftJoin(labours, eq(records.labourId, labours.id))
+            .where(and(eq(records.id, id), tenantWhere(records.tenantId, req)))
             .limit(1);
 
         if (!row) {
@@ -151,11 +150,6 @@ export const createRecord = async (req, res) => {
             });
         }
         const body = parsed.data;
-        if (body.tenantId !== req.user.tenantId) {
-            return res.status(403).json({
-                error: "tenantId must match your authenticated tenant",
-            });
-        }
 
         const entryDate = parseEntryDate(body.entryDate);
         if (!entryDate) {
@@ -168,6 +162,7 @@ export const createRecord = async (req, res) => {
             .insert(records)
             .values({
                 tenantId: req.user.tenantId,
+                labourId: body.labourId,
                 recordType: body.recordType,
                 recordUnit: body.recordUnit ?? null,
                 value: body.value != null ? String(body.value) : null,
@@ -217,7 +212,7 @@ export const updateRecord = async (req, res) => {
         const [existing] = await db
             .select({ id: records.id })
             .from(records)
-            .where(and(eq(records.id, id), tenantWhere(req)))
+            .where(and(eq(records.id, id), tenantWhere(records.tenantId, req)))
             .limit(1);
 
         if (!existing) {
@@ -230,10 +225,19 @@ export const updateRecord = async (req, res) => {
             updatedBy: req.user.id,
             updatedAt: new Date(),
         };
+        if (body.labourId !== undefined) patch.labourId = body.labourId;
         if (body.recordType !== undefined) patch.recordType = body.recordType;
         if (body.recordUnit !== undefined) patch.recordUnit = body.recordUnit;
         if (body.value !== undefined) patch.value = body.value != null ? String(body.value) : null;
-        if (body.entryDate !== undefined) patch.entryDate = body.entryDate;
+        if (body.entryDate !== undefined) {
+            const entryDate = parseEntryDate(body.entryDate);
+            if (!entryDate) {
+                return res.status(400).json({
+                    error: "Invalid entryDate",
+                });
+            }
+            patch.entryDate = entryDate
+        };
         if (body.entryTime !== undefined) patch.entryTime = body.entryTime;
         if (body.account !== undefined) {
             patch.account = body.account;
@@ -249,7 +253,7 @@ export const updateRecord = async (req, res) => {
         const [updated] = await db
             .update(records)
             .set(patch)
-            .where(and(eq(records.id, id), tenantWhere(req)))
+            .where(and(eq(records.id, id), tenantWhere(records.tenantId, req)))
             .returning();
 
         res.json({
@@ -275,7 +279,7 @@ export const deleteRecord = async (req, res) => {
 
         const del = await db
             .delete(records)
-            .where(and(eq(records.id, id), tenantWhere(req)))
+            .where(and(eq(records.id, id), tenantWhere(records.tenantId, req)))
             .returning({
                 id: records.id,
                 entryDate: records.entryDate,

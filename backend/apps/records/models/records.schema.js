@@ -14,11 +14,47 @@ import {
 import { sql } from "drizzle-orm";
 import { tenants, users } from "../../../models/schema.js";
 
+export const labours = pgTable(
+    "labours",
+    {
+        id: uuid("id").defaultRandom().notNull(),
+        tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade", }),
+        accountName: varchar("account_name", { length: 250 }),
+        labourCode: varchar("labour_code", { length: 50, }),
+        labourType: varchar("labour_type", { length: 100, }),
+        fullName: varchar("full_name", { length: 250, }).notNull(),
+        mobileNumber: varchar("mobile_number", { length: 20, }),
+        mobileNumber2: varchar("mobile_number2", { length: 20, },),
+        gender: varchar("gender", { length: 20, }).default("male"),
+        address: varchar("address", { length: 1000, }),
+        aadhaarNumber: varchar("aadhaar_number", { length: 30, }),
+        defaultRate: decimal("default_rate", { precision: 15, scale: 2, }),
+        brickBuilderRate: decimal("brick_builder_rate", { precision: 15, scale: 2, }),
+        brickMoverRate: decimal("brick_mover_rate", { precision: 15, scale: 2, }),
+        sapaRate: decimal("sapa_rate", { precision: 15, scale: 2, }),
+        rojRate: decimal("roj_rate", { precision: 15, scale: 2, }),
+        account: jsonb("account").notNull().default(sql`'{}'::jsonb`),
+        metadata: jsonb("metadata").notNull().default(sql`'{}'::jsonb`),
+        remark: varchar("remark", { length: 1000, }),
+        createdAt: timestamp("created_at", { withTimezone: true, }).notNull().defaultNow(),
+        createdBy: integer("created_by").references(() => users.id, { onDelete: "set null", }),
+        updatedAt: timestamp("updated_at", { withTimezone: true, }).notNull().defaultNow(),
+        updatedBy: integer("updated_by").references(() => users.id, { onDelete: "set null", }),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.id], }),
+        tenantIdx: index("labours_tenant_idx",).on(t.tenantId),
+        tenantLabourCodeIdx: index("labours_tenant_code_idx",).on(t.tenantId, t.labourCode),
+        tenantTypeIdx: index("labours_tenant_type_idx",).on(t.tenantId, t.labourType),
+    }),
+);
+
 export const records = pgTable(
     "records",
     {
         id: uuid("id").defaultRandom().notNull(),
         tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade", }),
+        labourId: uuid("labour_id").references(() => labours.id, { onDelete: "cascade", }),
         accountName: varchar("account_name", { length: 250 }),
         categoryName: varchar("category_name", { length: 250 }),
         recordType: varchar("record_type", { length: 250 }).notNull(),
@@ -41,5 +77,7 @@ export const records = pgTable(
         pk: primaryKey({ columns: [t.id, t.entryDate] }),
         tenantEntryIdx: index("records_tenant_entry_idx").on(t.tenantId, t.entryDate),
         tenantTypeIdx: index("records_tenant_type_idx").on(t.tenantId, t.recordType),
+        tenantLabourDateIdx: index("records_tenant_labour_date_idx",).on(t.tenantId, t.labourId, t.entryDate),
+        tenantLabourTypeIdx: index("records_tenant_labour_type_idx",).on(t.tenantId, t.labourId, t.recordType),
     }),
 );

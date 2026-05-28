@@ -311,16 +311,16 @@ const DEFAULT_MODULES = [
 
 export const seedDatabase = async () => {
     try {
-        console.log("Starting database seeding...");
+        console.log("DB | Starting database seeding...");
 
         const existingModules = await db.select().from(modules).limit(1);
         if (existingModules.length === 0) {
-            console.log("Seeding default modules...");
+            console.log("DB | Seeding default modules...");
             await db.insert(modules).values(DEFAULT_MODULES);
         } else {
             const formStudioModule = await db.select().from(modules).where(eq(modules.slug, "form_studio")).limit(1);
             if (formStudioModule.length === 0) {
-                console.log("Adding Form Studio module...");
+                console.log("DB | Adding Form Studio module...");
                 await db.insert(modules).values({
                     name: "Form Studio",
                     slug: "form_studio",
@@ -332,11 +332,11 @@ export const seedDatabase = async () => {
 
         const existingRoles = await db.select().from(roles).limit(1);
         if (existingRoles.length > 0) {
-            console.log("Database already seeded");
+            console.log("DB | Database already seeded");
             return;
         }
 
-        console.log("Creating roles...");
+        console.log("DB | Creating roles...");
         const [siteAdminRole] = await db
             .insert(roles)
             .values({
@@ -364,10 +364,10 @@ export const seedDatabase = async () => {
             })
             .returning();
 
-        console.log("Creating permissions...");
+        console.log("DB | Creating permissions...");
         const createdPermissions = await db.insert(permissions).values(permissionData).returning();
 
-        console.log("Assigning permissions to Site Admin role...");
+        console.log("DB | Assigning permissions to Site Admin role...");
         for (const permission of createdPermissions) {
             await db.insert(rolePermissions).values({
                 roleId: siteAdminRole.id,
@@ -375,7 +375,7 @@ export const seedDatabase = async () => {
             });
         }
 
-        console.log("Assigning permissions to Client Admin role...");
+        console.log("DB | Assigning permissions to Client Admin role...");
         const clientAdminPermissions = createdPermissions.filter((p) => ["users", "audit_logs", "settings", "form_studio"].includes(p.resourceName));
         for (const permission of clientAdminPermissions) {
             await db.insert(rolePermissions).values({
@@ -384,7 +384,7 @@ export const seedDatabase = async () => {
             });
         }
 
-        console.log("Assigning permissions to Client User role...");
+        console.log("DB | Assigning permissions to Client User role...");
         const clientUserPermissions = createdPermissions.filter((p) => (p.resourceName === "settings" && p.action === "read") || p.resourceName === "form_studio");
         for (const permission of clientUserPermissions) {
             await db.insert(rolePermissions).values({
@@ -393,7 +393,7 @@ export const seedDatabase = async () => {
             });
         }
 
-        console.log("Creating default Site Admin tenant...");
+        console.log("DB | Creating default Site Admin tenant...");
         const [siteAdminTenant] = await db
             .insert(tenants)
             .values({
@@ -403,7 +403,7 @@ export const seedDatabase = async () => {
             })
             .returning();
 
-        console.log("Creating default Site Admin user...");
+        console.log("DB | Creating default Site Admin user...");
         const adminPassword = await hashPassword(process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123456");
         const [siteAdmin] = await db
             .insert(users)
@@ -421,7 +421,7 @@ export const seedDatabase = async () => {
             roleId: siteAdminRole.id,
         });
 
-        console.log("Creating demo tenant...");
+        console.log("DB | Creating demo tenant...");
         const [demoTenant] = await db
             .insert(tenants)
             .values({
@@ -431,7 +431,7 @@ export const seedDatabase = async () => {
             })
             .returning();
 
-        console.log("Creating demo Client Admin...");
+        console.log("DB | Creating demo Client Admin...");
         const clientAdminPassword = await hashPassword("ClientAdmin@123");
         const [clientAdmin] = await db
             .insert(users)
@@ -449,7 +449,7 @@ export const seedDatabase = async () => {
             roleId: clientAdminRole.id,
         });
 
-        console.log("Creating demo Client Users...");
+        console.log("DB | Creating demo Client Users...");
         const user1Password = await hashPassword("User@123456");
         const [user1] = await db
             .insert(users)
@@ -467,7 +467,7 @@ export const seedDatabase = async () => {
             roleId: clientUserRole.id,
         });
 
-        console.log("Creating sample audit logs...");
+        console.log("DB | Creating sample audit logs...");
         await db.insert(auditLogs).values([
             {
                 userId: siteAdmin.id,
@@ -503,7 +503,7 @@ export const seedDatabase = async () => {
             },
         ]);
 
-        console.log("Database seeding completed successfully!");
+        console.log("DB | Database seeding completed successfully!");
         console.log("\n=== Default Credentials ===");
         console.log("Site Admin:");
         console.log(`  Email: ${process.env.DEFAULT_ADMIN_EMAIL || "admin@system.local"}`);
@@ -516,7 +516,7 @@ export const seedDatabase = async () => {
         console.log("  Password: User@123456");
         console.log("===========================\n");
     } catch (error) {
-        console.error("Seeding error:", error);
+        console.error("DB | Seeding error:", error);
         throw error;
     }
 };

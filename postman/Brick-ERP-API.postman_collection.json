@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:4000"
+      "value": "http://localhost:6426"
     }
   ],
   "item": [
@@ -1250,7 +1250,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tenantId\": \"{{tenantId}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 100.5,\n  \"entryDate\": \"2026-05-16\",\n  \"entryTime\": \"14:30\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"morning\"\n  },\n  \"remark\": \"Sample record\"\n}"
+              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 100.5,\n  \"entryDate\": \"2026-05-16\",\n  \"entryTime\": \"14:30\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"morning\"\n  },\n  \"remark\": \"Sample record\"\n}"
             }
           },
           "event": [
@@ -1292,7 +1292,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entryDate\": \"{{recordEntryDate}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 150.75,\n  \"entryTime\": \"15:00\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"afternoon\"\n  },\n  \"remark\": \"Updated record\"\n}"
+              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"entryDate\": \"{{recordEntryDate}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 150.75,\n  \"entryTime\": \"15:00\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"afternoon\"\n  },\n  \"remark\": \"Updated record\"\n}"
             }
           }
         },
@@ -1302,6 +1302,119 @@
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/records/delete/{{recordId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Labours",
+      "item": [
+        {
+          "name": "List labours",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/labours/get?page=1&limit=20",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get labour by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/labours/get/{{labourId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create labour",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/labours/create",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"labourType\": \"mason\",\n  \"mobileNumber\": \"9876543210\",\n  \"mobileNumber2\": null,\n  \"gender\": \"male\",\n  \"address\": \"123 Main St\",\n  \"aadhaarNumber\": \"1234-5678-9012\",\n  \"defaultRate\": 100,\n  \"brickBuilderRate\": 120,\n  \"brickMoverRate\": 90,\n  \"sapaRate\": 80,\n  \"rojRate\": 70,\n  \"metadata\": {},\n  \"remark\": \"Sample labour\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update labour",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/labours/update/{{labourId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe Updated\",\n  \"labourType\": \"carpenter\",\n  \"address\": \"456 Updated St\",\n  \"remark\": \"Updated labour\",\n  \"metadata\": {\n    \"notes\": \"updated\"\n  },\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete labour",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/labours/delete/{{labourId}}",
             "auth": {
               "type": "bearer",
               "bearer": [

@@ -19,6 +19,7 @@ import { apiLimiter } from "./utils/rateLimiter.js";
 import coreRoutes from "./core/routes/index.js";
 import formStudioRoutes from "./apps/form-studio/routes/index.js";
 import recordsRoutes from "./apps/records/routes/index.js";
+import { ensureRecordPartitions } from "./apps/records/utils/partitionManager.js";
 
 const app = express();
 const PORT = process.env.BACKEND_PORT;
@@ -56,16 +57,16 @@ app.use(errorHandler);
 
 const startServer = async () => {
     try {
-        console.log("Testing database connection...");
         const dbConnected = await testConnection();
 
         if (!dbConnected) {
-            console.error("Failed to connect to database. Exiting...");
+            console.error("DB | Failed to connect to database. Exiting...");
             process.exit(1);
         }
 
-        console.log("Running database migrations and seeding...");
+        console.log("DB | Running database migrations and seeding...");
         await seedDatabase();
+        await ensureRecordPartitions(new Date().getFullYear())
 
         app.listen(PORT, "0.0.0.0", () => {
             console.log(`Server running on port ${PORT}`);

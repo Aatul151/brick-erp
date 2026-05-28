@@ -22,14 +22,14 @@ function jsonObjectField() {
             if (v === undefined || v === null) return {};
             return v;
         },
-        z.record(z.string(), z.any()).refine((v) => typeof v === "object" && v !== null && !Array.isArray(v), {
-            message: "Must be a JSON object",
-        }),
+        z.union([
+            z.record(z.string(), z.any()),  // object
+            z.array(z.any()),               // array
+        ])
     );
 }
 
 export const createRecordSchema = z.object({
-    tenantId: uuidStr,
     recordType: z.string().min(1, "recordType is required").max(250),
     recordUnit: z.string().max(15).optional().nullable(),
     value: z.coerce.number().finite().optional().nullable(),

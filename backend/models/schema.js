@@ -58,6 +58,7 @@ export const users = pgTable(
         fullName: varchar("full_name", {
             length: 255,
         }).notNull(),
+        profilePicture: varchar("profile_picture", { length: 1500, }),
         status: userStatusEnum("status").notNull().default("active"),
         createdAt: timestamp("created_at", {
             withTimezone: true,

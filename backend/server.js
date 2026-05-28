@@ -37,6 +37,7 @@ app.use(
     }),
 );
 app.use(morgan("combined"));
+app.use("/uploads", express.static(join(__dirname, "uploads")));
 
 app.use("/api", apiLimiter);
 

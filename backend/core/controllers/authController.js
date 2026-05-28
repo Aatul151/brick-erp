@@ -5,6 +5,8 @@ import { hashPassword, verifyPassword, generateRandomToken } from "../../utils/p
 import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwt.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 import { logAudit, AuditResourceType } from "../services/auditService.js";
+import fs from 'fs';
+import path from "path";
 
 const SITE_ADMIN_TENANT_SUBDOMAIN = "system";
 
@@ -53,8 +55,8 @@ export const login = async (req, res) => {
                     loginMethod: lookup.kind,
                     ...(lookup.kind === "email"
                         ? {
-                              email: lookup.value,
-                          }
+                            email: lookup.value,
+                        }
                         : {}),
                     reason: "User not found",
                 },
@@ -216,6 +218,7 @@ export const login = async (req, res) => {
                 status: user[0].status,
                 createdAt: user[0].createdAt,
                 updatedAt: user[0].updatedAt,
+                profilePicture: user[0].profilePicture ?? null,
                 tenantName,
                 tenantThemeSetting,
                 roles: userRolesData,
@@ -475,6 +478,7 @@ export const getProfile = async (req, res) => {
                 mobile: users.mobile,
                 fullName: users.fullName,
                 tenantId: users.tenantId,
+                profilePicture: users.profilePicture,
                 tenantName: tenants.name,
                 tenantThemeSetting: tenants.themeSetting,
                 status: users.status,
@@ -528,6 +532,7 @@ export const getProfile = async (req, res) => {
             mobile: user.mobile ?? null,
             fullName: user.fullName,
             tenantId: user.tenantId,
+            profilePicture: user.profilePicture ?? null,
             tenantName: user.tenantName || null,
             tenantThemeSetting: user.tenantThemeSetting || null,
             status: user.status,
@@ -620,6 +625,54 @@ export const updateProfile = async (req, res) => {
         console.error("Update profile error:", error);
         res.status(500).json({
             error: "Failed to update profile",
+        });
+    }
+};
+
+const removeOldProfileImage = (recordId, currentFilename) => {
+    try {
+        const uploadsDir = `uploads/profile-pictures`
+        const files = fs.readdirSync(uploadsDir).filter((file) => file.includes(`Z${recordId}P`));
+        for (const file of files) {
+            if (file !== currentFilename) {
+                fs.unlinkSync(path.join(uploadsDir, file));
+            }
+        }
+    } catch { }
+};
+
+export const updateProfilePicture = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                error: "Profile picture file is required",
+            });
+        }
+
+        const fileName = req.body.filename;
+        const profilePicture = `uploads/profile-pictures/${fileName}`;
+        await db.update(users).set({ profilePicture, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        await removeOldProfileImage(req.user.id, fileName);
+        await logAudit({
+            userId: req.user.id,
+            tenantId: req.user.tenantId,
+            action: "PROFILE_PICTURE_UPDATED",
+            resourceType: AuditResourceType.USER,
+            resourceId: req.user.id,
+            details: {
+                profilePicture,
+            },
+            ipAddress: req.ip,
+        });
+
+        res.json({
+            success: true,
+            profilePicture,
+        });
+    } catch (error) {
+        console.error("Update profile picture error:", error);
+        res.status(500).json({
+            error: "Failed to update profile picture",
         });
     }
 };

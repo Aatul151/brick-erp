@@ -200,6 +200,34 @@
               "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"email\": \"{{loginEmail}}\",\n  \"mobile\": null\n}"
             }
           }
+        },
+        {
+          "name": "Update profile picture",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/profile-picture",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
         }
       ]
     },

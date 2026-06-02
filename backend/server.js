@@ -24,7 +24,9 @@ import { ensureRecordPartitions } from "./apps/records/utils/partitionManager.js
 const app = express();
 const PORT = process.env.BACKEND_PORT;
 
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: false,
+}));
 app.use(
     cors({
         origin: "*",

@@ -51,7 +51,7 @@ export const listRecords = async (req, res) => {
                 details: parsed.error.flatten(),
             });
         }
-        const { page, limit, recordType, entryDateFrom, entryDateTo } = parsed.data;
+        const { page, limit, recordType, entryDateFrom, entryDateTo, categoryName, labelValue } = parsed.data;
         const conditions = [tenantWhere(records.tenantId, req)];
         if (recordType) {
             conditions.push(eq(records.recordType, recordType));
@@ -64,6 +64,29 @@ export const listRecords = async (req, res) => {
         if (toD) {
             conditions.push(lte(records.entryDate, toD));
         }
+
+        if (categoryName) {
+            const categoryNames = categoryName?.split(",").map((v) => v?.trim()).filter(Boolean);
+            if (categoryNames.length > 0) {
+                conditions.push(
+                    sql`${records.categoryName} IN (${sql.join(categoryNames?.map(v => sql`${v}`), sql`, `)})`
+                );
+            }
+        }
+
+        if (labelValue) {
+            const labelValues = labelValue?.split(",").map((v) => v?.trim()).filter(Boolean);
+
+            if (labelValues.length > 0) {
+                conditions.push(
+                    sql`(${sql.join(
+                        labelValues.map(v => sql`${records?.label} @> ${JSON.stringify([{ value: v }])}::jsonb`),
+                        sql` OR `
+                    )})`
+                );
+            }
+        }
+
         const whereClause = and(...conditions);
         const offset = (page - 1) * limit;
 

@@ -59,4 +59,6 @@ export const listRecordsQuerySchema = z.object({
     recordType: z.string().max(250).optional(),
     entryDateFrom: dateStr.optional(),
     entryDateTo: dateStr.optional(),
+    categoryName: z.string().optional(),
+    labelValue: z.string().optional()
 });

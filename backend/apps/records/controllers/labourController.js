@@ -40,14 +40,13 @@ const generateNextLabourCode = async (tenantId, prefix = "LB") => {
     const lastLabour = await db.select({ labourCode: labours.labourCode, })
         .from(labours)
         .where(eq(labours.tenantId, tenantId))
-        .orderBy(desc(labours.labourCode))
+        .orderBy(desc(labours.createdAt))
         .limit(1);
 
-    const lastCode = lastLabour?.[0]?.labourCode ?? "000";
-
-    const nextNumber = Number(lastCode) + 1;
-
-    return `${prefix}${String(nextNumber).padStart(3, "0")}`
+    const lastCode = lastLabour?.[0]?.labourCode ?? `${prefix}000`;
+    const lastNumber = parseInt(lastCode.replace(prefix, ""), 10);
+    const nextNumber = lastNumber + 1;
+    return `${prefix}${String(nextNumber).padStart(3, "0")}`;
 };
 
 export const listLabours = async (req, res) => {
@@ -66,7 +65,7 @@ export const listLabours = async (req, res) => {
         if (labourCode) {
             conditions.push(eq(labours.labourCode, labourCode));
         }
-        
+
         if (labourType) {
             conditions.push(eq(labours.labourType, labourType));
         }

@@ -41,11 +41,13 @@ export const updateLabourSchema = z.object({
     rojRate: z.coerce.number().finite().optional().nullable(),
     metadata: jsonObjectField().optional(),
     remark: z.string().max(1000).optional().nullable(),
+    account: jsonObjectField().optional()
 });
 
 export const listLaboursQuerySchema = z.object({
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(500).default(20),
+    searchtext: z.string().max(100).optional(),
     labourCode: z.string().max(50).optional(),
     labourType: z.string().max(100).optional(),
     fullName: z.string().max(250).optional(),

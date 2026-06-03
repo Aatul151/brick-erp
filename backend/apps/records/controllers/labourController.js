@@ -59,8 +59,17 @@ export const listLabours = async (req, res) => {
             });
         }
 
-        const { page, limit, labourCode, labourType, fullName } = parsed.data;
+        const { page, limit, searchtext, labourCode, labourType, fullName } = parsed.data;
         const conditions = [tenantWhere(labours.tenantId, req)];
+
+        if (searchtext) {
+            conditions?.push(
+                or(
+                    sql`lower(${labours?.fullName}) like lower(${`%${filter}%`})`,
+                    sql`lower(${labours?.labourCode}) like lower(${`%${filter}%`})`
+                )
+            );
+        }
 
         if (labourCode) {
             conditions.push(eq(labours.labourCode, labourCode));

@@ -39,6 +39,7 @@ export const createRecordSchema = z.object({
     category: jsonObjectField().optional(),
     label: jsonObjectField().optional(),
     remark: z.string().max(1000).optional().nullable(),
+    labourId: z.string().uuid().optional().nullable()
 });
 
 export const updateRecordSchema = z.object({
@@ -51,6 +52,7 @@ export const updateRecordSchema = z.object({
     category: jsonObjectField().optional(),
     label: jsonObjectField().optional(),
     remark: z.string().max(1000).optional().nullable(),
+    labourId: z.string().uuid().optional().nullable()
 });
 
 export const listRecordsQuerySchema = z.object({
@@ -60,5 +62,6 @@ export const listRecordsQuerySchema = z.object({
     entryDateFrom: dateStr.optional(),
     entryDateTo: dateStr.optional(),
     categoryName: z.string().optional(),
-    labelValue: z.string().optional()
+    labelValue: z.string().optional(),
+    labourId: z.string().uuid().optional().nullable()
 });

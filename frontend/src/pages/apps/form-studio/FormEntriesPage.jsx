@@ -19,6 +19,8 @@ import { FormContainer } from "../../../components/form-studio/renders/FormConta
 import { FileDisplay } from "../../../components/form-studio/renders/FileDisplay";
 import { CKEditorContentDisplay } from "../../../components/form-studio/renders/CKEditorContentDisplay";
 import { CheckCircle, Close } from "@mui/icons-material";
+import { defaultFormReferenceService } from "@aatulwork/customform-renderer";
+import { createFormRendererServices } from "../../../utils/form-studio/formRendererServices";
 
 export default function FormEntriesPage() {
     const { user, isSiteAdmin } = useAuth();
@@ -146,12 +148,12 @@ export default function FormEntriesPage() {
         },
     });
 
-    const handleFormSubmit = async (data) => {
+    const handleFormSubmit = async (data, populateFieldValue) => {
         if (!decodedFormName) return;
         setSubmitAlert(null);
         const payload = {
             formName: decodedFormName,
-            payload: data,
+            payload: { ...(data ?? {}), ...populateFieldValue },
             scope: entryScope,
         };
         let response;
@@ -249,7 +251,10 @@ export default function FormEntriesPage() {
                         });
                     }
                     if (Array.isArray(fieldValue)) return fieldValue.map((item) => item.label ?? item).join(", ");
-                    if (typeof fieldValue === "object") return JSON.stringify(fieldValue);
+                    if (typeof fieldValue === "object") {
+                        if (fieldValue?.label) { return fieldValue?.label }
+                        return JSON.stringify(fieldValue);
+                    }
                     return String(fieldValue);
                 },
             });
@@ -504,23 +509,23 @@ export default function FormEntriesPage() {
                         isSingleRecordForm
                             ? undefined
                             : () => {
-                                  if (!isBusy) {
-                                      setFormDialogOpen(false);
-                                      setSelectedEntry(null);
-                                      setFormMode("add");
-                                      setEntryScope("tenant");
-                                  }
-                              }
+                                if (!isBusy) {
+                                    setFormDialogOpen(false);
+                                    setSelectedEntry(null);
+                                    setFormMode("add");
+                                    setEntryScope("tenant");
+                                }
+                            }
                     }
                     onCancel={
                         isSingleRecordForm
                             ? undefined
                             : () => {
-                                  setFormDialogOpen(false);
-                                  setSelectedEntry(null);
-                                  setFormMode("add");
-                                  setEntryScope("tenant");
-                              }
+                                setFormDialogOpen(false);
+                                setSelectedEntry(null);
+                                setFormMode("add");
+                                setEntryScope("tenant");
+                            }
                     }
                     onSuccess={() => {
                         if (!isSingleRecordForm) {

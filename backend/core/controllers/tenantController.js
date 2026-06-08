@@ -3,6 +3,7 @@ import { tenants, users, userRoles, roles } from "../../models/schema.js";
 import { eq, desc, sql, or, ilike, and } from "drizzle-orm";
 import { logAudit, AuditResourceType } from "../services/auditService.js";
 import { sendTenantSuspensionEmail, sendAccountReactivationEmail } from "../services/emailService.js";
+import { hashPassword } from "../../utils/password.js";
 
 function parseTenantUuid(value) {
     if (value == null || value === "") return null;
@@ -11,6 +12,80 @@ function parseTenantUuid(value) {
         return null;
     }
     return tenantId;
+}
+
+export const registerTenant = async (req, res) => {
+    try {
+        const { companyName, subdomain, name, email, mobile, password } = req.body;
+
+        //#region Validation
+        if (!companyName || !name || !mobile || !password) {
+            return res.status(400).json({ error: "Please enter required fields" });
+        }
+
+        if (subdomain) {
+            const existingDomain = await db.select().from(tenants).where(eq(tenants.subdomain, subdomain)).limit(1);
+            if (existingDomain?.length) {
+                return res.status(409).json({ error: "Subdomain already exists" });
+            }
+        }
+
+        const existingUserMobile = await db.select().from(users).where(eq(users.mobile, mobile)).limit(1);
+        if (existingUserMobile?.length) {
+            return res.status(409).json({ error: "Mobile number already exists" });
+        }
+
+        if (email) {
+            const existingUserEmail = await db.select().from(users).where(eq(users.email, email)).limit(1);
+            if (existingUserEmail?.length) {
+                return res.status(409).json({ error: "Email already exists" });
+            }
+        }
+        //#endregion
+
+        await db.transaction(async (tx) => {
+            const [tenant] = await tx.insert(tenants).values({
+                name: companyName,
+                subdomain: subdomain || null,
+                status: "active",
+            }).returning();
+
+            if (!tenant?.id) { throw new Error("Failed to create company"); }
+
+            const userEmail = email || `${name?.toLowerCase().replace(/\s+/g, "")}${mobile?.slice(-4)}@gmail.com`;
+            const hashedPassword = await hashPassword(password);
+
+            const [user] = await tx.insert(users).values({
+                email: userEmail,
+                mobile: mobile,
+                passwordHash: hashedPassword,
+                fullName: name,
+                tenantId: tenant.id,
+                status: "active",
+            }).returning();
+            if (!user?.id) { throw new Error("Failed to create user"); }
+
+
+            const [clientAdminRole] = await tx.select({ id: roles.id })
+                .from(roles)
+                .where(eq(roles.name, "Client Admin"))
+                .limit(1);
+            if (!clientAdminRole?.id) { throw new Error("Client Admin role not found"); }
+
+            const result = await tx.insert(userRoles).values({
+                userId: user.id,
+                roleId: clientAdminRole.id,
+            });
+            if (!result) { throw new Error("Failed to assign role"); }
+
+        });
+
+        return res.status(201).json({ success: true, message: "Tenant register successfully" });
+
+    } catch (error) {
+        console.error("Register tenant error:", error);
+        res.status(500).json({ error: "Failed to register tenant" });
+    }
 }
 
 export const createTenant = async (req, res) => {

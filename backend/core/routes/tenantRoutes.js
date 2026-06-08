@@ -6,6 +6,7 @@ import { createTenantSchema, updateTenantSchema } from "../../utils/zodSchemaVal
 
 const router = express.Router();
 
+router.post("/", tenantController.registerTenant);    
 router.get("/stats", authenticate, tenantController.getTenantStats);
 router.get("/", authenticate, requireRole("Site Admin", "Client Admin"), tenantController.getTenants);
 router.get("/:id", authenticate, requireRole("Site Admin", "Client Admin"), tenantController.getTenant);

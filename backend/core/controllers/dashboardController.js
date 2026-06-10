@@ -34,50 +34,22 @@ export const getCountStatistics = async (req, res) => {
 export const getChartStatistics = async (req, res) => {
     try {
         const whereClause = buildFilterConditions(req);
+        const chart = req.query?.chartType || null;
+        const result = { success: true };
 
-        //#region Category wise data
-        const categoryData = await db
-            .select({
-                label: records.categoryName,
-                value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
-            })
-            .from(records)
-            .where(whereClause)
-            .groupBy(records.categoryName)
-            .orderBy(sql`SUM(${records.value}) DESC`);
-        //#endregion
+        if (!chart || chart === "category") {
+            result.category = await getCategoryWiseData(whereClause);
+        }
 
-        //#region labour wise data
-        const labourData = await db
-            .select({
-                label: labours.fullName,
-                value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
-            })
-            .from(records)
-            .leftJoin(
-                labours,
-                eq(records.labourId, labours.id)
-            )
-            .where(whereClause)
-            .groupBy(labours.id, labours.fullName)
-            .orderBy(desc(sql`SUM(${records.value})`));
-        //#endregion
+        if (!chart || chart === "labour") {
+            result.labour = await getLabourWiseData(whereClause);
+        }
 
-        const result = {
-            success: true,
-            category: categoryData?.map((item) => ({
-                label: item?.label || "Unknown",
-                value: Number(item?.value || 0),
-            })),
-
-            labour: labourData?.map((item) => ({
-                label: item?.label || "Unknown",
-                value: Number(item?.value || 0),
-            })),
-        };
+        if (!chart || chart === "labourType") {
+            result.labourType = await getLabourTypeWiseData(whereClause);
+        }
 
         return res.status(200).json(result);
-
     } catch (error) {
         console.error("Get Chart statistics error:", error);
         res.status(500).json({ error: "Failed to fetch dashbord Chart statistics" });
@@ -88,6 +60,7 @@ const buildFilterConditions = (req) => {
     const {
         recordType = "Expense",
         accountName,
+        categoryName,
         entryDate,
         labourId
     } = req.query;
@@ -102,6 +75,10 @@ const buildFilterConditions = (req) => {
         conditions.push(eq(records.accountName, accountName?.trim()));
     }
 
+    if (categoryName) {
+        conditions.push(eq(records.categoryName, categoryName?.trim()));
+    }
+
     if (entryDate) {
         conditions.push(eq(records.entryDate, parseEntryDate(entryDate)));
     }
@@ -114,6 +91,7 @@ const buildFilterConditions = (req) => {
 };
 
 
+//#region Count Statistics
 const getExpenseByAccount = async (whereClause) => {
     const data = await db.select({
         accountName: records.accountName,
@@ -198,3 +176,70 @@ const getMonthGrowth = async (whereClause, startOfMonth) => {
         lastMonth: Number(lastMonth || 0),
     };
 };
+//#endregion
+
+//#region Chart data
+const getRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
+const getCategoryWiseData = async (whereClause) => {
+    const data = await db
+        .select({
+            label: records.categoryName,
+            category: records.category,
+            value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
+        })
+        .from(records)
+        .where(whereClause)
+        .groupBy(records.categoryName, records.category)
+        .orderBy(sql`SUM(${records.value}) DESC`);
+
+    return data.map((item) => ({
+        label: item?.label || "Unknown",
+        value: Number(item?.value || 0),
+        color: item?.category?.color || getRandomColor(),
+    }));
+};
+
+const getLabourWiseData = async (whereClause) => {
+    const data = await db
+        .select({
+            label: labours.fullName,
+            value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
+        })
+        .from(records)
+        .leftJoin(
+            labours,
+            eq(records.labourId, labours.id)
+        )
+        .where(whereClause)
+        .groupBy(labours.id, labours.fullName)
+        .orderBy(desc(sql`SUM(${records.value})`));
+
+    return data.map((item) => ({
+        label: item?.label || "Unknown",
+        value: Number(item?.value || 0),
+        color: getRandomColor(),
+    }));
+};
+
+const getLabourTypeWiseData = async (whereClause) => {
+    const data = await db
+        .select({
+            label: sql`COALESCE(${labours.labourType}, 'Unknown')`,
+            value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
+        })
+        .from(records)
+        .leftJoin(
+            labours,
+            eq(records.labourId, labours.id)
+        )
+        .where(whereClause)
+        .groupBy(sql`COALESCE(${labours.labourType}, 'Unknown')`)
+        .orderBy(desc(sql`SUM(${records.value})`));
+
+    return data?.map((item) => ({
+        label: item?.label || "Unknown",
+        value: Number(item?.value || 0),
+        color: getRandomColor(),
+    }));
+};
+//#endregion

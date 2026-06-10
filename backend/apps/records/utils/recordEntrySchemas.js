@@ -39,6 +39,7 @@ export const createRecordSchema = z.object({
     category: jsonObjectField().optional(),
     label: jsonObjectField().optional(),
     remark: z.string().max(1000).optional().nullable(),
+    categoryName: z.string().max(1000).optional().nullable(),
     labourId: z.string().uuid().optional().nullable()
 });
 
@@ -47,6 +48,7 @@ export const updateRecordSchema = z.object({
     recordType: z.string().min(1).max(250).optional(),
     recordUnit: z.string().max(15).optional().nullable(),
     value: z.coerce.number().finite().optional().nullable(),
+    categoryName: z.string().max(1000).optional().nullable(),
     entryTime: timeStr,
     account: jsonObjectField().optional(),
     category: jsonObjectField().optional(),

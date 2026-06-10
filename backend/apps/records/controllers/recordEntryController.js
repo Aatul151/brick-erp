@@ -191,9 +191,9 @@ export const createRecord = async (req, res) => {
                 value: body.value != null ? String(body.value) : null,
                 entryDate,
                 entryTime: body.entryTime ?? null,
-                accountName: body.account?.name ?? null,
+                accountName: body.account?.label ?? null,
                 account: body.account ?? {},
-                categoryName: body.category?.name ?? null,
+                categoryName: body.category?.label ?? null,
                 category: body.category ?? {},
                 label: body.label ?? {},
                 remark: body.remark ?? null,
@@ -264,11 +264,11 @@ export const updateRecord = async (req, res) => {
         if (body.entryTime !== undefined) patch.entryTime = body.entryTime;
         if (body.account !== undefined) {
             patch.account = body.account;
-            patch.accountName = body.account?.name ?? null;
+            patch.accountName = body.account?.label ?? null;
         }
         if (body.category !== undefined) {
             patch.category = body.category;
-            patch.categoryName = body.category?.name ?? null;
+            patch.categoryName = body.category?.label ?? null;
         }
         if (body.label !== undefined) patch.label = body.label;
         if (body.remark !== undefined) patch.remark = body.remark;

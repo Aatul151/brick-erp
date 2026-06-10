@@ -1,15 +1,12 @@
 {
   "info": {
+    "_postman_id": "808bcc98-dab5-407e-9f64-13fd39298a84",
     "name": "Brick ERP API",
     "description": "REST API (`/api`). Import the Brick ERP Local environment, set `baseUrl`, `loginEmail`, and `loginPassword`. Run **Auth → Login** to save `accessToken`, `refreshToken`, and `tenantId`. Protected routes use Bearer auth from `accessToken`.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32267242",
+    "_collection_link": "https://go.postman.co/collection/32267242-808bcc98-dab5-407e-9f64-13fd39298a84?source=collection_link"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:6426"
-    }
-  ],
   "item": [
     {
       "name": "Health",
@@ -17,13 +14,23 @@
         {
           "name": "Health check",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/health",
             "auth": {
               "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -32,23 +39,6 @@
       "item": [
         {
           "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/auth/login",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}"
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -62,17 +52,44 @@
                   "    if (j.user && j.user.id != null) pm.environment.set('userId', String(j.user.id));",
                   "}"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
-          ]
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@democompany.com\",\n  \"password\": \"ClientAdmin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
         },
         {
           "name": "Logout (Bearer — revokes refresh tokens)",
           "request": {
-            "method": "POST",
-            "header": [],
-            "url": "{{baseUrl}}/api/auth/logout",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -82,23 +99,51 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Logout (no auth)",
           "request": {
-            "method": "POST",
-            "header": [],
-            "url": "{{baseUrl}}/api/auth/logout",
             "auth": {
               "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Refresh access token",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -106,19 +151,30 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/auth/refresh",
-            "auth": {
-              "type": "noauth"
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Request password reset",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -126,19 +182,31 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/auth/password-reset/request",
-            "auth": {
-              "type": "noauth"
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{loginEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/password-reset/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password-reset",
+                "request"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Confirm password reset",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -146,22 +214,28 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/auth/password-reset/confirm",
-            "auth": {
-              "type": "noauth"
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{passwordResetToken}}\",\n  \"newPassword\": \"NewPassword1@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/password-reset/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password-reset",
+                "confirm"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get profile",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/auth/profile",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -171,12 +245,36 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update profile",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -184,29 +282,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/auth/profile",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"email\": \"{{loginEmail}}\",\n  \"mobile\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update profile picture",
           "request": {
-            "method": "PUT",
-            "header": [],
-            "url": "{{baseUrl}}/api/auth/profile-picture",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -217,17 +313,31 @@
                 }
               ]
             },
+            "method": "PUT",
+            "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
                   "key": "files",
                   "type": "file",
-                  "src": []
+                  "value": null
                 }
               ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile-picture",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile-picture"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -237,9 +347,6 @@
         {
           "name": "Stats",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/tenants/stats",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -249,15 +356,26 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "stats"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "List tenants",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/tenants",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -267,15 +385,25 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get tenant by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -285,20 +413,26 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create tenant",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/tenants",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -309,23 +443,33 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Acme Corp\",\n  \"subdomain\": \"acme-{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update tenant",
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -336,23 +480,34 @@
                 }
               ]
             },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Acme Corp Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update tenant theme (Site Admin)",
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}/theme",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -363,15 +518,45 @@
                 }
               ]
             },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"themeSetting\": {\n    \"primaryColor\": \"#1976d2\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/theme",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "theme"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update my tenant theme mode",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -379,34 +564,28 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/tenants/my-theme/mode",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"mode\": \"light\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/my-theme/mode",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "my-theme",
+                "mode"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Suspend tenant",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}/suspend",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -417,23 +596,35 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "suspend"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Activate tenant",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}/activate",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -444,18 +635,35 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}",
+                "activate"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Delete tenant",
           "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/api/tenants/{{tenantId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -465,8 +673,50 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                "{{tenantId}}"
+              ]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Register tenant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"companyName\": \"Acme Technologies\",\r\n  \"name\": \"John Doe\",\r\n  \"email\": \"john@example.com\",\r\n  \"mobile\": \"9876543210\",\r\n  \"password\": \"Password@123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tenants",
+                ""
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -476,9 +726,6 @@
         {
           "name": "List users",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/users",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -488,15 +735,25 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get user by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/users/{{userId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -506,20 +763,26 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create user",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/users",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -530,23 +793,33 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password1@\",\n  \"fullName\": \"New User\",\n  \"tenantId\": \"{{tenantId}}\",\n  \"roleIds\": [\n    1\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Invite user",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/users/invite",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -557,15 +830,44 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"invited@example.com\",\n  \"fullName\": \"Invited User\",\n  \"roleIds\": [\n    1\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "invite"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Update user",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PUT",
             "header": [
               {
@@ -573,7 +875,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/users/{{userId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated User Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete user",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -584,29 +906,21 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Updated User Name\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete user",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/users/{{userId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -616,9 +930,6 @@
         {
           "name": "List roles",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/roles",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -628,15 +939,25 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get role by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/roles/{{roleId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -646,12 +967,36 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{roleId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create role",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -659,7 +1004,26 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Role\",\n  \"description\": \"Optional\",\n  \"scope\": \"tenant\",\n  \"permissionIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update role",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -670,15 +1034,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Custom Role\",\n  \"description\": \"Optional\",\n  \"scope\": \"tenant\",\n  \"permissionIds\": []\n}"
-            }
-          }
-        },
-        {
-          "name": "Update role",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -686,7 +1041,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/roles/{{roleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Role Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete role",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -697,29 +1072,21 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Custom Role Updated\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete role",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/roles/{{roleId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "{{roleId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -729,9 +1096,6 @@
         {
           "name": "List permissions",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/permissions",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -741,12 +1105,35 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "permissions"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create permission",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -754,7 +1141,26 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/permissions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceName\": \"widgets\",\n  \"action\": \"read\",\n  \"description\": \"Read widgets\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update permission",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -765,15 +1171,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"resourceName\": \"widgets\",\n  \"action\": \"read\",\n  \"description\": \"Read widgets\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Update permission",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -781,7 +1178,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/permissions/{{permissionId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/permissions/{{permissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{permissionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete permission",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -792,29 +1209,21 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"description\": \"Updated\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete permission",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/permissions/{{permissionId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/permissions/{{permissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "permissions",
+                "{{permissionId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -824,9 +1233,6 @@
         {
           "name": "List modules",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/modules",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -836,15 +1242,25 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "modules"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get module by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/modules/{{moduleId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -854,12 +1270,36 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{moduleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "{{moduleId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create module",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -867,7 +1307,26 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/modules",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sample Module\",\n  \"slug\": \"sample_module_{{$timestamp}}\",\n  \"icon\": \"Extension\",\n  \"description\": \"Optional\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "modules"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update module",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -878,15 +1337,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Sample Module\",\n  \"slug\": \"sample_module_{{$timestamp}}\",\n  \"icon\": \"Extension\",\n  \"description\": \"Optional\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}"
-            }
-          }
-        },
-        {
-          "name": "Update module",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -894,7 +1344,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/modules/{{moduleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated module\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{moduleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "{{moduleId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete module",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -905,29 +1375,21 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"description\": \"Updated module\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete module",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/modules/{{moduleId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{moduleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "modules",
+                "{{moduleId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -937,9 +1399,6 @@
         {
           "name": "List audit logs",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/audit-logs?tenantId={{tenantId}}&page=1&limit=50",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -949,15 +1408,39 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-logs?tenantId={{tenantId}}&page=1&limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "tenantId",
+                  "value": "{{tenantId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Audit stats",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/audit-logs/stats",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -967,8 +1450,22 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-logs/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "audit-logs",
+                "stats"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -978,9 +1475,6 @@
         {
           "name": "List form definitions",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-definitions",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -990,15 +1484,25 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "List form definitions (menu)",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-definitions/menu",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1008,15 +1512,26 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions/menu",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions",
+                "menu"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get form definition by name",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-definitions/name/{{formName}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1026,15 +1541,27 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions/name/{{formName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions",
+                "name",
+                "{{formName}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get form definition by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1044,12 +1571,36 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions",
+                "{{formDefinitionId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create form definition",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1057,7 +1608,26 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/form-definitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sample Form\",\n  \"name\": \"sample_form_{{$timestamp}}\",\n  \"formType\": \"custom\",\n  \"collectionName\": null,\n  \"sections\": [],\n  \"settings\": {}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update form definition",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1068,15 +1638,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Sample Form\",\n  \"name\": \"sample_form_{{$timestamp}}\",\n  \"formType\": \"custom\",\n  \"collectionName\": null,\n  \"sections\": [],\n  \"settings\": {}\n}"
-            }
-          }
-        },
-        {
-          "name": "Update form definition",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -1084,7 +1645,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Form Title\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions",
+                "{{formDefinitionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete form definition",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1095,29 +1676,21 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated Form Title\"\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete form definition",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/form-definitions/{{formDefinitionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-definitions",
+                "{{formDefinitionId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -1127,9 +1700,6 @@
         {
           "name": "List form entries",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-entries?formName={{formName}}&page=1&limit=10",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1139,12 +1709,49 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-entries?formName={{formName}}&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-entries"
+              ],
+              "query": [
+                {
+                  "key": "formName",
+                  "value": "{{formName}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create form entry",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1152,7 +1759,26 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/form-entries",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formName\": \"{{formName}}\",\n  \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/form-entries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-entries"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update form entry",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1163,15 +1789,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"formName\": \"{{formName}}\",\n  \"payload\": {}\n}"
-            }
-          }
-        },
-        {
-          "name": "Update form entry",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -1179,7 +1796,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/form-entries/{{formEntryId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formName\": \"{{formName}}\",\n  \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/form-entries/{{formEntryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-entries",
+                "{{formEntryId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete form entry",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1190,29 +1827,27 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"formName\": \"{{formName}}\",\n  \"payload\": {}\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete form entry",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/form-entries/{{formEntryId}}?formName={{formName}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
+            "url": {
+              "raw": "{{baseUrl}}/api/form-entries/{{formEntryId}}?formName={{formName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-entries",
+                "{{formEntryId}}"
+              ],
+              "query": [
                 {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
+                  "key": "formName",
+                  "value": "{{formName}}"
                 }
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -1222,50 +1857,6 @@
         {
           "name": "List records",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/records/get?page=1&limit=20&recordType=production&entryDateFrom=2026-01-01&entryDateTo=2026-12-31",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get record by id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/records/get/{{recordId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Create record",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/records/create",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1276,11 +1867,76 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 100.5,\n  \"entryDate\": \"2026-05-16\",\n  \"entryTime\": \"14:30\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"morning\"\n  },\n  \"remark\": \"Sample record\"\n}"
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/get?page=1&limit=20&recordType=production&entryDateFrom=2026-01-01&entryDateTo=2026-12-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "get"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "recordType",
+                  "value": "production"
+                },
+                {
+                  "key": "entryDateFrom",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "entryDateTo",
+                  "value": "2026-12-31"
+                }
+              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Get record by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/get/{{recordId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "get",
+                "{{recordId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create record",
           "event": [
             {
               "listen": "test",
@@ -1295,19 +1951,8 @@
                 "type": "text/javascript"
               }
             }
-          ]
-        },
-        {
-          "name": "Update record",
+          ],
           "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/api/records/update/{{recordId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1318,18 +1963,34 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"entryDate\": \"{{recordEntryDate}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 150.75,\n  \"entryTime\": \"15:00\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"afternoon\"\n  },\n  \"remark\": \"Updated record\"\n}"
+              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 100.5,\n  \"entryDate\": \"2026-05-16\",\n  \"entryTime\": \"14:30\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"morning\"\n  },\n  \"remark\": \"Sample record\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/records/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "create"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Delete record",
+          "name": "Update record",
           "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/api/records/delete/{{recordId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1339,8 +2000,62 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labourId\": \"{{labourId}}\",\n  \"entryDate\": \"{{recordEntryDate}}\",\n  \"recordType\": \"production\",\n  \"recordUnit\": \"pcs\",\n  \"value\": 150.75,\n  \"entryTime\": \"15:00\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  },\n  \"category\": {\n    \"name\": \"Bricks\"\n  },\n  \"label\": {\n    \"shift\": \"afternoon\"\n  },\n  \"remark\": \"Updated record\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/records/update/{{recordId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "update",
+                "{{recordId}}"
+              ]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete record",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/delete/{{recordId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "delete",
+                "{{recordId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1350,9 +2065,6 @@
         {
           "name": "List labours",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/labours/get?page=1&limit=20",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1362,15 +2074,36 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/labours/get?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "labours",
+                "get"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Get labour by id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/labours/get/{{labourId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1380,12 +2113,37 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/labours/get/{{labourId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "labours",
+                "get",
+                "{{labourId}}"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Create labour",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1393,7 +2151,27 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/labours/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"labourType\": \"mason\",\n  \"mobileNumber\": \"9876543210\",\n  \"mobileNumber2\": null,\n  \"gender\": \"male\",\n  \"address\": \"123 Main St\",\n  \"aadhaarNumber\": \"1234-5678-9012\",\n  \"defaultRate\": 100,\n  \"brickBuilderRate\": 120,\n  \"brickMoverRate\": 90,\n  \"sapaRate\": 80,\n  \"rojRate\": 70,\n  \"metadata\": {},\n  \"remark\": \"Sample labour\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/labours/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "labours",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update labour",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1404,15 +2182,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"labourType\": \"mason\",\n  \"mobileNumber\": \"9876543210\",\n  \"mobileNumber2\": null,\n  \"gender\": \"male\",\n  \"address\": \"123 Main St\",\n  \"aadhaarNumber\": \"1234-5678-9012\",\n  \"defaultRate\": 100,\n  \"brickBuilderRate\": 120,\n  \"brickMoverRate\": 90,\n  \"sapaRate\": 80,\n  \"rojRate\": 70,\n  \"metadata\": {},\n  \"remark\": \"Sample labour\",\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
-            }
-          }
-        },
-        {
-          "name": "Update labour",
-          "request": {
             "method": "PUT",
             "header": [
               {
@@ -1420,7 +2189,28 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/api/labours/update/{{labourId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe Updated\",\n  \"labourType\": \"carpenter\",\n  \"address\": \"456 Updated St\",\n  \"remark\": \"Updated labour\",\n  \"metadata\": {\n    \"notes\": \"updated\"\n  },\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/labours/update/{{labourId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "labours",
+                "update",
+                "{{labourId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete labour",
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1431,29 +2221,22 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"John Doe Updated\",\n  \"labourType\": \"carpenter\",\n  \"address\": \"456 Updated St\",\n  \"remark\": \"Updated labour\",\n  \"metadata\": {\n    \"notes\": \"updated\"\n  },\n  \"account\": {\n    \"name\": \"Main Account\"\n  }\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete labour",
-          "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/labours/delete/{{labourId}}",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/labours/delete/{{labourId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "labours",
+                "delete",
+                "{{labourId}}"
               ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -1463,6 +2246,16 @@
         {
           "name": "Upload files (multipart)",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "body": {
@@ -1471,30 +2264,28 @@
                 {
                   "key": "files",
                   "type": "file",
-                  "src": [],
-                  "description": "One or more files (max 20 per request)"
+                  "description": "One or more files (max 20 per request)",
+                  "value": null
                 }
               ]
             },
-            "url": "{{baseUrl}}/api/form-media/file-upload",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
+            "url": {
+              "raw": "{{baseUrl}}/api/form-media/file-upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-media",
+                "file-upload"
               ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Download file by public id",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/form-media/files/{{filePublicId}}",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1504,10 +2295,134 @@
                   "type": "string"
                 }
               ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/form-media/files/{{filePublicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "form-media",
+                "files",
+                "{{filePublicId}}"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "count",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Chart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "count"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:6426",
+      "disabled": true
+    },
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "accessToken",
+      "value": ""
     }
   ]
 }

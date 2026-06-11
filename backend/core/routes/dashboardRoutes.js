@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get("/count", authenticate, dashboardController.getCountStatistics);
 router.get("/chart", authenticate, dashboardController.getChartStatistics);
-router.get("/labour/activity", authenticate, dashboardController.getActivities);
+router.get("/activity/:type", authenticate, dashboardController.getActivities);
 
 export default router;

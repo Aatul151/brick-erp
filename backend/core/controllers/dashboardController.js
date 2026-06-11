@@ -58,10 +58,11 @@ export const getChartStatistics = async (req, res) => {
 
 export const getActivities = async (req, res) => {
     try {
+        const type = ["labour", "category"]?.includes(req.params.type) ? req.params.type : "labour";
         const searchText = req.query?.searchText || null;
 
         const filter = [];
-        if (searchText) {
+        if (searchText && type == "labour") {
             filter.push(
                 or(
                     ilike(labours.fullName, `%${searchText.trim()}%`),
@@ -70,15 +71,15 @@ export const getActivities = async (req, res) => {
             );
         }
 
-        const whereClause = buildFilterConditions(req, filter);
-        const page = Number(req.query?.page || 1);
-        const limit = Number(req.query?.limit || 5);
+        if (searchText && type == "category") {
+            filter.push(ilike(records.categoryName, `%${searchText.trim()}%`));
+        }
 
+        const whereClause = buildFilterConditions(req, filter);
         const result = { success: true };
-        result.labourDetails = await getLabourWorkCategoryWise(whereClause, page, limit);
+        result.details = await getGroupedWorkData(whereClause, type, req);
 
         return res.status(200).json(result);
-
     } catch (error) {
         console.error("Get activities error:", error);
         res.status(500).json({ error: "Failed to fetch dashbord activities list" });
@@ -287,50 +288,66 @@ const getLabourTypeWiseData = async (whereClause) => {
 //#endregion
 
 //#region List Statistic
-const getLabourWorkCategoryWise = async (whereClause, page = 1, limit = 5) => {
+const getGroupedWorkData = async (whereClause, parentField = "labour", req) => {
+    const page = Number(req.query?.page || 1);
+    const limit = Number(req.query?.limit || 5);
 
     const data = await db.select({
         labourId: labours.id,
         labour: labours.fullName,
         labourCode: labours.labourCode,
-        category: records.categoryName,
-        value: sql`COALESCE(SUM(${records?.value}),0)::numeric`,
+        categoryName: records.categoryName,
+        category: records.category,
+        value: sql`COALESCE(SUM(${records.value}),0)::numeric`,
     })
         .from(records)
         .leftJoin(labours, eq(records.labourId, labours.id))
         .where(whereClause)
-        .groupBy(labours.id, labours.fullName, labours.labourCode, records.categoryName)
-        .orderBy(labours.fullName, records.categoryName);
+        .groupBy(labours.id, labours.fullName, labours.labourCode, records.category, records.categoryName);
 
+    const grouped = Object.values(data.reduce((acc, item) => {
+        const key = parentField === "category" ? item.categoryName || "Unknown" : item.labourId;
 
-    const labourType = Object.values(
-        data.reduce((acc, item) => {
-            const labour = item?.labour || "Unknown";
-
-            if (!acc[item.labourId]) {
-                acc[item.labourId] = {
+        if (!acc[key]) {
+            acc[key] = parentField === "category" ?
+                {
+                    id: item?.category?.id,
+                    categoryName: item.categoryName || "Unknown",
+                    color: item.category?.color,
+                    icon: item.category?.icon,
+                    labour: [],
+                }
+                : {
                     id: item.labourId,
-                    name: labour,
+                    name: item.labour || "Unknown",
                     labourCode: item.labourCode,
-                    data: [],
+                    category: [],
                 };
-            }
+        }
 
-            acc[item.labourId].data.push({
-                category: item.category || "Unknown",
+        if (parentField == "category") {
+            acc[key].labour.push({
+                id: item.labourId,
+                name: item.labour || "Unknown",
+                code: item.labourCode,
                 value: Number(item.value || 0),
             });
+        } else {
+            acc[key].category?.push({
+                id: item.category?.id || "Unknown",
+                name: item.categoryName,
+                color: item?.category?.color,
+                icon: item?.category?.icon,
+                value: Number(item.value || 0),
+            });
+        }
+        return acc;
+    }, {}));
 
-            return acc;
-        }, {})
-    );
-
-
-    const total = labourType.length;
+    const total = grouped.length;
     const start = (page - 1) * limit;
-
     return {
-        data: labourType.slice(start, start + limit),
+        data: grouped.slice(start, start + limit),
         pagination: {
             page,
             limit,

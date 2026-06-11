@@ -1,11 +1,10 @@
 {
   "info": {
-    "_postman_id": "808bcc98-dab5-407e-9f64-13fd39298a84",
+    "_postman_id": "ed9f2530-c4c4-44ea-9792-c0cb12c5b261",
     "name": "Brick ERP API",
     "description": "REST API (`/api`). Import the Brick ERP Local environment, set `baseUrl`, `loginEmail`, and `loginPassword`. Run **Auth → Login** to save `accessToken`, `refreshToken`, and `tenantId`. Protected routes use Bearer auth from `accessToken`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "32267242",
-    "_collection_link": "https://go.postman.co/collection/32267242-808bcc98-dab5-407e-9f64-13fd39298a84?source=collection_link"
+    "_exporter_id": "32267242"
   },
   "item": [
     {
@@ -2319,7 +2318,7 @@
       "name": "Dashboard",
       "item": [
         {
-          "name": "count",
+          "name": "Count",
           "request": {
             "auth": {
               "type": "bearer",
@@ -2341,7 +2340,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/dashboard/count",
+              "raw": "{{baseUrl}}/api/dashboard/count?recordType=Work",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -2349,6 +2348,28 @@
                 "api",
                 "dashboard",
                 "count"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Work",
+                  "type": "text"
+                },
+                {
+                  "key": "accountName",
+                  "value": "Ganesh Enterprises",
+                  "disabled": true
+                },
+                {
+                  "key": "entryDate",
+                  "value": "2026-06-10",
+                  "disabled": true
+                },
+                {
+                  "key": "labourId",
+                  "value": "9feb430b-4537-4cb9-814a-c7c4579551b4",
+                  "disabled": true
+                }
               ]
             }
           },
@@ -2370,14 +2391,128 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/dashboard/count",
+              "raw": "{{baseUrl}}/api/dashboard/chart?recordType=Work",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "dashboard",
-                "count"
+                "chart"
+              ],
+              "query": [
+                {
+                  "key": "chartType",
+                  "value": "labour",
+                  "disabled": true
+                },
+                {
+                  "key": "accountName",
+                  "value": "Ganesh Enterprises",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "entryDate",
+                  "value": "2026-06-10",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "labourId",
+                  "value": "7373b81f-06c2-4fab-b3c4-ff0875edd309",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "categoryName",
+                  "value": "Sand",
+                  "disabled": true
+                },
+                {
+                  "key": "recordType",
+                  "value": "Work",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Labour/category wise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/activity/labour?recordType=Work",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "activity",
+                "labour"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "Work"
+                },
+                {
+                  "key": "accountName",
+                  "value": "Ganesh Enterprises",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "entryDate",
+                  "value": "2026-06-10",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "labourId",
+                  "value": "d8af098d-c764-4ba5-8278-264f65d48075",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "searchText",
+                  "value": "LB010",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": null,
+                  "value": null,
+                  "description": "labour | category",
+                  "type": "text",
+                  "disabled": true
+                }
               ]
             }
           },
@@ -2413,12 +2548,12 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:6426",
-      "disabled": true
+      "value": "http://localhost:6426"
     },
     {
       "key": "baseUrl",
-      "value": ""
+      "value": "",
+      "disabled": true
     },
     {
       "key": "accessToken",

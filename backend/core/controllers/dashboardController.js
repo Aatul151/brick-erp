@@ -1,6 +1,6 @@
 import { parseEntryDate, tenantWhere } from "../../apps/records/utils/utilities.js";
 import { db } from "../../models/db.js";
-import { eq, desc, sql, gte, lte, and } from "drizzle-orm";
+import { eq, desc, sql, gte, lte, and, ilike, or } from "drizzle-orm";
 import { labours, records } from "../../models/schemaIndex.js";
 
 export const getCountStatistics = async (req, res) => {
@@ -56,13 +56,44 @@ export const getChartStatistics = async (req, res) => {
     }
 }
 
-const buildFilterConditions = (req) => {
+export const getActivities = async (req, res) => {
+    try {
+        const searchText = req.query?.searchText || null;
+
+        const filter = [];
+        if (searchText) {
+            filter.push(
+                or(
+                    ilike(labours.fullName, `%${searchText.trim()}%`),
+                    ilike(labours.labourCode, `%${searchText.trim()}%`)
+                )
+            );
+        }
+
+        const whereClause = buildFilterConditions(req, filter);
+        const page = Number(req.query?.page || 1);
+        const limit = Number(req.query?.limit || 5);
+
+        const result = { success: true };
+        result.labourDetails = await getLabourWorkCategoryWise(whereClause, page, limit);
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error("Get activities error:", error);
+        res.status(500).json({ error: "Failed to fetch dashbord activities list" });
+    }
+}
+
+const buildFilterConditions = (req, extraFilters = []) => {
     const {
         recordType = "Expense",
         accountName,
         categoryName,
         entryDate,
-        labourId
+        labourId,
+        formDate,
+        toDate,
     } = req.query;
 
     const conditions = [tenantWhere(records.tenantId, req)];
@@ -83,9 +114,18 @@ const buildFilterConditions = (req) => {
         conditions.push(eq(records.entryDate, parseEntryDate(entryDate)));
     }
 
+    if (formDate) {
+        conditions.push(gte(records.entryDate, parseEntryDate(formDate)));
+    }
+    if (toDate) {
+        conditions.push(lte(records.entryDate, parseEntryDate(toDate)));
+    }
+
     if (labourId) {
         conditions.push(eq(records.labourId, labourId));
     }
+
+    conditions.push(...extraFilters);
 
     return and(...conditions);
 };
@@ -167,6 +207,8 @@ const getMonthGrowth = async (whereClause, startOfMonth) => {
     let percentage = 0;
     if (Number(lastMonth) > 0) {
         percentage = ((Number(currentMonth) - Number(lastMonth)) / Number(lastMonth)) * 100;
+    } else {
+        percentage = 100
     }
 
     return {
@@ -241,5 +283,60 @@ const getLabourTypeWiseData = async (whereClause) => {
         value: Number(item?.value || 0),
         color: getRandomColor(),
     }));
+};
+//#endregion
+
+//#region List Statistic
+const getLabourWorkCategoryWise = async (whereClause, page = 1, limit = 5) => {
+
+    const data = await db.select({
+        labourId: labours.id,
+        labour: labours.fullName,
+        labourCode: labours.labourCode,
+        category: records.categoryName,
+        value: sql`COALESCE(SUM(${records?.value}),0)::numeric`,
+    })
+        .from(records)
+        .leftJoin(labours, eq(records.labourId, labours.id))
+        .where(whereClause)
+        .groupBy(labours.id, labours.fullName, labours.labourCode, records.categoryName)
+        .orderBy(labours.fullName, records.categoryName);
+
+
+    const labourType = Object.values(
+        data.reduce((acc, item) => {
+            const labour = item?.labour || "Unknown";
+
+            if (!acc[item.labourId]) {
+                acc[item.labourId] = {
+                    id: item.labourId,
+                    name: labour,
+                    labourCode: item.labourCode,
+                    data: [],
+                };
+            }
+
+            acc[item.labourId].data.push({
+                category: item.category || "Unknown",
+                value: Number(item.value || 0),
+            });
+
+            return acc;
+        }, {})
+    );
+
+
+    const total = labourType.length;
+    const start = (page - 1) * limit;
+
+    return {
+        data: labourType.slice(start, start + limit),
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 };
 //#endregion

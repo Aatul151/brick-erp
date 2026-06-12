@@ -1,6 +1,6 @@
 import { parseEntryDate, tenantWhere } from "../../apps/records/utils/utilities.js";
 import { db } from "../../models/db.js";
-import { eq, desc, sql, gte, lte, and, ilike, or } from "drizzle-orm";
+import { eq, desc, sql, gte, lte, and, ilike, or, inArray } from "drizzle-orm";
 import { labours, records } from "../../models/schemaIndex.js";
 
 export const getCountStatistics = async (req, res) => {
@@ -95,6 +95,7 @@ const buildFilterConditions = (req, extraFilters = []) => {
         labourId,
         formDate,
         toDate,
+        labelValue
     } = req.query;
 
     const conditions = [tenantWhere(records.tenantId, req)];
@@ -108,11 +109,25 @@ const buildFilterConditions = (req, extraFilters = []) => {
     }
 
     if (categoryName) {
-        conditions.push(eq(records.categoryName, categoryName?.trim()));
+        const categories = categoryName.split(",").map(v => v.trim()).filter(Boolean);
+        conditions.push(inArray(records.categoryName, categories));
     }
 
     if (entryDate) {
         conditions.push(eq(records.entryDate, parseEntryDate(entryDate)));
+    }
+
+    if (labelValue) {
+        const allLabel = labelValue?.split(",").map(v => v.trim().toLowerCase()).filter(Boolean);
+
+        if (allLabel.length > 0) {
+            conditions.push(
+                sql`(${sql.join(
+                    allLabel.map(v => sql`${records.label} @> ${JSON.stringify([{ value: v?.toLowerCase() }])}::jsonb`),
+                    sql` OR `
+                )})`
+            );
+        }
     }
 
     if (formDate) {

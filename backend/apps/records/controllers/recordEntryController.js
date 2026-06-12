@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { db } from "../../../models/db.js";
 import { records, labours } from "../models/records.schema.js";
-import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
+import { eq, and, desc, gte, lte, sql, inArray } from "drizzle-orm";
 import { createRecordSchema, updateRecordSchema, listRecordsQuerySchema } from "../utils/recordEntrySchemas.js";
 import { parseEntryDate, tenantWhere, UUID_PARAM } from "../utils/utilities.js";
 
@@ -66,21 +66,17 @@ export const listRecords = async (req, res) => {
         }
 
         if (categoryName) {
-            const categoryNames = categoryName?.split(",").map((v) => v?.trim()).filter(Boolean);
-            if (categoryNames.length > 0) {
-                conditions.push(
-                    sql`${records.categoryName} IN (${sql.join(categoryNames?.map(v => sql`${v}`), sql`, `)})`
-                );
-            }
+            const categories = categoryName.split(",").map(v => v.trim()).filter(Boolean);
+            conditions.push(inArray(records.categoryName, categories));
         }
 
         if (labelValue) {
-            const labelValues = labelValue?.split(",").map((v) => v?.trim()).filter(Boolean);
+            const labelValues = labelValue?.split(",").map(v => v.trim().toLowerCase()).filter(Boolean);
 
             if (labelValues.length > 0) {
                 conditions.push(
                     sql`(${sql.join(
-                        labelValues.map(v => sql`${records?.label} @> ${JSON.stringify([{ value: v }])}::jsonb`),
+                        labelValues.map(v => sql`${records.label} @> ${JSON.stringify([{ value: v }])}::jsonb`),
                         sql` OR `
                     )})`
                 );

@@ -1,6 +1,6 @@
 import { db } from "../../../models/db.js";
 import { labours } from "../models/records.schema.js";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, or } from "drizzle-orm";
 import {
     createLabourSchema,
     updateLabourSchema,
@@ -65,8 +65,8 @@ export const listLabours = async (req, res) => {
         if (searchtext) {
             conditions?.push(
                 or(
-                    sql`lower(${labours?.fullName}) like lower(${`%${filter}%`})`,
-                    sql`lower(${labours?.labourCode}) like lower(${`%${filter}%`})`
+                    sql`lower(${labours?.fullName}) like lower(${`%${searchtext}%`})`,
+                    sql`lower(${labours?.labourCode}) like lower(${`%${searchtext}%`})`
                 )
             );
         }

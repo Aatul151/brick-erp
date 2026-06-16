@@ -7,7 +7,7 @@ export const getCountStatistics = async (req, res) => {
     try {
         const whereClause = buildFilterConditions(req);
 
-        const expenseByAccount = await getExpenseByAccount(whereClause);
+        const expenseByAccount = await getExpenseByAccount(req);
         const statistics = await getExpenseStatistics(whereClause);
         const growth = await getMonthGrowth(whereClause, statistics.startOfMonth);
 
@@ -100,6 +100,18 @@ const buildFilterConditions = (req, extraFilters = []) => {
 
     const conditions = [tenantWhere(records.tenantId, req)];
 
+    //#region Defult 1Month Entry Date filter 
+    const today = new Date();
+    const oneMonthAgo = new Date(today);
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+
+    const defaultFromDate = formDate ? formDate : oneMonthAgo.toISOString().split('T')[0]; // 2026-06-01
+    const defaultToDate = toDate ? toDate : today.toISOString().split('T')[0];             // 2026-07-01
+
+    conditions.push(gte(records.entryDate, parseEntryDate(defaultFromDate)));
+    conditions.push(lte(records.entryDate, parseEntryDate(defaultToDate)));
+    //#endregion
+
     if (recordType) {
         conditions.push(eq(records.recordType, recordType));
     }
@@ -130,13 +142,6 @@ const buildFilterConditions = (req, extraFilters = []) => {
         }
     }
 
-    if (formDate) {
-        conditions.push(gte(records.entryDate, parseEntryDate(formDate)));
-    }
-    if (toDate) {
-        conditions.push(lte(records.entryDate, parseEntryDate(toDate)));
-    }
-
     if (labourId) {
         conditions.push(eq(records.labourId, labourId));
     }
@@ -146,15 +151,16 @@ const buildFilterConditions = (req, extraFilters = []) => {
     return and(...conditions);
 };
 
-
 //#region Count Statistics
-const getExpenseByAccount = async (whereClause) => {
+const getExpenseByAccount = async (req) => {
+    const recordType = req.query?.recordType || "Expense";
+
     const data = await db.select({
         accountName: records.accountName,
         amount: sql`COALESCE(SUM(${records.value}), 0)::numeric`,
     })
         .from(records)
-        .where(whereClause)
+        .where(eq(records.recordType, recordType))
         .groupBy(records.accountName)
         .orderBy(sql`SUM(${records.value}) DESC`);
 

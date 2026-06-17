@@ -2,6 +2,10 @@ import { parseEntryDate, tenantWhere } from "../../apps/records/utils/utilities.
 import { db } from "../../models/db.js";
 import { eq, desc, sql, gte, lte, and, ilike, or, inArray } from "drizzle-orm";
 import { labours, records } from "../../models/schemaIndex.js";
+import * as schema from "../../models/schemaIndex.js";
+import * as fs from 'fs';
+import * as path from 'path';
+import { exec } from "promisify-child-process";
 
 export const getCountStatistics = async (req, res) => {
     try {
@@ -378,3 +382,40 @@ const getGroupedWorkData = async (whereClause, parentField = "labour", req) => {
     };
 };
 //#endregion
+
+export const createDBBackup = async (req, res) => {
+    try {
+        const host = process.env.DB_Host;
+        const port = process.env.DB_PORT;
+        const username = process.env.DB_USER;
+        const password = process.env.DB_PASSWORD;
+        const database = process.env.DB_NAME;
+
+        if (!username || !password || !database) {
+            return res.status(500).json({ success: false, message: "Database credentials are required" });
+        }
+        const backupDir = path.join(process.cwd(), "DB_backup");
+
+        // Create backup folder if it doesn't exist
+        if (!fs.existsSync(backupDir)) { fs.mkdirSync(backupDir, { recursive: true }); }
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupFile = path.join(backupDir, `backup_${timestamp}.sql`);
+
+        const pgDumpPath = process.env.PG_DUMP_PATH || "pg_dump";
+        const command = `"${pgDumpPath}" -h ${host} -p ${port} -U ${username} -d ${database} --format=plain --inserts -f "${backupFile}"`;
+
+        exec(command, {
+            env: {
+                ...process.env,
+                PGPASSWORD: password
+            },
+        }, (error, stdout, stderr) => {
+            if (error) { return res.status(500).json({ success: false, message: "Backup failed", error: stderr || error?.message }); }
+
+            res.json({ success: true, message: "Backup created successfully", file: backupFile });
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err?.message });
+    }
+}

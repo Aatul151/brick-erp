@@ -8,4 +8,6 @@ router.get("/count", authenticate, dashboardController.getCountStatistics);
 router.get("/chart", authenticate, dashboardController.getChartStatistics);
 router.get("/activity/:type", authenticate, dashboardController.getActivities);
 
+router.post("/db-backup", authenticate, requireRole("Site Admin"), dashboardController.createDBBackup );
+
 export default router;

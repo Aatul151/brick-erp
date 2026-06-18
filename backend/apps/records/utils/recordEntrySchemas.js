@@ -63,6 +63,7 @@ export const listRecordsQuerySchema = z.object({
     recordType: z.string().max(250).optional(),
     entryDateFrom: dateStr.optional(),
     entryDateTo: dateStr.optional(),
+    accountName: z.string().optional(),
     categoryName: z.string().optional(),
     labelValue: z.string().optional(),
     labourId: z.string().uuid().optional().nullable()

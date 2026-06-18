@@ -51,7 +51,7 @@ export const listRecords = async (req, res) => {
                 details: parsed.error.flatten(),
             });
         }
-        const { page, limit, recordType, entryDateFrom, entryDateTo, categoryName, labelValue } = parsed.data;
+        const { page, limit, recordType, entryDateFrom, entryDateTo, categoryName, labelValue, accountName } = parsed.data;
         const conditions = [tenantWhere(records.tenantId, req)];
         if (recordType) {
             conditions.push(eq(records.recordType, recordType));
@@ -63,6 +63,10 @@ export const listRecords = async (req, res) => {
         }
         if (toD) {
             conditions.push(lte(records.entryDate, toD));
+        }
+
+        if (accountName) {
+            conditions.push(eq(records.accountName, accountName?.trim()));
         }
 
         if (categoryName) {
